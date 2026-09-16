@@ -1,0 +1,34 @@
+\begin{table}[t]
+\centering
+\caption{Grouping families at the primary window (0.55, seed 0); flow coverage is
+window-specific. The margin column is the \emph{level-$w_0$} feasibility margin (\cref{eq:margin});
+the recall and coverage columns are e-LOND under the horizon-uniform \oracle\ $\gamma$, whose
+cold-start coefficient is $\alpha = 2w_0$. $^{\dagger}$ marks a \emph{negative level-$w_0$ margin};
+e-LOND can still fire there when that margin exceeds $-\tfrac12$ (its own $\alpha = 2w_0$
+cold-start bound), which is why some daggered rows carry non-zero recall/coverage --- a row is $0$
+only when e-LOND is itself infeasible. Feasibility and detection are thus not the same condition
+(cf.\ \cref{tab:main}). All counts here use the \textbf{first-flow} within-bucket order, the optimistic upper bound over the orders we audit, not the canonical metadata-hash order \cref{tab:main} reports (\cref{apptab:ordering}).}
+\label{apptab:grouping}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{llrrr}
+\toprule
+Family & bucket & margin & episode recall & flow coverage \\
+\midrule
+src-dst & 300\,s (5\,m) & $-0.637^{\dagger}$ & 0.000 & 0.000 \\
+src-dst & 7200\,s (2\,h) & $+0.067$ & 0.378 & 0.276 \\
+src-dst & none & $+0.548$ & 0.253 & 0.032 \\
+src & 300\,s (5\,m) & $+1.546$ & 0.501 & 0.408 \\
+src & 7200\,s (2\,h) & $+20.505$ & 0.382 & 0.353 \\
+src & none & $+54.964$ & 0.286 & 0.350 \\
+dst & 300\,s (5\,m) & $+0.085$ & 0.532 & 0.689 \\
+dst & 7200\,s (2\,h) & $+1.736$ & 0.304 & 0.033 \\
+dst & none & $+3.646$ & 0.184 & 0.034 \\
+subnet24 & 300\,s (5\,m) & $-0.451^{\dagger}$ & 0.448 & 0.697 \\
+subnet24 & 7200\,s (2\,h) & $+0.501$ & 0.285 & 0.031 \\
+subnet24 & none & $+1.251$ & 0.193 & 0.031 \\
+src-dport & 300\,s (5\,m) & $-0.327^{\dagger}$ & 0.324 & 0.368 \\
+src-dport & 7200\,s (2\,h) & $+3.025$ & 0.066 & 0.351 \\
+src-dport & none & $+6.189$ & 0.032 & 0.340 \\
+\bottomrule
+\end{tabular}}
+\end{table}

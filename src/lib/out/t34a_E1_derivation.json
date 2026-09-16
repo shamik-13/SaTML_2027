@@ -1,0 +1,69 @@
+{
+ "M_reference": 1813114.0,
+ "alpha": 0.05,
+ "w0": 0.025,
+ "zeta_1_6": 2.28576566568013,
+ "D2b": "P(reject | ceiling evidence) = min(1, alpha_t * (|C|+1))",
+ "D2c": "P(reject | null) = alpha_t exactly; lift = |C|+1",
+ "D2d_hard_horizon_t_star_LOND_R0": 748,
+ "D2d_soft_yield_beyond_t_star": 1246.5136727280963,
+ "D3e": "P(reject | ceiling) = min(1, (alpha_t*lam)^(1/(1-lam)) * (|C|+1))",
+ "D3g": "Route B rejection region is a strict subset of Route A's at the same level",
+ "D3i_boost": "b* = (tau/lam)^lam; = sqrt(2 tau) at lam=1/2, matching section 4.28",
+ "D3j": "boosted Route B rejection region is p <= lam*alpha_t",
+ "D3k": "the optimal p-to-e calibrator at tau=1/alpha_t IS the threshold e-value",
+ "D4a": "Bonferroni all-ceiling: 1-(1-min(1,aM/m))^m",
+ "D4b": "Bonferroni one-of-m at ceiling: min(1, aM/m)",
+ "D4c": "mean-p x2 all-ceiling: IrwinHall_m(aMm/2); ~ (aMm/2)^m/m!",
+ "D4d": "Route B episode: ~ m^(-lam/(1-lam)) * single-hypothesis value",
+ "D5b": "Var(R) = sum q(1-q)",
+ "D5c": "J ~= sum q^2 / sum (2q - q^2)",
+ "lam_star": [
+  {
+   "a": 1e-09,
+   "lam_star": 0.04009719898599493,
+   "P_B_best": 2.6744773184153844e-05,
+   "P_B_vovk": 4.5327850000000006e-13,
+   "P_A": 0.0018131140000000002
+  },
+  {
+   "a": 1e-08,
+   "lam_star": 0.04437636438182191,
+   "P_B_best": 0.0002959769791661844,
+   "P_B_vovk": 4.5327850000000006e-11,
+   "P_A": 0.01813114
+  },
+  {
+   "a": 1e-07,
+   "lam_star": 0.04970032600163001,
+   "P_B_best": 0.0033151788914894988,
+   "P_B_vovk": 4.532784999999999e-09,
+   "P_A": 0.18131139999999998
+  },
+  {
+   "a": 1e-06,
+   "lam_star": 0.05653399316996585,
+   "P_B_best": 0.03770870067958372,
+   "P_B_vovk": 4.532785e-07,
+   "P_A": 1.0
+  }
+ ],
+ "n_checks_passed": 152,
+ "n_checks_failed": 0,
+ "failed": [],
+ "n_checks_no_power": 12,
+ "no_power": [
+  "D2a P(reject|G=7,E=1,a=0.002)",
+  "D3e P(reject) closed form [lam=0.25, a=1e-08]",
+  "D3e P(reject) closed form [lam=0.25, a=1e-07]",
+  "D3e P(reject) closed form [lam=0.5, a=1e-08]",
+  "D3e P(reject) closed form [lam=0.5, a=1e-07]",
+  "D3e P(reject) closed form [lam=0.5, a=1e-06]",
+  "D3e P(reject) closed form [lam=0.75, a=1e-08]",
+  "D3e P(reject) closed form [lam=0.75, a=1e-07]",
+  "D3e P(reject) closed form [lam=0.75, a=1e-06]",
+  "D4c mean-p x2 all-ceiling [m=5, a=1e-07]",
+  "D4c mean-p x2 all-ceiling [m=20, a=1e-07]",
+  "D4d m=1 reduces to D3e [lam=0.5]"
+ ]
+}

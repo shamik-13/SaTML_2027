@@ -1,0 +1,137 @@
+{
+ "route_b_validity": [
+  {
+   "N": 10,
+   "m": 3,
+   "mean_e1": 1.0026,
+   "se": 0.0034181902551091423,
+   "exact": 1.0,
+   "within_5se": true
+  },
+  {
+   "N": 100,
+   "m": 5,
+   "mean_e1": 0.9926,
+   "se": 0.009712579362403653,
+   "exact": 1.0,
+   "within_5se": true
+  },
+  {
+   "N": 1000,
+   "m": 40,
+   "mean_e1": 0.996125,
+   "se": 0.010934116228409294,
+   "exact": 1.0,
+   "within_5se": true
+  }
+ ],
+ "dilution_bound": [
+  {
+   "pos": 0.55,
+   "seed": 0,
+   "BH": 2,
+   "threshold": 2294720.0,
+   "median_pad": 3.0
+  },
+  {
+   "pos": 0.55,
+   "seed": 1,
+   "BH": 2,
+   "threshold": 2294720.0,
+   "median_pad": 3.0
+  },
+  {
+   "pos": 0.62,
+   "seed": 0,
+   "BH": 2,
+   "threshold": 1970680.0,
+   "median_pad": 6.0
+  },
+  {
+   "pos": 0.62,
+   "seed": 1,
+   "BH": 2,
+   "threshold": 1970680.0,
+   "median_pad": 3.0
+  },
+  {
+   "pos": 0.7,
+   "seed": 0,
+   "BH": 2,
+   "threshold": 1489240.0,
+   "median_pad": 62.0
+  },
+  {
+   "pos": 0.77,
+   "seed": 0,
+   "BH": 2,
+   "threshold": 1266880.0,
+   "median_pad": 35.0
+  },
+  {
+   "pos": 0.77,
+   "seed": 1,
+   "BH": 2,
+   "threshold": 1266880.0,
+   "median_pad": 35.0
+  },
+  {
+   "pos": 0.85,
+   "seed": 0,
+   "BH": 2,
+   "threshold": 1262720.0,
+   "median_pad": 35.0
+  },
+  {
+   "pos": 0.85,
+   "seed": 1,
+   "BH": 2,
+   "threshold": 1262720.0,
+   "median_pad": 35.5
+  }
+ ],
+ "symmetric_rules": [
+  {
+   "rule": "arithmetic mean",
+   "value": 25000.0,
+   "bound": 25000.0,
+   "within_bound": true
+  },
+  {
+   "rule": "0.3 + 0.7*mean",
+   "value": 17500.3,
+   "bound": 25000.0,
+   "within_bound": true
+  },
+  {
+   "rule": "sum/n0 (n0=40)",
+   "value": 25000.0,
+   "bound": 25000.0,
+   "within_bound": true
+  },
+  {
+   "rule": "sum/n0 (n0=200)",
+   "value": 5000.0,
+   "bound": 25000.0,
+   "within_bound": true
+  }
+ ],
+ "precommitted_slot": [
+  {
+   "pad": 0,
+   "F": 1000000.0
+  },
+  {
+   "pad": 10,
+   "F": 1000000.0
+  },
+  {
+   "pad": 1000,
+   "F": 1000000.0
+  },
+  {
+   "pad": 100000,
+   "F": 1000000.0
+  }
+ ]
+}

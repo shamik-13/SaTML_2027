@@ -1,0 +1,1007 @@
+ 
+ Improving online FDR procedures via online analogs of e-closure and compound e-values 
+ Report GitHub Issue 
+ × 
+ Title: 
+ Content selection saved. Describe the issue below: 
+ Description: 
+ Submit without GitHub 
+ Submit in GitHub 
+ arXiv is now an independent nonprofit! 
+ Learn more 
+ × 
+ Back to arXiv 
+ Why HTML? 
+ Report Issue 
+ Back to Abstract 
+ Download PDF 
+ Abstract 
+ 1 Introduction 
+ Error metrics to control. 
+ A brief overview of multiple testing. 
+ Contributions 
+ 2 Improving e-value based procedures 
+ 2.1 The online SupFDR e-closure principle 
+ Computation via dynamic programming. 
+ 2.2 Compound e-values via donation 
+ Efficient donation computation. 
+ 3 Improving p-value based procedures 
+ 4 Simulations 
+ Runtime comparison 
+ 5 Real data experiment 
+ 6 Extensions 
+ 7 Related work 
+ Different online multiple testing analogs of FDR. 
+ 8 Conclusion 
+ References 
+ A Methodological details of online closed procedures 
+ A.1 General weighted e-collections and closure enlargement 
+ A.2 Alternative e-collection for e-LOND ¯ \overline{\textnormal{e-LOND}} 
+ Simulation results. 
+ A.3 Computation details of r-LOND ¯ \overline{\text{r-LOND}} 
+ B Deferred proofs 
+ B.1 Proof of Theorem 
+ B.2 Proof of Proposition 
+ B.3 Proof of Proposition 
+ B.4 Proof of Proposition 
+ B.5 Proof of Theorem 
+ B.6 Proof of Theorem 
+ B.7 Proof of Theorem 
+ C Simulation extensions 
+ C.1 Additional simulations 
+ C.2 Real data e-value formulation 
+ C.3 Simulation details 
+ D Improvements via donation beyond online multiple testing 
+ D.1 Online donation e-BH for acceptance-to-rejection (ARC) 
+ The online e-BH procedure 
+ D.1.1 Simulation results 
+ D.2 Donation e-TOAD for decision deadlines 
+ The e-TOAD procedure 
+ D.3 Donation e-BH for offline multiple testing 
+ Baseline e-BH. 
+ Donation-derived compound e-values. 
+ Donation e-BH. 
+ E Randomization for donation algorithms 
+ E.1 Simulation results 
+ License: arXiv.org perpetual non-exclusive license
+arXiv:2603.24792v3 [stat.ME] 08 Jul 2026 
+ Improving online FDR procedures 
+ via online analogs of e-closure and compound e-values 
+ Ziyu Xu
+ † † thanks: Department of Statistics and Data Science, Carnegie Mellon University. xzy@cmu.edu 
+ Lasse Fischer
+ † † thanks: Competence Center for Clinical Trials Bremen, University of Bremen. fischer1@uni-bremen.de 
+ Aaditya Ramdas
+ † † thanks: Departments of Statistics and Data Science, and Machine Learning, Carnegie Mellon University. aramdas@cmu.edu 
+ Abstract 
+ In many scientific applications, hypotheses are generated and tested continuously in a stream. We develop a framework for improving online multiple testing procedures with false discovery rate (FDR) control under arbitrary dependence. Our approach is two-fold: we construct methods via the online e-closure principle, as well as a novel formulation of online compound e-values that is defined through donations. This yields strict power improvements over state-of-the-art e-value and p-value procedures while retaining FDR control. We further derive algorithms that compute the decision at time t t in O ⁡ ( log ⁡ t ) O(\log t) time, and we demonstrate improved empirical performance on synthetic and real data. 
+ Contents 
+ 1 Introduction 
+ 2 Improving e-value based procedures 
+ 2.1 The online SupFDR e-closure principle 
+ 2.2 Compound e-values via donation 
+ 3 Improving p-value based procedures 
+ 4 Simulations 
+ 5 Real data experiment 
+ 6 Extensions 
+ 7 Related work 
+ 8 Conclusion 
+ References 
+ A Methodological details of online closed procedures 
+ A.1 General weighted e-collections and closure enlargement 
+ A.2 Alternative e-collection for e-LOND ¯ \overline{\textnormal{e-LOND}} 
+ A.3 Computation details of r-LOND ¯ \overline{\text{r-LOND}} 
+ B Deferred proofs 
+ B.1 Proof of Theorem 
+ B.2 Proof of Proposition 
+ B.3 Proof of Proposition 
+ B.4 Proof of Proposition 
+ B.5 Proof of Theorem 
+ B.6 Proof of Theorem 
+ B.7 Proof of Theorem 
+ C Simulation extensions 
+ C.1 Additional simulations 
+ C.2 Real data e-value formulation 
+ C.3 Simulation details 
+ D Improvements via donation beyond online multiple testing 
+ D.1 Online donation e-BH for acceptance-to-rejection (ARC) 
+ D.1.1 Simulation results 
+ D.2 Donation e-TOAD for decision deadlines 
+ D.3 Donation e-BH for offline multiple testing 
+ E Randomization for donation algorithms 
+ E.1 Simulation results 
+ 1 Introduction 
+ Large-scale hypothesis testing has become prevalent in multiple industries, such as A/B testing, genomics, clinical trials, neuroscience, and online monitoring, where the scientist wishes to filter for hypotheses where a true discovery is made and further investigation or action is merited. Online error control is particularly important in platform clinical trials ( Robertson et al., 2023 ; Zehetmayer et al., 2022 ) and streaming anomaly detection ( Lavin and Ahmad, 2015 ) , where evidence arrives sequentially and testing decisions may trigger costly follow-up actions. Automated methods for doing so have become particularly prevalent as of late, with the rapidly improving capabilities of large language models (LLMs) to either act as an autonomous agent for generating hypotheses that it can then investigate, or as part of a human-in-the-loop system where the human scientist generates hypotheses and the model helps to triage them. In either case, hypotheses are often formulated in a sequential manner where the scientist (or LLM agent) generates some candidate hypotheses, gathers or analyzes data in the context of hypotheses, and then continues to generate more hypotheses to further elucidate their model of the world. Thus, one must provide statistical guardrails to such a system to ensure that the agent or system does not make too many false discoveries, and overfit their conclusions to the data at hand. 
+ This motivates the problem of online multiple hypothesis testing ( Foster and Stine, 2008 ) , where we assume that there is an infinite stream of hypotheses H 1 , H 2 , … H_{1},H_{2},\dots , and a new hypothesis arrives at each time step. As each hypothesis arrives, we assume we must make the decision whether to reject or accept the null hypothesis. Let 𝒩 ⊂ ℕ ≔ { 1 , 2 , … } \mathcal{N}\subset\mathbb{N}\coloneqq\{1,2,\dots\} denote the set of null hypotheses, i.e., the subset of indices where the null hypothesis is true. Consequently, we output a monotonically growing sequence of discovery sets ∅ = R 0 ⊆ R 1 ⊆ R 2 , … \emptyset=R_{0}\subseteq R_{1}\subseteq R_{2},\dots for each time step t ∈ ℕ t\in\mathbb{N} , where R t R_{t} contains t t if and only if we reject the t t th null hypothesis. 
+ Error metrics to control. 
+ The false positive criterion we wish to control is an online version of the false discovery rate (FDR) ( Benjamini and Hochberg, 1995 ) , an error criterion that has been central to statistical methodology in the offline multiple testing setting, where the number of hypotheses is known beforehand, for several decades.
+We define the FDR, along with the false discovery proportion (FDP), as follows: 
+ FDP S ​ ( R ) ≔ | S ∩ R | | R | ∨ 1 , FDR ​ ( R ) ≔ 𝔼 ⁡ [ FDP 𝒩 ​ ( R ) ] . \displaystyle\textnormal{FDP}_{S}(R)\coloneqq\frac{|S\cap R|}{|R|\vee 1},\qquad\textnormal{FDR}(R)\coloneqq\mathbb{E}\left[\textnormal{FDP}_{\mathcal{N}}(R)\right]. 
+ (2) 
+ In the above notation for FDP, S S is a candidate set of null hypotheses and R R is the discovery set the error metric is being evaluated on. The FDR is defined as the expectation of the FDP on the true null hypotheses 𝒩 \mathcal{N} . In the online setting, we output a novel discovery set at each time step t t , which motivates the following online error metric that was recently proposed by Fischer et al. (2025) : 
+ SupFDR ​ ( 𝐑 ) ≔ 𝔼 ⁡ [ sup t ∈ ℕ FDP ​ ( R t ) ] . \displaystyle\textnormal{SupFDR}(\mathbf{R})\coloneqq\mathbb{E}\left[\sup_{t\in\mathbb{N}}\textnormal{FDP}(R_{t})\right]. 
+ (3) 
+ Existing offline result Our online extension Our online shortcut FDR e-Closure Principle ( Xu et al., 2025 ) Online SupFDR e-Closure Principle
+(Theorem 1 ) Dynamic programming (Theorem 2 ) FDR control with compound e-values ( Ignatiadis et al., 2025 ) SupFDR control with γ \gamma -online compound e-values (Proposition 5 ) 𝜸 \boldsymbol{\gamma} -weighted donations (Theorem 8 ) (this paper) 
+ Figure 1 : Summary of the paper’s main technical contributions. 
+ Online multiple testing with false discovery rate (FDR) control has been studied extensively in recent work ( Xu and Ramdas, 2024 ) . In this problem, we receive hypotheses in a stream, along with some data associated with those hypotheses. We then wish to produce a discovery set with control of the FDR at a fixed level δ ∈ ( 0 , 1 ] \delta\in(0,1] , and maximize the number of discoveries that we make. An interesting challenge that the online setting presents, in contrast to the classical offline multiple testing setting where one possesses a fixed, known number of hypotheses beforehand, is how to define the notion of FDR, now that one will output multiple discovery sets (usually one per time step). 
+ Xu and Ramdas (2024) initiated a line of study in the use of e-values for onlineFDR control, a weaker form of FDR control for the online multiple testing setting (although Fischer et al. (2025) later showed that their methods controlled SupFDR as well), and assumed that the dependence between the data collected for different hypotheses was unknown. E-values are nonnegative random variables with expectation at most 1 under the null hypothesis, and have been shown to be useful for multiple testing in both offline and online settings — see Ramdas and Wang (2025) for an overview. Practically, many settings where online multiple testing is utilized (e.g., platform clinical trials ( Robertson et al., 2023 ; Zehetmayer et al., 2022 ) ) involve adaptive and sequential data collection, where e-values are more natural to construct than p-values ( Ramdas et al., 2022 ) . Further, offline e-closure ideas ( Xu et al., 2025 ) suggest a unified way to characterize and improve e-value procedures, which we now adapt to the online SupFDR setting. 
+ A brief overview of multiple testing. 
+ Multiple testing methods provide error guarantees when many hypotheses are tested together, and classically it is assumed that one knows the finite number of hypotheses a priori, i.e., offline multiple testing. The benchmark method for this setting is the Benjamini-Hochberg (BH) procedure ( Benjamini and Hochberg, 1995 ) , which is valid under independence or positive dependence among the p-values for each hypothesis, while the Benjamini-Yekutieli (BY) correction ( Benjamini and Yekutieli, 2001 ) provides an analog that is valid under arbitrary dependence among the p-values. Another natural criterion for multiple testing is family-wise error rate (FWER) control, which controls the probability of making even one false discovery. FDR methods became popular as a less conservative alternative to FWER methods, since FWER control can be overly stringent in many applications ( Benjamini and Hochberg, 1995 ; Lehmann and Romano, 2005 ) . In online testing, hypotheses arrive sequentially and decisions must be made as the stream unfolds. In this setting, e-LOND is the standard e-value LOND procedure under arbitrary dependence, and r-LOND is a reshaped p-value LOND procedure that achieves arbitrary dependence validity by using reshaping functions. We recall both procedures formally below before presenting our improvements. 
+ Contributions 
+ In this paper we introduce a framework that improves the power of existing online multiple testing procedures with FDR control. We first introduce an online e-closure principle for SupFDR control and apply it to improve a wide variety of online e-value and calibrated p-value procedures. This is not a direct reuse of the offline e-closure construction: the online setting requires an increasing e-collection over an infinite stream, validity uniformly over time, and test levels that can be recomputed sequentially using only past data. This methodology yields strict improvements over the status quo, but the resulting closed procedures are computationally expensive and may require O ⁡ ( t 2 ) O(t^{2}) time to compute the rejection decision at time t t . This quickly becomes costly in long streams. 
+ Thus, another of the key contributions of this paper is deriving a practical algorithm that can improve power while being computationally tractable in the online setting. We provide a novel framework for generally improving e-value based online multiple testing procedures with FDR control, and show that it has practical power improvements over existing methods while requiring only O ⁡ ( log ⁡ t ) O(\log t) time to compute the rejection decision at time t t . Our method is based on a novel notion of online compound e-values , which generalizes the notion of compound e-values for offline multiple testing ( Ignatiadis et al., 2025 ) to the online setting. We show that online compound e-values can be used to generally improve online multiple testing procedures with FDR control, and demonstrate its empirical performance on both synthetic and real data. We also provide a user-friendly implementation of our methods in the accompanying code, and demonstrate that online compound e-value based methods are also computationally more efficient in practice. 
+ Our primary contributions are as follows, and are also visually summarized in Figure   1 . 
+ 1. 
+ Closure-based strict power improvements for standard online testing. We introduce an online e-closure principle for SupFDR control and use it to formulate strict improvements over e-LOND ( Xu and Ramdas, 2024 ) and r-LOND ( Zrnic et al., 2021 ) . We derive novel explicit formulations for the next test level, which involves an optimization problem over subsets of the first t − 1 t-1 hypotheses. Since naive optimization would require computation that is exponential in t t , we also provide dynamic programming decomposition that only requires O ⁡ ( t 2 ) O(t^{2}) time to compute the next test level. 
+ 2. 
+ A computationally efficient donation framework for strict improvement. Since O ⁡ ( t 2 ) O(t^{2}) computation remains inefficient for moderately large values of t t (i.e., in the thousands), we introduce a novel framework based on donations and online compound e-values, and show that it can also strictly improve e-LOND and r-LOND while remaining computationally tractable, requiring only O ⁡ ( log ⁡ t ) O(\log t) computation per time step. A central technical ingredient is our notion of online compound e-values , which powers the donation framework. 
+ 3. 
+ Extensions beyond the standard online multiple testing setting. Our donation framework is not restricted to only improving standard online multiple testing algorithms. We extend our framework to variants of the online multiple testing problem such as the acceptance-to-rejection setting of Fischer et al. (2025) and the decision deadlines setting of Fisher (2022) , where we also derive strict improvements of existing algorithms. Lastly, we show that we can construct an efficient version of eBH ( Wang and Ramdas, 2022 ) that is strictly more powerful for offline multiple testing, and is computationally more efficient than the eBH ¯ \overline{\textnormal{eBH}} procedures of Xu et al. (2025) ; for m m hypotheses, we require O ⁡ ( m ​ log ⁡ m ) O(m\log m) computation as opposed to the O ⁡ ( m 2 ​ log ⁡ m ) O(m^{2}\log m) required by eBH ¯ \overline{\textnormal{eBH}} . 
+ We then demonstrate the empirical performance of our method on both synthetic and real data, where we see that both the power and computational improvements of the methods in this paper are nontrivial. Table   1 gives a compact summary of all improved procedures and their computational costs. By default, theorem proofs are deferred to Appendix   B . 
+ Setting 
+ Base 
+ Type 
+ Method 
+ Runtime 
+ Standard 
+ e-LOND 
+ Closed 
+ e-LOND ¯ \overline{\textnormal{e-LOND}} 
+ O ⁡ ( t 2 ) O(t^{2}) 
+ Donation 
+ donation e-LOND 
+ O ⁡ ( log ⁡ t ) O(\log t) 
+ r-LOND 
+ Closed 
+ r-LOND ¯ \overline{\textnormal{r-LOND}} 
+ O ⁡ ( t 2 ) O(t^{2}) 
+ Donation 
+ donation r-LOND 
+ O ⁡ ( log ⁡ t ) O(\log t) 
+ ARC 
+ online e-BH 
+ Donation 
+ donation online e-BH 
+ O ⁡ ( t ​ log ⁡ t ) O(t\log t) 
+ Decision deadlines 
+ e-TOAD 
+ Donation 
+ donation e-TOAD 
+ O ⁡ ( t ​ log ⁡ t ) O(t\log t) 
+ Offline 
+ e-BH 
+ Closed 
+ eBH ¯ \overline{\textnormal{eBH}} 
+ O ⁡ ( m 2 ​ log ⁡ m ) O(m^{2}\log m) 
+ Donation 
+ donation e-BH 
+ O ⁡ ( m ​ log ⁡ m ) O(m\log m) 
+ Table 1 : Method summary of improved procedures grouped by setting and base procedure. For online methods, the “Runtime” column gives the asymptotic complexity of the t t th online decision; cumulative costs over m m online hypotheses are obtained by summing these per-decision costs. For offline methods, m m is the number of hypotheses in the batch. 
+ 2 Improving e-value based procedures 
+ Each arriving hypothesis H t H_{t} is paired with either an e-value E t E_{t} or a p-value P t P_{t} , depending on the procedure under consideration. Formally, the t t th e-value and p-value satisfy the following properties, respectively: 
+ 𝔼 ⁡ [ E t ] ≤ 1 ​  if  ​ t ∈ 𝒩 . \displaystyle\mathbb{E}[E_{t}]\leq 1\text{ if }t\in\mathcal{N}. 
+ (4) 
+ ℙ ⁡ ( P t ≤ s ) ≤ s ​  for all  ​ s ∈ [ 0 , 1 ] ​  if  ​ t ∈ 𝒩 . \displaystyle\mathbb{P}(P_{t}\leq s)\leq s\text{ for all }s\in[0,1]\text{ if }t\in\mathcal{N}. 
+ (5) 
+ Online multiple testing algorithms can be viewed as producing a sequence of test levels 𝜶 \boldsymbol{\alpha} , where α t \alpha_{t} is the level used at time t t . For e-value procedures, we reject H t H_{t} when E t ≥ α t − 1 E_{t}\geq\alpha_{t}^{-1} ; for p-value procedures, we reject H t H_{t} when P t ≤ α t P_{t}\leq\alpha_{t} . Thus, the induced discovery sets are: 
+ R t \displaystyle R_{t} 
+ ≔ { { i ∈ [ t ] : E i ≥ α i − 1 }  for e-values { i ∈ [ t ] : P i ≤ α i }  for p-values , \displaystyle\coloneqq\begin{cases}\{i\in[t]:E_{i}\geq\alpha_{i}^{-1}\}&\text{ for e-values}\\
+\{i\in[t]:P_{i}\leq\alpha_{i}\}&\text{ for p-values}\end{cases}, 
+ (6) 
+ where [ t ] ≔ { 1 , … , t } [t]\coloneqq\{1,\ldots,t\} . We say that a procedure with discovery sets 𝐑 \mathbf{R} strictly improves another procedure with discovery sets 𝐑 ′ \mathbf{R}^{\prime} if R t ⊇ R t ′ R_{t}\supseteq R_{t}^{\prime} for all t ∈ ℕ t\in\mathbb{N} almost surely, and there exists a data-generating distribution such that ℙ ( ∃ t ∈ ℕ : R t ⊃ R t ′ ) > 0 \mathbb{P}(\exists t\in\mathbb{N}:R_{t}\supset R_{t}^{\prime})>0 .
+Under unknown dependence between e-values, e-LOND controls SupFDR ( Xu and Ramdas, 2024 ; Fischer et al., 2025 ) . The e-LOND procedure uses a sequence of test levels 𝜶 \boldsymbol{\alpha} defined by 
+ α t \displaystyle\alpha_{t} 
+ ≔ δ ​ γ t ​ ( | R t − 1 | + 1 ) , \displaystyle\coloneqq\delta\gamma_{t}(|R_{t-1}|{+1}), 
+ (7) 
+ where 𝜸 \boldsymbol{\gamma} is a fixed nonnegative sequence of user-chosen constants such that ∑ t ∈ ℕ γ t ≤ 1 \sum_{t\in\mathbb{N}}\gamma_{t}\leq 1 .
+Similarly, Zrnic et al. (2021) ; Javanmard and Montanari (2018) showed that the following sequence of test levels 𝜶 \boldsymbol{\alpha} ensures FDR control for p-values with arbitrary dependence: 
+ α t \displaystyle\alpha_{t} 
+ ≔ δ ​ γ t ​ β t ​ ( | R t − 1 | + 1 ) , \displaystyle\coloneqq\delta\gamma_{t}\beta_{t}(|R_{t-1}|+1), 
+ (8) 
+ where ( β t ) (\beta_{t}) is a sequence of reshaping functions ( Blanchard and Roquain, 2008 ) . A function β : [ 0 , ∞ ) → [ 0 , ∞ ) \beta:[0,\infty)\rightarrow[0,\infty) is a reshaping function if β \beta can be written as β ⁡ ( r ) = ∫ 0 r x ​ 𝑑 ν ​ ( x ) \beta(r)=\int_{0}^{r}x\ d\nu(x) where ν \nu is any probability measure on [ 0 , ∞ ) [0,\infty) . A typical choice, which is the online analog of the Benjamini and Yekutieli (2001) correction for offline multiple testing under arbitrary dependence, is β t ​ ( r ) = ( ⌊ r ⌋ ∧ t ) / ℓ t \beta_{t}(r)=(\lfloor r\rfloor\wedge t)/\ell_{t} , where ℓ t ≔ ∑ i ∈ [ t ] i − 1 \ell_{t}\coloneqq\sum_{i\in[t]}i^{-1} is the t t th harmonic number. 
+ We will demonstrate how to improve on both of these methods in the online setting in this paper, among others. 
+ 2.1 The online SupFDR e-closure principle 
+ We develop an online e-closure principle that improves on existing methods in the online setting.
+Recently, Xu et al. (2025) proposed an e-Closure Principle and used this to improve the e-BH and the BY procedure for offline FDR control.
+ Fischer et al. (2024) generalized the classical Closure Principle for FWER control ( Marcus et al., 1976 ) to the online setting by using increasing families of local tests. In the following, we extend these ideas to introduce a SupFDR e-Closure Principle for the online setting. 
+ Let ( ℱ t ) t ∈ ℕ (\mathcal{F}_{t})_{t\in\mathbb{N}} be a filtration where ℱ t \mathcal{F}_{t} denotes information available by time t t . Let σ ⁡ ( X ) \sigma(X) denote the sigma-algebra formed by a set X X . Thus, we define each element of the filtration as the sigma-algebra ℱ t = σ ⁡ ( { E i } i ∈ [ t ] ) \mathcal{F}_{t}=\sigma(\{E_{i}\}_{i\in[t]}) if one is working with e-values, and ℱ t = σ ⁡ ( { P i } i ∈ [ t ] ) \mathcal{F}_{t}=\sigma(\{P_{i}\}_{i\in[t]}) if one is working with p-values. For the purposes of this framework, we consider a more general type of online procedure that outputs a collection 𝒞 t ⊆ 2 [ t ] \mathcal{C}_{t}\subseteq 2^{[t]} of candidate rejection sets at each time t t , with 𝒞 t \mathcal{C}_{t} being measurable w.r.t. ℱ t \mathcal{F}_{t} .
+An e-collection is a family ( E S ) S ⊂ ℕ , | S | < ∞ (E_{S})_{S\subset\mathbb{N},\ |S|<\infty} , with E ∅ = 0 E_{\emptyset}=0 , such that each E S E_{S} is an e-value for the intersection null H S = ∩ i ∈ S H i H_{S}=\cap_{i\in S}H_{i} when S S is nonempty. In our online setting, we require increasing e-collections: 
+ E S ≤ E S ∪ S ′ ​  for all  ​ S , S ′ ⊂ ℕ ​  s.t.  ​ min ⁡ S ′ > sup S . E_{S}\leq E_{S\cup S^{\prime}}\text{ for all }S,S^{\prime}\subset\mathbb{N}\text{ s.t. }\min S^{\prime}>\sup S. 
+ (9) 
+ Given an increasing e-collection, define: 
+ 𝒞 t ≔ { R ⊆ [ t ] : E S ≥ FDP S ​ ( R ) δ ​  for all  ​ S ⊆ [ t ] } . \displaystyle\mathcal{C}_{t}\coloneqq\left\{R\subseteq[t]:E_{S}\geq\frac{\textnormal{FDP}_{S}(R)}{\delta}\text{ for all }S\subseteq[t]\right\}. 
+ (10) 
+ When ( E S ) (E_{S}) is increasing, the collections are nested ( 𝒞 1 ⊆ 𝒞 2 ⊆ … \mathcal{C}_{1}\subseteq\mathcal{C}_{2}\subseteq\dots ), which is needed to obtain SupFDR control. 
+ Theorem 1 (Online SupFDR e-closure) . 
+ Let ( E S ) S ⊂ ℕ , | S | < ∞ (E_{S})_{S\subset\mathbb{N},\ |S|<\infty} be an increasing e-collection.
+Assume E S E_{S} is measurable with respect to ℱ sup ( S ) \mathcal{F}_{\sup(S)} for all finite nonempty S S .
+Then the associated e-closure collections ( 𝒞 t ) t ∈ ℕ (\mathcal{C}_{t})_{t\in\mathbb{N}} in ( 10 ) form an online procedure that satisfies 
+ 𝔼 ⁡ [ sup t ∈ ℕ sup R ∈ 𝒞 t FDP 𝒩 ​ ( R ) ] ≤ δ . \mathbb{E}\left[\sup_{t\in\mathbb{N}}\sup_{R\in\mathcal{C}_{t}}\textnormal{FDP}_{\mathcal{N}}(R)\right]\leq\delta. 
+ (11) 
+ Consequently, any discovery sequence 𝐑 \mathbf{R} with R t ∈ 𝒞 t R_{t}\in\mathcal{C}_{t} for all t ∈ ℕ t\in\mathbb{N} controls SupFDR at level δ \delta . 
+ Proof details are deferred to Section   B.1 .
+When working with a stream of e-values, one explicit increasing e-collection is 
+ E S = ∑ i ∈ S γ | S ∩ [ i ] | ​ E i ​  for all finite  ​ S ⊂ ℕ . \displaystyle E_{S}=\sum_{i\in S}\gamma_{|S\cap[i]|}E_{i}\text{ for all finite }S\subset\mathbb{N}. 
+ (12) 
+ For example, E { 2 , 3 } = γ 1 ​ E 2 + γ 2 ​ E 3 E_{\{2,3\}}=\gamma_{1}E_{2}+\gamma_{2}E_{3} .
+This e-collection is increasing: if we append indices larger than max ⁡ S \max S , the existing summands stay unchanged and we only add nonnegative terms.
+As a result, we get the following constraint on E t E_{t} for making a discovery at time t t , i.e., for R t − 1 ∪ { t } R_{t-1}\cup\{t\} to be in 𝒞 t \mathcal{C}_{t} : 
+ FDP S ​ ( R t − 1 ∪ { t } ) ≤ δ ​ E S ​  for all  ​ S ∈ 2 [ t ] . \displaystyle\textnormal{FDP}_{S}(R_{t-1}\cup\{t\})\leq\delta E_{S}\text{ for all }S\in 2^{[t]}. 
+ (13) 
+ With this closure framework in place, we now begin our first construction: applying the above increasing e-collection to derive a procedure that strictly improves over e-LOND.
+To see the resulting level, the constraints with t ∉ S t\notin S are already implied by R t − 1 ∈ 𝒞 t − 1 R_{t-1}\in\mathcal{C}_{t-1} . For the constraints with t ∈ S t\in S , write S = S ′ ∪ { t } S=S^{\prime}\cup\{t\} with S ′ ⊆ [ t − 1 ] S^{\prime}\subseteq[t-1] and solve the inequality 
+ 1 + | S ′ ∩ R t − 1 | | R t − 1 | + 1 ≤ δ ⁡ ( E S ′ + γ | S ′ | + 1 ​ E t ) \frac{1+|S^{\prime}\cap R_{t-1}|}{|R_{t-1}|+1}\leq\delta\left(E_{S^{\prime}}+\gamma_{|S^{\prime}|+1}E_{t}\right) 
+ (14) 
+ for E t E_{t} . Taking the largest required lower bound over S ′ S^{\prime} yields the following test levels; we call the resulting procedure e-LOND ¯ \overline{\text{e-LOND}} (closed e-LOND) . 
+ α t \displaystyle\alpha_{t} 
+ = min S ⊆ [ t − 1 ] : D t ​ ( S ) > 0 δ ​ γ | S | + 1 ​ ( | R t − 1 | + 1 ) D t ​ ( S ) , \displaystyle=\min_{\begin{subarray}{c}S\subseteq[t-1]:\\
+D_{t}(S)>0\end{subarray}}\frac{\delta\gamma_{|S|+1}(|R_{t-1}|+1)}{D_{t}(S)}, 
+ (15) 
+ D t ​ ( S ) \displaystyle D_{t}(S) 
+ ≔ 1 + | S ∩ R t − 1 | − δ ​ E S ​ ( | R t − 1 | + 1 ) . \displaystyle\coloneqq 1+|S\cap R_{t-1}|-\delta E_{S}(|R_{t-1}|+1). 
+ (16) 
+ Theorem 2 . 
+ The e-LOND ¯ \overline{\text{e-LOND}} procedure defined by the test levels in ( 15 ) ensures SupFDR control at level δ \delta under arbitrary dependence between e-values, and strictly improves over e-LOND when 𝛄 \boldsymbol{\gamma} is nonincreasing. 
+ Proof. 
+ The preceding derivation gives the exact threshold required for R t − 1 ∪ { t } R_{t-1}\cup\{t\} to satisfy all closure constraints involving the new index t t . The constraints not involving t t are already satisfied because R t − 1 ∈ 𝒞 t − 1 R_{t-1}\in\mathcal{C}_{t-1} . Thus, whenever e-LOND ¯ \overline{\textnormal{e-LOND}} rejects at time t t , we have R t = R t − 1 ∪ { t } ∈ 𝒞 t R_{t}=R_{t-1}\cup\{t\}\in\mathcal{C}_{t} ; if it does not reject, then R t = R t − 1 ∈ 𝒞 t R_{t}=R_{t-1}\in\mathcal{C}_{t} by monotonicity of the closure constraints. By induction, R t ∈ 𝒞 t R_{t}\in\mathcal{C}_{t} for all t t , so SupFDR control follows from Theorem   1 . 
+ It remains to compare the test levels with e-LOND. Since R t − 1 ∈ 𝒞 t − 1 R_{t-1}\in\mathcal{C}_{t-1} , for every S ⊆ [ t − 1 ] S\subseteq[t-1] we have FDP S ​ ( R t − 1 ) ≤ δ ​ E S \textnormal{FDP}_{S}(R_{t-1})\leq\delta E_{S} , and hence 
+ | S ∩ R t − 1 | − δ ​ E S ​ | R t − 1 | ≤ 0 . |S\cap R_{t-1}|-\delta E_{S}|R_{t-1}|\leq 0. 
+ (17) 
+ For any nonvacuous constraint in ( 15 ), the denominator is therefore at most one, while the nonincreasingness of 𝜸 \boldsymbol{\gamma} gives γ | S | + 1 ≥ γ t \gamma_{|S|+1}\geq\gamma_{t} . Each candidate level is consequently at least δ ​ γ t ​ ( | R t − 1 | + 1 ) \delta\gamma_{t}(|R_{t-1}|+1) , the e-LOND level in ( 7 ). Hence e-LOND ¯ \overline{\textnormal{e-LOND}} dominates e-LOND. 
+ Strict improvement is possible already at t = 2 t=2 . On an event with positive probability where E 1 = ( δ ​ γ 1 ) − 1 E_{1}=(\delta\gamma_{1})^{-1} , both methods reject H 1 H_{1} , and the S = { 1 } S=\{1\} constraint in ( 15 ) is vacuous because 
+ 1 + | S ∩ R 1 | − δ ​ E S ​ ( | R 1 | + 1 ) = 2 − 2 ​ δ ​ γ 1 ​ E 1 = 0 . 1+|S\cap R_{1}|-\delta E_{S}(|R_{1}|+1)=2-2\delta\gamma_{1}E_{1}=0. 
+ (18) 
+ Thus α 2 e-LOND ¯ = 2 ​ δ ​ γ 1 > 2 ​ δ ​ γ 2 = α 2 e-LOND \alpha_{2}^{\overline{\textnormal{e-LOND}}}=2\delta\gamma_{1}>2\delta\gamma_{2}=\alpha_{2}^{\textnormal{e-LOND}} when γ 1 > γ 2 \gamma_{1}>\gamma_{2} . A two-point construction with positive probability on this value of E 1 E_{1} , and with E 2 E_{2} falling between the two rejection thresholds with positive probability, gives an explicit distribution on which e-LOND ¯ \overline{\textnormal{e-LOND}} rejects H 2 H_{2} while e-LOND does not.
+∎ 
+ Computation via dynamic programming. 
+ Although we have shown that e-LOND ¯ \overline{\textnormal{e-LOND}} strictly improves over e-LOND, it is expensive to compute. While Xu et al. (2025) developed computational shortcuts for the offline e-closure principle, it is not obvious how to adapt such shortcuts to the online setting due to the weighted merging of e-values involved in solving the maximization problem in ( 15 ). A naive computation would require exponential time in t t , while dynamic programming reduces this to a worst-case O ⁡ ( t 2 ) O(t^{2}) computation per time step. To carry out this computation, we define: 
+ v t ( i , k ) ≔ max S ⊆ [ i ] : | S | = k | S ∩ R t − 1 | − δ E S ( | R t − 1 | + 1 ) . \displaystyle v_{t}(i,k)\coloneqq\max_{S\subseteq[i]:|S|=k}|S\cap R_{t-1}|-\delta E_{S}(|R_{t-1}|+1). 
+ (19) 
+ The e-LOND ¯ \overline{\textnormal{e-LOND}} choice of α t \alpha_{t} in ( 15 ) can be computed as 
+ α t = min k ∈ { 0 } ∪ [ t − 1 ] : 1 + v t ​ ( t − 1 , k ) > 0 δ ​ γ k + 1 ​ ( | R t − 1 | + 1 ) 1 + v t ​ ( t − 1 , k ) . \displaystyle\alpha_{t}=\min_{\begin{subarray}{c}k\in\{0\}\cup[t-1]:\\
+1+v_{t}(t-1,k)>0\end{subarray}}\frac{\delta\gamma_{k+1}(|R_{t-1}|+1)}{1+v_{t}(t-1,k)}. 
+ (20) 
+ We can compute v t ​ ( i , k ) v_{t}(i,k) for i ∈ [ t − 1 ] i\in[t-1] and k ∈ { 0 } ∪ [ t − 1 ] k\in\{0\}\cup[t-1] using the following dynamic programming formula (for k ≥ 1 k\geq 1 , and with v t ​ ( i , 0 ) = 0 v_{t}(i,0)=0 ): 
+ v t ( i , k ) = max { v t ( i − 1 , k ) , \displaystyle v_{t}(i,k)=\max\left\{v_{t}(i-1,k),\right. 
+ (21) 
+ v t ( i − 1 , k − 1 ) + 𝟏 { i ∈ R t − 1 } − δ γ k E i ( | R t − 1 | + 1 ) } . \displaystyle\left.v_{t}(i-1,k-1)+\mathbf{1}\{i\in R_{t-1}\}-\delta\gamma_{k}E_{i}(|R_{t-1}|+1)\right\}. 
+ (22) 
+ Thus, computing the dynamic program requires O ⁡ ( t 2 ) O(t^{2}) time. However, this quickly becomes computationally costly in practice, motivating the need for more efficient methods. 
+ Remark 3 . 
+ One minor drawback of the e-collection in ( 12 ) is that showing strict improvement in Theorem   2 requires 𝜸 \boldsymbol{\gamma} to be nonincreasing. To avoid this restriction, we can define 
+ E S = ∑ i ∈ S γ i , S ​ E i , \displaystyle E_{S}=\sum_{i\in S}\gamma_{i,S}E_{i}, 
+ (23) 
+ where γ i , S ≔ ∑ j ∈ N S ​ ( i ) γ j \gamma_{i,S}\coloneqq\sum_{j\in N_{S}(i)}\gamma_{j} and
+ N S ​ ( i ) ≔ { max ⁡ ( S ∩ [ i − 1 ] ) + 1 , … , i } N_{S}(i)\coloneqq\{\max(S\cap[i-1])+1,\dots,i\} , with the convention max ⁡ ( ∅ ) = 0 \max(\emptyset)=0 .
+Intuitively, this is still a weighted sum of the e-values in S S , but each weight aggregates γ \gamma -mass between consecutive selected indices in time order. This requires different computational shortcuts for test-level computation; see Section   A.2 . 
+ 2.2 Compound e-values via donation 
+ So far, online multiple testing methods have primarily treated e-values either as direct inputs or as intermediaries for improving p-value procedures. However, we will instead leverage the notion of compound e-values to substantially improve power.
+In offline multiple testing with a fixed m ∈ ℕ m\in\mathbb{N} , one calls nonnegative random variables ( E ~ 1 , … , E ~ m ) (\tilde{E}_{1},\dots,\tilde{E}_{m}) compound e-values if ∑ i ∈ 𝒩 𝔼 ⁡ [ E ~ i ] ≤ m \sum_{i\in\mathcal{N}}\mathbb{E}[\tilde{E}_{i}]\leq m ( Ignatiadis et al., 2025 ) . This relaxes the usual e-value condition in ( 4 ). We now introduce the online, 𝜸 \boldsymbol{\gamma} -weighted analog together with donation sequences used to construct it.
+Fix a nonnegative sequence 𝜸 = ( γ t ) t ∈ ℕ \boldsymbol{\gamma}=(\gamma_{t})_{t\in\mathbb{N}} with ∑ t ∈ ℕ γ t ≤ 1 \sum_{t\in\mathbb{N}}\gamma_{t}\leq 1 . 
+ Definition 4 ( 𝜸 \boldsymbol{\gamma} -online compound e-values and 𝜸 \boldsymbol{\gamma} -weighted donations) . 
+ For this fixed 𝜸 \boldsymbol{\gamma} : 
+ (i) 
+ 𝐄 ~ = ( E ~ t ) t ∈ ℕ \tilde{\mathbf{E}}=(\tilde{E}_{t})_{t\in\mathbb{N}} is a stream of 𝛄 \boldsymbol{\gamma} -online compound e-values if ∑ i ∈ 𝒩 γ i ​ 𝔼 ​ [ E ~ i ] ≤ 1 \sum_{i\in\mathcal{N}}\gamma_{i}\mathbb{E}[\tilde{E}_{i}]\leq 1 . 
+ (ii) 
+ 𝐁 = ( B t ) t ∈ ℕ \mathbf{B}=(B_{t})_{t\in\mathbb{N}} is a 𝛄 \boldsymbol{\gamma} -weighted donation if ∑ i ∈ [ t ] γ i ​ B i ≤ 0 \sum_{i\in[t]}\gamma_{i}B_{i}\leq 0 for all t ∈ ℕ t\in\mathbb{N} , and B t ≥ − ( E t ∧ 1 ) B_{t}\geq-(E_{t}\wedge 1) for all t ∈ ℕ t\in\mathbb{N} . 
+ We first note that weighted self-consistency applied to online compound e-values has valid SupFDR control. Define the following collection of weighted self-consistent discovery sets: 
+ 𝒞 ≔ { R ⊂ ℕ : E ~ t ≥ 1 δ ​ γ t ​ | R | ​  for all  ​ t ∈ R } \displaystyle\mathcal{C}\coloneqq\left\{R\subset\mathbb{N}:\tilde{E}_{t}\geq\frac{1}{\delta\gamma_{t}|R|}\text{ for all }t\in R\right\} 
+ (24) 
+ Proposition 5 . 
+ Let E ~ 1 , E ~ 2 , … \tilde{E}_{1},\tilde{E}_{2},\dots be a stream of 𝛄 \boldsymbol{\gamma} -online compound e-values. Then, 
+ 𝔼 ⁡ [ sup R ∈ 𝓒 FDP ​ ( R ) ] ≤ δ . \mathbb{E}\left[\sup_{R\in\boldsymbol{\mathcal{C}}}\textnormal{FDP}(R)\right]\leq\delta. 
+ A full proof is provided in Section   B.2 .
+Now that we have shown that online compound e-values can be used to control SupFDR, we introduce a construction that, when combined with the test levels of e-LOND, strictly dominates e-LOND applied only to the original e-values. This construction is computationally efficient, requiring only O ⁡ ( log ⁡ t ) O(\log t) time to compute the compound e-value and hence the rejection decision at each time step. Further, it is robust to unknown dependence between e-values.
+Now, we will define how to construct online compound e-values via donation .
+Let 𝐁 \mathbf{B} be any 𝜸 \boldsymbol{\gamma} -weighted donation sequence as in Definition   4 . Note that 𝐁 \mathbf{B} can be arbitrarily dependent with 𝐄 \mathbf{E} . We first note the following property. 
+ Proposition 6 . 
+ Let E ~ t = E t + B t \tilde{E}_{t}=E_{t}+B_{t} . Then, for all t ∈ ℕ t\in\mathbb{N} , 𝐄 ~ \tilde{\mathbf{E}} is a valid sequence of 𝛄 \boldsymbol{\gamma} -online compound e-values. 
+ Proof details are deferred to Section   B.3 . 
+ As a result, we can choose any 𝜸 \boldsymbol{\gamma} -weighted donation 𝐁 \mathbf{B} to construct online compound e-values 𝐄 ~ \tilde{\mathbf{E}} for e-LOND while retaining SupFDR control. Furthermore, we can take a supremum over choices of 𝐁 \mathbf{B} and still retain FDP control. Let 𝒞 ⁡ ( 𝐁 ) \mathcal{C}(\mathbf{B}) be the collection of discovery sets defined by the online weighted self-consistency condition in ( 24 ) with online compound e-values E ~ t = E t + B t \tilde{E}_{t}=E_{t}+B_{t} for a specific choice of 𝐁 \mathbf{B} . For a stream of arbitrarily dependent e-values 𝐄 \mathbf{E} , let ℬ \mathcal{B} be the set of all valid 𝜸 \boldsymbol{\gamma} -weighted donations. Then we have: 
+ Proposition 7 . 
+ For any stream of e-values E 1 , E 2 , … E_{1},E_{2},\dots , we have that 
+ 𝔼 ⁡ [ sup 𝐁 ∈ ℬ sup R ∈ 𝒞 ⁡ ( 𝐁 ) FDP ​ ( R ) ] ≤ δ . \displaystyle\mathbb{E}\left[\sup_{\mathbf{B}\in\mathcal{B}}\sup_{R\in\mathcal{C}(\mathbf{B})}\textnormal{FDP}(R)\right]\leq\delta. 
+ (25) 
+ See Section   B.4 for the proof. 
+ As a result, we can define an algorithm that is equivalent to choosing the following test levels. Define the following “wealth” quantity for each t ∈ ℕ t\in\mathbb{N} : 
+ W ¯ t \displaystyle\bar{W}_{t} 
+ ≔ ∑ i ∈ R t − 1 γ i ​ ( ( E i − 1 δ ​ γ i ​ ( | R t − 1 | + 1 ) ) ∧ 1 ) \displaystyle\coloneqq\sum_{i\in R_{t-1}}\gamma_{i}\left(\left(E_{i}-\frac{1}{\delta\gamma_{i}(|R_{t-1}|+1)}\right)\wedge 1\right) 
+ (26) 
+ + ∑ i ∈ [ t − 1 ] ∖ R t − 1 γ i ( E i ∧ 1 ) , \displaystyle+\sum_{i\in[t-1]\setminus R_{t-1}}\gamma_{i}(E_{i}\wedge 1), 
+ (27) 
+ where R t − 1 = { i ∈ [ t − 1 ] : E i ≥ α i − 1 } R_{t-1}=\{i\in[t-1]:E_{i}\geq\alpha_{i}^{-1}\} is defined by the following test levels: 
+ α t ≔ δ ​ γ t ​ ( | R t − 1 | + 1 ) 1 − ( δ ⁡ ( | R t − 1 | + 1 ) ​ W ¯ t ∧ 1 ) . \displaystyle\alpha_{t}\coloneqq\frac{\delta\gamma_{t}(|R_{t-1}|+1)}{1-(\delta(|R_{t-1}|+1)\bar{W}_{t}\wedge 1)}. 
+ (28) 
+ We refer to this procedure as donation e-LOND . The convention R 0 = ∅ R_{0}=\emptyset makes W ¯ 1 = 0 \bar{W}_{1}=0 and hence α 1 = δ ​ γ 1 \alpha_{1}=\delta\gamma_{1} . Intuitively, W ¯ t \bar{W}_{t} is the largest γ \gamma -weighted amount of past evidence that can be shifted to E t E_{t} while keeping all previous discoveries in R t − 1 R_{t-1} valid and respecting the donation budget. Thus, previous e-values that exceed what is needed for their current rejection can donate excess mass, and unrejected e-values can donate up to E i ∧ 1 E_{i}\wedge 1 . 
+ Note that ( 1 − ( δ ⁡ ( | R t − 1 | + 1 ) ​ W ¯ t ∧ 1 ) ) − 1 ≥ 1 (1-(\delta(|R_{t-1}|+1)\bar{W}_{t}\wedge 1))^{-1}\geq 1 , so donation e-LOND always has test levels at least as large as e-LOND. The two improvements should be viewed as complementary: neither donation e-LOND nor e-LOND ¯ \overline{\textnormal{e-LOND}} dominates the other pointwise, although both dominate e-LOND. We now have the following result. 
+ Theorem 8 . 
+ Donation e-LOND controls the SupFDR at level δ \delta , and strictly improves over e-LOND. 
+ Proof sketch. 
+ Suppose at time t t that we want the enlarged rejection set R t − 1 ∪ { t } R_{t-1}\cup\{t\} to be weighted self-consistent for some valid 𝜸 \boldsymbol{\gamma} -weighted donation 𝐁 \mathbf{B} . This requires 
+ E t + B t \displaystyle E_{t}+B_{t} 
+ ≥ 1 δ ​ γ t ​ ( | R t − 1 | + 1 ) , \displaystyle\geq\frac{1}{\delta\gamma_{t}(|R_{t-1}|+1)}, 
+ (29) 
+ E i + B i \displaystyle E_{i}+B_{i} 
+ ≥ 1 δ ​ γ i ​ ( | R t − 1 | + 1 ) for each  ​ i ∈ R t − 1 . \displaystyle\geq\frac{1}{\delta\gamma_{i}(|R_{t-1}|+1)}\qquad\text{for each }i\in R_{t-1}. 
+ (30) 
+ The donation budget gives γ t B t ≤ − ∑ i < t γ i B i \gamma_{t}B_{t}\leq-\sum_{i<t}\gamma_{i}B_{i} . To make rejection of H t H_{t} as easy as possible, we maximize the donation available to t t by choosing the smallest feasible B i B_{i} for each past index. For i ∈ R t − 1 i\in R_{t-1} , ( 30 ) and B i ≥ − ( E i ∧ 1 ) B_{i}\geq-(E_{i}\wedge 1) imply 
+ B i min = ( 1 δ ​ γ i ​ ( | R t − 1 | + 1 ) − E i ) ∨ ( − 1 ) , \displaystyle B_{i}^{\min}=\left(\frac{1}{\delta\gamma_{i}(|R_{t-1}|+1)}-E_{i}\right)\vee(-1), 
+ (31) 
+ so 
+ − γ i ​ B i min = γ i ∧ ( γ i ​ E i − 1 δ ⁡ ( | R t − 1 | + 1 ) ) . \displaystyle-\gamma_{i}B_{i}^{\min}=\gamma_{i}\wedge\left(\gamma_{i}E_{i}-\frac{1}{\delta(|R_{t-1}|+1)}\right). 
+ (32) 
+ For i ∉ R t − 1 i\notin R_{t-1} , there is no rejection-preserving constraint, so B i min = − ( E i ∧ 1 ) B_{i}^{\min}=-(E_{i}\wedge 1) and − γ i ​ B i min = γ i ​ ( E i ∧ 1 ) -\gamma_{i}B_{i}^{\min}=\gamma_{i}(E_{i}\wedge 1) . Summing these maximal past contributions yields exactly W ¯ t \bar{W}_{t} , and hence the largest feasible donation to the new hypothesis is γ t ​ B t = W ¯ t \gamma_{t}B_{t}=\bar{W}_{t} , up to the point where the rejection constraint is already vacuous.
+Substituting B t = W ¯ t / γ t B_{t}=\bar{W}_{t}/\gamma_{t} into ( 29 ) gives 
+ E t \displaystyle E_{t} 
+ ≥ 1 δ ​ γ t ​ ( | R t − 1 | + 1 ) − W ¯ t γ t \displaystyle\geq\frac{1}{\delta\gamma_{t}(|R_{t-1}|+1)}-\frac{\bar{W}_{t}}{\gamma_{t}} 
+ (33) 
+ = 1 − δ ⁡ ( | R t − 1 | + 1 ) ​ W ¯ t δ ​ γ t ​ ( | R t − 1 | + 1 ) . \displaystyle=\frac{1-\delta(|R_{t-1}|+1)\bar{W}_{t}}{\delta\gamma_{t}(|R_{t-1}|+1)}. 
+ (34) 
+ When δ ⁡ ( | R t − 1 | + 1 ) ​ W ¯ t ≥ 1 \delta(|R_{t-1}|+1)\bar{W}_{t}\geq 1 , the right-hand side is nonpositive, so any nonnegative e-value satisfies the constraint. This is captured by replacing the numerator with 1 − ( δ ⁡ ( | R t − 1 | + 1 ) ​ W ¯ t ∧ 1 ) 1-(\delta(|R_{t-1}|+1)\bar{W}_{t}\wedge 1) , which is equivalent to the test level in ( 28 ). SupFDR control then follows from Proposition   7 ; the strict improvement over e-LOND follows from the displayed test level being at least the e-LOND level, with strict inequality possible when past evidence can donate positive mass.
+∎ 
+ The proof appears in Section   B.5 . 
+ Efficient donation computation. 
+ To efficiently compute the test levels in ( 28 ), we need to update W ¯ t \bar{W}_{t} efficiently at each time step. The only nontrivial component to compute is the summation over terms in R t − 1 R_{t-1} , i.e., our term of interest is 
+ W ¯ t R \displaystyle\bar{W}^{R}_{t} 
+ ≔ ∑ i ∈ R t − 1 γ i ​ ( ( E i − 1 δ ​ γ i ​ ( | R t − 1 | + 1 ) ) ∧ 1 ) \displaystyle\coloneqq\sum_{i\in R_{t-1}}\gamma_{i}\left(\left(E_{i}-\frac{1}{\delta\gamma_{i}(|R_{t-1}|+1)}\right)\wedge 1\right) 
+ (35) 
+ = ∑ i ∈ R t − 1 γ i ∧ ( γ i ​ E i − 1 δ ⁡ ( | R t − 1 | + 1 ) ) . \displaystyle=\sum_{i\in R_{t-1}}\gamma_{i}\wedge\left(\gamma_{i}E_{i}-\frac{1}{\delta(|R_{t-1}|+1)}\right). 
+ (36) 
+ Define 
+ w ¯ t ( i ) ≔ γ i ∧ ( γ i ​ E i − 1 δ ⁡ ( | R t − 1 | + 1 ) ) \displaystyle\bar{w}_{t}^{(i)}\coloneqq\gamma_{i}\wedge\left(\gamma_{i}E_{i}-\frac{1}{\delta(|R_{t-1}|+1)}\right) 
+ (37) 
+ = { γ i ​ E i − 1 δ ⁡ ( | R t − 1 | + 1 )  if  ​ γ i ​ ( E i − 1 ) ≤ 1 δ ⁡ ( | R t − 1 | + 1 ) γ i  otherwise. \displaystyle=\begin{cases}\gamma_{i}E_{i}-\frac{1}{\delta(|R_{t-1}|+1)}&\text{ if }\gamma_{i}(E_{i}-1)\leq\frac{1}{\delta(|R_{t-1}|+1)}\\
+\gamma_{i}&\text{ otherwise.}\end{cases} 
+ (38) 
+ As a result, we need to threshold on the value of γ i ​ ( E i − 1 ) \gamma_{i}(E_{i}-1) for each i ∈ [ t ] i\in[t] to determine what value w ¯ t ( i ) \bar{w}_{t}^{(i)} takes on. To compute the sum of w ¯ t ( i ) \bar{w}_{t}^{(i)} efficiently, we maintain an augmented binary search tree where the key is γ i ​ ( E i − 1 ) \gamma_{i}(E_{i}-1) for each i ∈ R t − 1 i\in R_{t-1} . We augment each node with sums of γ i ​ E i \gamma_{i}E_{i} , γ i \gamma_{i} and a count of nodes for all nodes i i that are in the tree. Therefore, when split on γ i ​ ( E i − 1 ) \gamma_{i}(E_{i}-1) , we have already computed our desired quantities. Consequently, the computation is simply O ⁡ ( log ⁡ ( | R t − 1 | ) ) ≤ O ⁡ ( log ⁡ t ) O(\log(|R_{t-1}|))\leq O(\log t) whenever we make a discovery, i.e., the insertion cost into the augmented binary search tree. 
+ 3 Improving p-value based procedures 
+ Using the above results for improving e-value based procedures, we can also improve the r-LOND procedure for p-value based procedures. Xu and Ramdas (2024) observed that the r-LOND procedure was equivalent to applying e-LOND where the e-values were defined by E t = f t ​ ( P t ) E_{t}=f_{t}(P_{t}) , where we let f t f_{t} be the following calibrator similar to the calibrator for r-LOND Xu and Ramdas (2024) for each t ∈ ℕ t\in\mathbb{N} : 
+ f t ​ ( p ) = 𝟏 { p ≤ δ γ t t / ℓ t } δ ​ γ t ​ ⌈ ( p ​ ℓ t / ( δ ​ γ t ) ) ∨ 1 ⌉ . \displaystyle f_{t}(p)=\frac{\mathbf{1}\{p\leq\delta\gamma_{t}t/\ell_{t}\}}{\delta\gamma_{t}\lceil(p\ell_{t}/(\delta\gamma_{t}))\vee 1\rceil}. 
+ (39) 
+ As a result, we can apply online e-closure principle to p-value based procedures and achieve SupFDR control. Notably, unlike the formulation of r-LOND as the application of e-LOND to calibrated p-values f t ​ ( P t ) f_{t}(P_{t}) for t ∈ ℕ t\in\mathbb{N} , we instead construct a new e-collection. The calibrator index below is the rank | S ∩ [ i ] | |S\cap[i]| of hypothesis i i within the subset S S , rather than its global time index i i . This rank-based choice is what makes the dynamic program in Section   A.3 depend only on the subset size, giving an O ⁡ ( t 2 ) O(t^{2}) computation. Let 
+ E S \displaystyle E_{S} 
+ = ∑ i ∈ S γ | S ∩ [ i ] | ​ f | S ∩ [ i ] | ​ ( P i ) \displaystyle=\sum_{i\in S}\gamma_{|S\cap[i]|}f_{|S\cap[i]|}(P_{i}) 
+ (40) 
+ = 1 δ ​ ∑ i ∈ S 𝟏 { P i ≤ δ γ | S ∩ [ i ] | | S ∩ [ i ] | / ℓ | S ∩ [ i ] | } ⌈ ( P i ​ ℓ | S ∩ [ i ] | / ( δ ​ γ | S ∩ [ i ] | ) ) ∨ 1 ⌉ . \displaystyle=\frac{1}{\delta}\sum_{i\in S}\frac{\mathbf{1}\{P_{i}\leq\delta\gamma_{|S\cap[i]|}|S\cap[i]|/\ell_{|S\cap[i]|}\}}{\lceil(P_{i}\ell_{|S\cap[i]|}/(\delta\gamma_{|S\cap[i]|}))\vee 1\rceil}. 
+ (41) 
+ Consequently, we define r-LOND ¯ \overline{\text{r-LOND}} (closed r-LOND) as 
+ α t = min S ⊆ [ t − 1 ] : Δ ​ E S ​ ( t ) > 0 δ ​ γ | S | + 1 ℓ | S | + 1 ⌊ ( δ Δ E S ( t ) ) − 1 ∧ ( | S | + 1 ) ⌋ \displaystyle\alpha_{t}=\min_{\begin{subarray}{c}S\subseteq[t-1]:\\
+\Delta E_{S}(t)>0\end{subarray}}\frac{\delta\gamma_{|S|+1}}{\ell_{|S|+1}}\left\lfloor(\delta\Delta E_{S}(t))^{-1}\wedge(|S|+1)\right\rfloor\qquad 
+ (42) 
+ where  ​ Δ ​ E S ​ ( t ) ≔ 1 + | S ∩ R t − 1 | δ ⁡ ( | R t − 1 | + 1 ) − E S . \displaystyle\text{where }\Delta E_{S}(t)\coloneqq\frac{1+|S\cap R_{t-1}|}{\delta(|R_{t-1}|+1)}-E_{S}. 
+ (43) 
+ Note that the constraint set is never empty since we can always select S = ∅ S=\emptyset . 
+ Theorem 9 . 
+ r-LOND ¯ \overline{\text{r-LOND}} controls the SupFDR at level δ \delta for arbitrarily dependent p-values. Further, when i ​ γ i / ℓ i i\gamma_{i}/\ell_{i} is nonincreasing in i i for i ∈ ℕ i\in\mathbb{N} , r-LOND ¯ \overline{\text{r-LOND}} strictly improves over r-LOND. 
+ The proof is deferred to Section   B.6 .
+We also elaborate on computational details for r-LOND ¯ \overline{\textnormal{r-LOND}} in Section   A.3 , but they are similar to that of e-LOND ¯ \overline{\text{e-LOND}} , and it consequently requires only O ⁡ ( t 2 ) O(t^{2}) computation at each time step. 
+ Define the donation excess-wealth term W ¯ t \bar{W}_{t} as we do in ( 28 ), but using the calibrated e-values derived via E t = f t ​ ( P t ) E_{t}=f_{t}(P_{t}) . We then obtain the following test levels for arbitrarily dependent p-values: 
+ α t = δ ​ γ t ℓ t ​ ( ⌊ | R t − 1 | + 1 1 − ( δ ⁡ ( | R t − 1 | + 1 ) ​ W ¯ t ∧ 1 ) ⌋ ∧ t ) . \displaystyle\alpha_{t}=\frac{\delta\gamma_{t}}{\ell_{t}}\left(\left\lfloor\frac{|R_{t-1}|+1}{1-(\delta(|R_{t-1}|+1)\bar{W}_{t}\wedge 1)}\right\rfloor\wedge t\right). 
+ (44) 
+ Theorem 10 . 
+ Donation r-LOND controls the SupFDR at level δ \delta for arbitrarily dependent p-values, and can strictly improve over r-LOND. 
+ A proof of the above is deferred to Section   B.7 . 
+ 4 Simulations 
+ We compare our procedures in a local dependence setup inspired by Zrnic et al. (2021) . Each hypothesis t ∈ [ m ] t\in[m] produces a single Gaussian observation with μ 0 = 0 \mu_{0}=0 under the null and μ 1 = 3 \mu_{1}=3 under the alternative, where π 1 \pi_{1} denotes the probability of the alternative being true; we set m = 200 m=200 . For a fixed lag L = 100 L=100 , samples within distance L L of one another share Gaussian copula dependence: the covariance matrix satisfies Σ i , j = 0.5 | i − j | \Sigma_{i,j}=0.5^{|i-j|} for | i − j | ≤ L |i-j|\leq L and zero otherwise, and we verify positive semidefiniteness numerically for each simulated dimension. The resulting e-values and p-values are based on Gaussian likelihood ratios and the Gaussian c.d.f. — see Section   C.3 for details.
+Each design is averaged over n = 200 n=200 trials. For all methods, we use the sequence where γ t = ( t ⁡ ( t + 1 ) ) − 1 \gamma_{t}=(t(t+1))^{-1} for each t ∈ ℕ t\in\mathbb{N} unless otherwise stated. We also consider additional simulation settings in Section   C.1 . 
+ We see in Figure   2 the results of applying the base procedure of e-LOND and r-LOND, as well as the power gain our procedures offer over both e-LOND and r-LOND. Both donation e-LOND and e-LOND ¯ \overline{\textnormal{e-LOND}} outperform e-LOND, with e-LOND ¯ \overline{\textnormal{e-LOND}} ’s power differential increasing over donation e-LOND as the proportion of non-nulls increases. Similarly, both donation r-LOND and r-LOND ¯ \overline{\text{r-LOND}} also outperform r-LOND, with r-LOND ¯ \overline{\text{r-LOND}} ’s power differential increasing over donation r-LOND as the proportion of non-nulls increases. Thus, we see that our frameworks for improving the power of both procedures have practical results. 
+ (a) E-value procedures. 
+ (b) P-value procedures. 
+ Figure 2 : Local dependence simulation summary over 200 trials. The left column shows e-value procedures and the right column shows p-value procedures. The top row reports power as the non-null fraction π 1 \pi_{1} increases (with μ = 3 \mu=3 and δ = 0.1 \delta=0.1 ), while the bottom row reports mean wall-clock runtime (log scale) as the number of hypotheses increases. Donation and closed variants improve power over the corresponding baselines, and donation variants remain computationally practical compared with closed variants. 
+ Runtime comparison 
+ To quantify the tradeoff between computation and power for closed vs. donation variants of each procedure, we run simulations using the same local dependence Gaussian data model as above, with a fixed setting of π 1 = 0.3 \pi_{1}=0.3 .
+We choose hypothesis counts up to m = 3000 m=3000 with n = 80 n=80 trials. We average the wall-clock runtime of each procedure over all trials. Wall-clock times were measured on a server with an AMD Ryzen 9 9950X CPU (16 cores, 32 threads, up to 5.756 GHz) running in a single-threaded fashion. We visualize the results of these measurements in Figure   2 — note that the y-axis for runtime in the figure is on a log scale. We can see that as the number of hypotheses increases, the runtime of e-LOND ¯ \overline{\text{e-LOND}} goes from milliseconds to on the order of an hour. On the other hand, standard e-LOND as well as donation e-LOND remain in the millisecond range. We see a similar pattern with the variants of r-LOND as well. In cumulative terms over m m online decisions, the closed variants scale as O ⁡ ( m 3 ) O(m^{3}) when recomputed from scratch, while donation e-LOND and donation r-LOND scale as O ⁡ ( m ​ log ⁡ m ) O(m\log m) with the augmented-tree updates described above. 
+ 5 Real data experiment 
+ We also show the effectiveness of our procedures on a real dataset involving online anomaly detection, following the NYC taxi demand experiment used by Zhang et al. (2026) for procedure evaluation. 
+ The NYC taxi dataset ( Lavin and Ahmad, 2015 ) records taxi demand over time. We use the likelihood-ratio e-value setup of Zhang et al. (2026) ; the dataset-specific e-value formulation and interpretation of the annotation windows are described in Appendix C.2 . 
+ e-LOND 
+ d-eLOND 
+ e-LOND ¯ \overline{\text{e-LOND}} 
+ 8 
+ 16 
+ 10 
+ Table 2 : Discoveries coinciding with annotated anomalous periods for each e-value procedure on the NYC taxi dataset. Donation e-LOND and e-LOND ¯ \overline{\text{e-LOND}} both improve over e-LOND, with donation e-LOND detecting the largest number of annotated anomalies. 
+ Table   2 summarizes the method vs. the number of detected anomalies (rejections inside annotated anomaly windows) for variants of our procedures. These annotations are incomplete event windows rather than exact true-discovery labels. The largest detected anomaly count is bolded. Both e-LOND ¯ \overline{\text{e-LOND}} and donation e-LOND outperform e-LOND in terms of detected anomalies, with donation e-LOND having the largest gain. This result also illustrates that e-LOND ¯ \overline{\textnormal{e-LOND}} and donation e-LOND do not dominate each other, despite each strictly improving over e-LOND. We visualize the corresponding discoveries in Figure   3 . 
+ Figure 3 : Plot of NYC taxi usage over time, with red highlighted periods indicating anomalous periods. We can see donation e-LOND making more discoveries in these periods than e-LOND (circled in black). 
+ 6 Extensions 
+ In addition to improving the aforementioned online multiple testing algorithms, the donation framework can also be used to improve the power of three other classes of algorithms. 
+ 1. 
+ Online acceptance-to-rejection (ARC) and decision deadlines. Fischer et al. (2025) introduced the online ARC problem — here, one still receives a stream of hypotheses and corresponding statistics, but no longer is forced to immediately make a decision before receiving the next hypothesis and associated statistic.
+We can use the donation to improve their online e-BH procedure in a computationally efficient manner. Fisher (2022) considers an intermediate setting where each hypothesis t t has a (rejection) decision deadline d t ≥ t d_{t}\geq t , and we show that we can improve the power of their procedure using donations as well. We elaborate on this in Appendix   D . 
+ 2. 
+ Offline multiple testing. While Xu et al. (2025) used the e-closure principle to improve the eBH ¯ \overline{\textnormal{eBH}} procedure for offline multiple testing, it can require quadratic time to compute the rejection set for m m hypotheses. Using donations, we can construct compound e-values that can be used with eBH to improve its power while computing a strictly more powerful discovery set in O ⁡ ( m ​ log ⁡ m ) O(m\log m) time. We elaborate on this in Section   D.3 . 
+ 3. 
+ Randomization : Xu and Ramdas (2026) introduced the notion of randomization for improving the power of multiple testing procedures, and Xu and Ramdas (2024) applied it to improve both e-LOND and r-LOND. Similarly, we can apply randomization to improve the power of donation procedures. We elaborate on this in Appendix   E . 
+ 7 Related work 
+ In addition to the aforementioned works, online multiple testing with FDR control has been studied extensively in recent years. Javanmard and Montanari (2018) introduced an online notion of FDR control and formulated the LORD procedure for control under independence. As a result, there has been a line of literature that has developed increasingly powerful online multiple testing algorithms under either independence or conditional validity assumption Ramdas et al. (2017) ; Zrnic et al. (2020) . Ramdas et al. (2018) and Tian and Ramdas (2019) formulate adaptive and discarding versions of LORD in the style of Storey (2002) and Zhao et al. (2019) , respectively, that allow the procedure to adapt to the frequency of the true null hypotheses. These LORD-type and SAFFRON-type methods are powerful under their assumptions, but they are not valid in the arbitrary dependence SupFDR setting considered in this paper, so they are not direct baselines for our main results. These works have restricted their focus to p-value based methods. More recently Zhang et al. (2026) proposed a new method under the conditional validity assumption that applies to both p-values and e-values. 
+ A line of work has also considered designing methods under other kinds of dependency structures. In addition to defining the r-LOND procedure and considering general arbitrary dependence, Zrnic et al. (2021) considers p-value based methods for global positive dependence among test statistics and local forms of dependence. Fisher (2024) show that under a different definition of positive dependence, LORD and SAFFRON also have valid FDR control. Jankovic et al. (2026) considers online FWER control for weakly dependent data, although their control is asymptotic. 
+ Outside of Xu and Ramdas (2024) , e-values have also been utilized in online multiple testing with family-wise error rate (FWER) control. Fischer and Ramdas (2025) showed that e-values are necessary for constructing admissible online methods with control of FDP tail probabilities. 
+ Different online multiple testing analogs of FDR. 
+ SupFDR is a relatively new error criterion, but it is valuable in the sense that it is stronger than both of the more classical notions of FDR control that have developed for online multiple testing. The first of these is onlineFDR, which was introduced in Javanmard and Montanari (2018) and is defined as the following: 
+ onlineFDR ​ ( 𝐑 ) ≔ sup t ∈ ℕ FDR ​ ( R t ) . \displaystyle\text{onlineFDR}(\mathbf{R})\coloneqq\sup_{t\in\mathbb{N}}\textnormal{FDR}(R_{t}). 
+ (45) 
+ Fischer et al. (2025) also considered a stopping time version of onlineFDR, which they called StopFDR and defined as: 
+ StopFDR ​ ( 𝐑 ) ≔ sup τ ∈ 𝒯 FDR ​ ( R τ ) , \displaystyle\text{StopFDR}(\mathbf{R})\coloneqq\sup_{\tau\in\mathcal{T}}\textnormal{FDR}(R_{\tau}), 
+ (46) 
+ where 𝒯 \mathcal{T} is the set of all stopping times with respect to the filtration generated by the data. Both onlineFDR and StopFDR control are implied by SupFDR control, as observed by Fischer et al. (2025) . One can see that
+since sup t 𝔼 ⁡ [ FDP ​ ( R t ) ] ≤ 𝔼 ⁡ [ sup t FDP ​ ( R t ) ] \sup_{t}\mathbb{E}[\textnormal{FDP}(R_{t})]\leq\mathbb{E}[\sup_{t}\textnormal{FDP}(R_{t})] , and FDP ​ ( R τ ) ≤ sup t FDP ​ ( R t ) \textnormal{FDP}(R_{\tau})\leq\sup_{t}\textnormal{FDP}(R_{t}) for any stopping time τ \tau . Thus, our development of procedures for SupFDR control implies validity under previous error metrics considered in prior literature. 
+ 8 Conclusion 
+ We introduced a general framework for improving several online multiple testing procedures under unknown dependence, with a focus on SupFDR control. We presented two approaches that trade off power and computational cost while both strictly improving over existing methods. Our first approach uses the online e-closure principle to produce closed procedures that dominate their baselines, including e-LOND ¯ \overline{\textnormal{e-LOND}} for e-values and r-LOND ¯ \overline{\textnormal{r-LOND}} for p-values. These closed procedures can yield large power gains but are computationally expensive in long streams. Our second approach is the donation framework, which constructs online compound e-values via 𝜸 \boldsymbol{\gamma} -weighted donations and yields computationally efficient, strictly improved procedures such as donation e-LOND and donation r-LOND. Together, these results provide a principled menu of improvements: closed methods provide a strong but more expensive benchmark, while donation methods retain power improvements with efficient test-level computation and can be preferable on some instances. An interesting direction for future work is to further narrow the computational gap between closed and donation procedures, or show that there is an irreducible difference between them. 
+ References 
+ Benjamini and Hochberg (1995) 
+Yoav Benjamini and Yosef Hochberg.
+ Controlling the False Discovery Rate: A Practical and
+Powerful Approach to Multiple Testing.
+ Journal of the Royal Statistical Society. Series B
+(Methodological) , 57(1):289–300, 1995.
+ Benjamini and Yekutieli (2001) 
+Yoav Benjamini and Daniel Yekutieli.
+ The control of the false discovery rate in multiple testing under
+dependency.
+ The Annals of Statistics , 29(4):1165–1188, 2001.
+ Blanchard and Roquain (2008) 
+Gilles Blanchard and Etienne Roquain.
+ Two simple sufficient conditions for FDR control.
+ Electronic Journal of Statistics , 2:963–992, 2008.
+ Fischer and Ramdas (2025) 
+Lasse Fischer and Aaditya Ramdas.
+ Admissible online closed testing must employ e-values.
+ arXiv:2407.15733, 2025.
+ Fischer et al. (2024) 
+Lasse Fischer, Marta Bofill Roig, and Werner Brannath.
+ The online closure principle.
+ The Annals of Statistics , 52(2):817–841,
+2024.
+ Fischer et al. (2025) 
+Lasse Fischer, Ziyu Xu, and Aaditya Ramdas.
+ An online generalization of the (e-)Benjamini-Hochberg procedure.
+ arXiv:2407.20683, 2025.
+ Fisher (2024) 
+Aaron Fisher.
+ Online false discovery rate control for LORD++ and SAFFRON
+under positive, local dependence.
+ Biometrical Journal , 66(1):2300177, 2024.
+ Fisher (2022) 
+Aaron J. Fisher.
+ Online Control of the False Discovery Rate under ”Decision
+Deadlines”.
+ In International Conference on Artificial Intelligence
+and Statistics , 2022.
+ Foster and Stine (2008) 
+Dean P. Foster and Robert A. Stine.
+ α \alpha -investing: A procedure for sequential control of expected
+false discoveries.
+ Journal of the Royal Statistical Society: Series B (Statistical
+Methodology) , 70(2):429–444, 2008.
+ Ignatiadis et al. (2025) 
+Nikolaos Ignatiadis, Ruodu Wang, and Aaditya Ramdas.
+ Asymptotic and compound e-values: Multiple testing and empirical
+Bayes.
+ arXiv:2409.19812, 2025.
+ Jankovic et al. (2026) 
+Vincent Jankovic, Lasse Fischer, and Werner Brannath.
+ Asymptotic Online FWER Control for Dependent Test Statistics.
+ Statistical Methods in Medical Research (forthcoming) , 2026.
+ Javanmard and Montanari (2018) 
+Adel Javanmard and Andrea Montanari.
+ Online rules for control of false discovery rate and false discovery
+exceedance.
+ The Annals of Statistics , 46(2):526–554,
+2018.
+ Lavin and Ahmad (2015) 
+Alexander Lavin and Subutai Ahmad.
+ Evaluating Real-Time Anomaly Detection Algorithms – The
+Numenta Anomaly Benchmark.
+ In IEEE International Conference on Machine
+Learning and Applications , 2015.
+ Lehmann and Romano (2005) 
+E. L. Lehmann and Joseph P. Romano.
+ Generalizations of the familywise error rate.
+ The Annals of Statistics , 33(3):1138–1154, 2005.
+ Marcus et al. (1976) 
+Ruth Marcus, Peritz Eric, and K Ruben Gabriel.
+ On closed testing procedures with special reference to ordered
+analysis of variance.
+ Biometrika , 63(3):655–660, 1976.
+ Ramdas and Wang (2025) 
+Aaditya Ramdas and Ruodu Wang.
+ Hypothesis testing with e-values.
+ Foundations and Trends in Statistics , 1(1–2):1–390, 2025.
+ Ramdas et al. (2017) 
+Aaditya Ramdas, Fanny Yang, Martin J Wainwright, and Michael I Jordan.
+ Online control of the false discovery rate with decaying memory.
+ In Advances in Neural Information Processing Systems ,
+volume 30, 2017.
+ Ramdas et al. (2018) 
+Aaditya Ramdas, Tijana Zrnic, Martin Wainwright, and Michael Jordan.
+ SAFFRON: An Adaptive Algorithm for Online Control of the
+False Discovery Rate.
+ In International Conference on Machine Learning , 2018.
+ Ramdas et al. (2022) 
+Aaditya Ramdas, Johannes Ruf, Martin Larsson, and Wouter Koolen.
+ Admissible anytime-valid sequential inference must rely on
+nonnegative martingales.
+ arXiv:2009.03167, 2022.
+ Robertson et al. (2023) 
+David S Robertson, James MS Wason, Franz König, Martin Posch, and Thomas
+Jaki.
+ Online error rate control for platform trials.
+ Statistics in Medicine , 42(14):2475–2495,
+2023.
+ Storey (2002) 
+John D. Storey.
+ A direct approach to false discovery rates.
+ Journal of the Royal Statistical Society: Series B (Statistical
+Methodology) , 64(3):479–498, 2002.
+ Su (2018) 
+Weijie J. Su.
+ The FDR-Linking theorem.
+ arXiv:1812.08965, 2018.
+ Tian and Ramdas (2019) 
+Jinjin Tian and Aaditya Ramdas.
+ ADDIS: An adaptive discarding algorithm for online FDR
+control with conservative nulls.
+ In Neural Information Processing Systems 32 , 2019.
+ Vovk and Wang (2021) 
+Vladimir Vovk and Ruodu Wang.
+ E-values: Calibration, combination and applications.
+ The Annals of Statistics , 49(3):1736–1754, 2021.
+ Wang and Ramdas (2022) 
+Ruodu Wang and Aaditya Ramdas.
+ False discovery rate control with e-values.
+ Journal of the Royal Statistical Society: Series B (Statistical
+Methodology) , 84(3):822–852, 2022.
+ Xu and Ramdas (2024) 
+Ziyu Xu and Aaditya Ramdas.
+ Online multiple testing with e-values.
+ In International Conference on Artificial Intelligence and
+Statistics , 2024.
+ Xu and Ramdas (2026) 
+Ziyu Xu and Aaditya Ramdas.
+ More powerful multiple testing under dependence via randomization.
+ Bernoulli (forthcoming) , 2026.
+ Xu et al. (2025) 
+Ziyu Xu, Aldo Solari, Lasse Fischer, Rianne de Heide, Aaditya Ramdas, and Jelle
+Goeman.
+ Bringing Closure to False Discovery Rate Control: A General
+Principle for Multiple Testing.
+ arXiv:2509.02517, 2025.
+ Zehetmayer et al. (2022) 
+Sonja Zehetmayer, Martin Posch, and Franz Koenig.
+ Online control of the false discovery rate in group-sequential
+platform trials.
+ Statistical Methods in Medical Research , 31(12):2470–2485, 2022.
+ Zhang et al. (2026) 
+Yifan Zhang, Zijian Wei, Haojie Ren, and Changliang Zou.
+ e-GAI: e-value-based Generalized
+ α \alpha -Investing for Online False Discovery Rate Control.
+ In International Conference on Machine Learning , 2026.
+ Zhao et al. (2019) 
+Qingyuan Zhao, Dylan S. Small, and Weijie Su.
+ Multiple Testing When Many p-Values are Uniformly
+Conservative, with Application to Testing Qualitative Interaction
+in Educational Interventions.
+ Journal of the American Statistical Association , 114(527):1291–1304, 2019.
+ Zrnic et al. (2020) 
+Tijana Zrnic, Daniel Jiang, Aaditya Ramdas, and Michael Jordan.
+ The Power of Batching in Multiple Hypothesis Testing.
+ In International Conference on Artificial Intelligence
+and Statistics , 2020.
+ Zrnic et al. (2021) 
+Tijana Zrnic, Aaditya Ramdas, and Michael I. Jordan.
+ Asynchronous Online Testing of Multiple Hypotheses.
+ Journal of Machine Learning Research , 22(33):1–39, 2021.
+ Appendix A Methodological details of online closed procedures 
+ This section collects methodological details that are deferred from the main text. We first record a general weighted e-collection construction and its relation to weighted self-consistency. We then present an alternative e-collection for e-LOND ¯ \overline{\textnormal{e-LOND}} (referenced in Section   A.2 ) and computation details for r-LOND ¯ \overline{\textnormal{r-LOND}} . 
+ A.1 General weighted e-collections and closure enlargement 
+ Fix a nonnegative sequence 𝜸 = ( γ t ) t ∈ ℕ \boldsymbol{\gamma}=(\gamma_{t})_{t\in\mathbb{N}} with ∑ t ∈ ℕ γ t ≤ 1 \sum_{t\in\mathbb{N}}\gamma_{t}\leq 1 .
+For each finite S ⊂ ℕ S\subset\mathbb{N} , let ( γ i S ) i ∈ S (\gamma_{i}^{S})_{i\in S} satisfy: 
+ (i) 
+ ∑ i ∈ S γ i S ≤ 1 \sum_{i\in S}\gamma_{i}^{S}\leq 1 and γ i S ≥ γ i \gamma_{i}^{S}\geq\gamma_{i} for all i ∈ S i\in S ; 
+ (ii) 
+ if i ∈ S ∩ T i\in S\cap T and S ∩ [ i ] = T ∩ [ i ] S\cap[i]=T\cap[i] , then γ i S = γ i T \gamma_{i}^{S}=\gamma_{i}^{T} . 
+ Define 
+ E S ≔ ∑ i ∈ S γ i S ​ E i . \displaystyle E_{S}\coloneqq\sum_{i\in S}\gamma_{i}^{S}E_{i}. 
+ (47) 
+ Under H S H_{S} , this gives 𝔼 ⁡ [ E S ] ≤ ∑ i ∈ S γ i S ≤ 1 \mathbb{E}[E_{S}]\leq\sum_{i\in S}\gamma_{i}^{S}\leq 1 , so ( E S ) S ∈ 2 ℕ (E_{S})_{S\in 2^{\mathbb{N}}} is an e-collection.
+Condition (ii) ensures this e-collection is increasing. 
+ Proposition 11 . 
+ Let ( E S ) (E_{S}) be defined above and let R ⊂ [ t ] R\subset[t] be nonempty.
+If R R is weighted self-consistent for ( γ i , E i ) (\gamma_{i},E_{i}) , i.e., 
+ γ i ​ E i ≥ 1 δ ​ | R | for all  ​ i ∈ R , \displaystyle\gamma_{i}E_{i}\geq\frac{1}{\delta|R|}\qquad\text{for all }i\in R, 
+ (48) 
+ then R ∈ 𝒞 t R\in\mathcal{C}_{t} . 
+ Proof. 
+ For any S ⊆ [ t ] S\subseteq[t] , 
+ E S = ∑ i ∈ S γ i S ​ E i ≥ ∑ i ∈ S ∩ R γ i ​ E i ≥ | S ∩ R | δ ​ | R | = FDP S ​ ( R ) δ . \displaystyle E_{S}=\sum_{i\in S}\gamma_{i}^{S}E_{i}\geq\sum_{i\in S\cap R}\gamma_{i}E_{i}\geq\frac{|S\cap R|}{\delta|R|}=\frac{\textnormal{FDP}_{S}(R)}{\delta}. 
+ (49) 
+ Hence R R satisfies all constraints in ( 10 ), so R ∈ 𝒞 t R\in\mathcal{C}_{t} .
+∎ 
+ The closure set can be strictly larger than the weighted self-consistent family.
+For example, let γ 1 = γ 2 = 1 / 2 \gamma_{1}=\gamma_{2}=1/2 , 
+ γ 1 { 1 } = 1 2 , γ 1 { 1 , 2 } = γ 2 { 1 , 2 } = 1 2 , γ 2 { 2 } = 1 , \gamma_{1}^{\{1\}}=\tfrac{1}{2},\quad\gamma_{1}^{\{1,2\}}=\gamma_{2}^{\{1,2\}}=\tfrac{1}{2},\quad\gamma_{2}^{\{2\}}=1, 
+ (50) 
+ and choose E 1 = 1 / ( 2 ​ δ ) E_{1}=1/(2\delta) , E 2 = 3 / ( 2 ​ δ ) E_{2}=3/(2\delta) .
+Then no nonempty weighted self-consistent rejection set exists, but { 2 } ∈ 𝒞 2 \{2\}\in\mathcal{C}_{2} . 
+ A.2 Alternative e-collection for e-LOND ¯ \overline{\textnormal{e-LOND}} 
+ In Theorem   2 , we used E S = ∑ i ∈ S γ | S ∩ [ i ] | ​ E i E_{S}=\sum_{i\in S}\gamma_{|S\cap[i]|}E_{i} as the e-collection to construct e-LOND ¯ \overline{\textnormal{e-LOND}} . That choice requires a nonincreasing 𝜸 \boldsymbol{\gamma} sequence in the strict-improvement argument. Here we record an alternative e-collection that avoids that monotonicity requirement. 
+ For a finite set S = { s 1 < ⋯ < s m } S=\{s_{1}<\dots<s_{m}\} , define s 0 ≔ 0 s_{0}\coloneqq 0 and 
+ γ s j , S ≔ ∑ ℓ = s j − 1 + 1 s j γ ℓ , E S ≔ ∑ j = 1 m γ s j , S ​ E s j . \displaystyle\gamma_{s_{j},S}\coloneqq\sum_{\ell=s_{j-1}+1}^{s_{j}}\gamma_{\ell},\qquad E_{S}\coloneqq\sum_{j=1}^{m}\gamma_{s_{j},S}E_{s_{j}}. 
+ (51) 
+ For each t t and S ⊆ [ t − 1 ] S\subseteq[t-1] , define 
+ Γ t ​ ( S ) ≔ ∑ ℓ = max ⁡ ( S ∪ { 0 } ) + 1 t γ ℓ . \displaystyle\Gamma_{t}(S)\coloneqq\sum_{\ell=\max(S\cup\{0\})+1}^{t}\gamma_{\ell}. 
+ (52) 
+ Then E S ∪ { t } = E S + Γ t ​ ( S ) ​ E t E_{S\cup\{t\}}=E_{S}+\Gamma_{t}(S)E_{t} . 
+ Theorem 12 . 
+ The procedure with test levels 
+ α t = min S ⊆ [ t − 1 ] : 1 + | S ∩ R t − 1 | − δ ​ E S ​ ( | R t − 1 | + 1 ) > 0 δ ​ Γ t ​ ( S ) ​ ( | R t − 1 | + 1 ) 1 + | S ∩ R t − 1 | − δ ​ E S ​ ( | R t − 1 | + 1 ) \displaystyle\alpha_{t}=\min_{\begin{subarray}{c}S\subseteq[t-1]:\\
+1+|S\cap R_{t-1}|-\delta E_{S}(|R_{t-1}|+1)>0\end{subarray}}\frac{\delta\Gamma_{t}(S)(|R_{t-1}|+1)}{1+|S\cap R_{t-1}|-\delta E_{S}(|R_{t-1}|+1)} 
+ (53) 
+ controls SupFDR at level δ \delta under arbitrary dependence, and dominates e-LOND for any nonnegative 𝛄 \boldsymbol{\gamma} with ∑ i ∈ ℕ γ i ≤ 1 \sum_{i\in\mathbb{N}}\gamma_{i}\leq 1 . A sufficient condition for strict improvement at time t t is that S = ∅ S=\emptyset attains the minimum and ∑ i = 1 t γ i > γ t \sum_{i=1}^{t}\gamma_{i}>\gamma_{t} . 
+ Proof. 
+ For each finite S = { s 1 < ⋯ < s m } S=\{s_{1}<\dots<s_{m}\} , 
+ 𝔼 ⁡ [ E S ] ≤ ∑ j = 1 m γ s j , S = ∑ ℓ = 1 s m γ ℓ ≤ 1 \displaystyle\mathbb{E}[E_{S}]\leq\sum_{j=1}^{m}\gamma_{s_{j},S}=\sum_{\ell=1}^{s_{m}}\gamma_{\ell}\leq 1 
+ (54) 
+ under H S H_{S} , so ( E S ) S ∈ 2 ℕ (E_{S})_{S\in 2^{\mathbb{N}}} is a valid e-collection. 
+ For S ⊆ [ t − 1 ] S\subseteq[t-1] , requiring R t − 1 ∪ { t } ∈ 𝒞 t R_{t-1}\cup\{t\}\in\mathcal{C}_{t} is equivalent to 
+ FDP S ∪ { t } ​ ( R t − 1 ∪ { t } ) ≤ δ ⁡ ( E S + Γ t ​ ( S ) ​ E t ) , \displaystyle\textnormal{FDP}_{S\cup\{t\}}(R_{t-1}\cup\{t\})\leq\delta(E_{S}+\Gamma_{t}(S)E_{t}), 
+ (55) 
+ i.e., 
+ E t ≥ FDP S ∪ { t } ​ ( R t − 1 ∪ { t } ) − δ ​ E S δ ​ Γ t ​ ( S ) . \displaystyle E_{t}\geq\frac{\textnormal{FDP}_{S\cup\{t\}}(R_{t-1}\cup\{t\})-\delta E_{S}}{\delta\Gamma_{t}(S)}. 
+ (56) 
+ Taking the maximum over S ⊆ [ t − 1 ] S\subseteq[t-1] yields exactly the displayed test level, so R t ∈ 𝒞 t R_{t}\in\mathcal{C}_{t} for all t t . SupFDR control then follows from Theorem   1 . 
+ To compare with e-LOND, use R t − 1 ∈ 𝒞 t − 1 R_{t-1}\in\mathcal{C}_{t-1} to get 
+ | S ∩ R t − 1 | ≤ δ ​ E S ​ | R t − 1 | , \displaystyle|S\cap R_{t-1}|\leq\delta E_{S}|R_{t-1}|, 
+ (57) 
+ hence 
+ 1 + | S ∩ R t − 1 | − δ ​ E S ​ ( | R t − 1 | + 1 ) ≤ 1 . \displaystyle 1+|S\cap R_{t-1}|-\delta E_{S}(|R_{t-1}|+1)\leq 1. 
+ (58) 
+ Also Γ t ​ ( S ) ≥ γ t \Gamma_{t}(S)\geq\gamma_{t} for every S ⊆ [ t − 1 ] S\subseteq[t-1] . Therefore each candidate term in the minimum is at least δ ​ γ t ​ ( | R t − 1 | + 1 ) \delta\gamma_{t}(|R_{t-1}|+1) , which is the e-LOND level, so dominance holds. 
+ If S = ∅ S=\emptyset is a minimizer and ∑ i = 1 t γ i > γ t \sum_{i=1}^{t}\gamma_{i}>\gamma_{t} , then 
+ α t = δ ⁡ ( ∑ i = 1 t γ i ) ​ ( | R t − 1 | + 1 ) > δ ​ γ t ​ ( | R t − 1 | + 1 ) , \displaystyle\alpha_{t}=\delta\Big(\sum_{i=1}^{t}\gamma_{i}\Big)(|R_{t-1}|+1)>\delta\gamma_{t}(|R_{t-1}|+1), 
+ (59) 
+ giving strict improvement at time t t .
+∎ 
+ Simulation results. 
+ We compare e-LOND, e-LOND ¯ \overline{\text{e-LOND}} , and the alternative- γ \gamma 
+closed e-LOND using the same local dependence simulation setup as in the
+main simulations section in Figure   4 and plot empirical error diagnostics in Figure   5 . We see that the alternative- 𝜸 \boldsymbol{\gamma} e-LOND ¯ \overline{\text{e-LOND}} has worse power than the original 𝜸 \boldsymbol{\gamma} , while still being much more powerful than the original e-LOND procedure. All methods remain below the target δ = 0.1 \delta=0.1 level in these diagnostics. 
+ Figure 4 : Power comparison for alternative choice of γ \gamma for e-LOND ¯ \overline{\textnormal{e-LOND}} . 
+ Figure 5 : Empirical error diagnostics for the alternative- γ \gamma closure comparison. All methods stay controlled at the target level δ = 0.1 \delta=0.1 . 
+ A.3 Computation details of r-LOND ¯ \overline{\text{r-LOND}} 
+ The minimization in ( 42 ) can be carried out in O ⁡ ( t 2 ) O(t^{2}) time via a dynamic program mirroring the e-LOND ¯ \overline{\textnormal{e-LOND}} case in Section   2.2 . Define for i ∈ [ t − 1 ] i\in[t-1] and k ∈ { 0 } ∪ [ t − 1 ] k\in\{0\}\cup[t-1] , 
+ g t ( i , k ) ≔ max S ⊆ [ i ] : | S | = k | S ∩ R t − 1 | − δ ( | R t − 1 | + 1 ) E S . \displaystyle g_{t}(i,k)\coloneqq\max_{S\subseteq[i]:|S|=k}|S\cap R_{t-1}|-\delta(|R_{t-1}|+1)E_{S}. 
+ (60) 
+ Initialize g t ​ ( 0 , 0 ) = 0 g_{t}(0,0)=0 and g t ​ ( 0 , k ) = − ∞ g_{t}(0,k)=-\infty for k > 0 k>0 . For i ≥ 1 i\geq 1 , set g t ​ ( i , 0 ) = 0 g_{t}(i,0)=0 , and for k ∈ { 1 , … , i } k\in\{1,\dots,i\} update 
+ g t ( i , k ) = max { \displaystyle g_{t}(i,k)=\max\Big\{ 
+ g t ​ ( i − 1 , k ) , \displaystyle g_{t}(i-1,k), 
+ (61) 
+ g t ( i − 1 , k − 1 ) + 𝟏 { i ∈ R t − 1 } − ( | R t − 1 | + 1 ) ⌈ ( P i ​ ℓ k δ ​ γ k ) ∨ 1 ⌉ − 1 } . \displaystyle g_{t}(i-1,k-1)+\mathbf{1}\{i\in R_{t-1}\}-(|R_{t-1}|+1)\left\lceil\left(\frac{P_{i}\ell_{k}}{\delta\gamma_{k}}\right)\vee 1\right\rceil^{-1}\Big\}. 
+ (62) 
+ Then 
+ α t r-LOND ¯ = min ⁡ { 1 , min k ∈ { 0 , … , t − 1 } 1 + g t ​ ( t − 1 , k ) > 0 ⁡ δ ​ γ k + 1 ℓ k + 1 ​ ⌊ ( | R t − 1 | + 1 1 + g t ​ ( t − 1 , k ) ) ∧ ( k + 1 ) ⌋ } . \displaystyle\alpha_{t}^{\overline{\textnormal{r-LOND}}}=\min\Bigg\{1,\;\min_{\begin{subarray}{c}k\in\{0,\dots,t-1\}\\
+1+g_{t}(t-1,k)>0\end{subarray}}\frac{\delta\gamma_{k+1}}{\ell_{k+1}}\left\lfloor\left(\frac{|R_{t-1}|+1}{1+g_{t}(t-1,k)}\right)\wedge(k+1)\right\rfloor\Bigg\}. 
+ The state space only tracks k = | S | k=|S| , so the algorithm requires O ⁡ ( t 2 ) O(t^{2}) time and O ⁡ ( t ) O(t) memory per step; in practice we restrict i i to indices in R t − 1 R_{t-1} to reduce the constant factors. 
+ Appendix B Deferred proofs 
+ This section contains deferred proofs for the main theoretical results in the paper, including the closure-based improvements, the donation framework lemmas, and the p-value analogs. 
+ B.1 Proof of Theorem 1 
+ Proof. 
+ Since each E S E_{S} is measurable with respect to ℱ sup ( S ) \mathcal{F}_{\sup(S)} , the collection ( 𝒞 t ) t ∈ ℕ (\mathcal{C}_{t})_{t\in\mathbb{N}} is an online procedure.
+Fix a finite horizon T T . For any t ≤ T t\leq T and R ∈ 𝒞 t R\in\mathcal{C}_{t} , let S t ≔ 𝒩 ∩ [ t ] S_{t}\coloneqq\mathcal{N}\cap[t] . Then R ⊆ [ t ] R\subseteq[t] , so 
+ FDP 𝒩 ​ ( R ) = FDP S t ​ ( R ) ≤ δ ​ E S t . \displaystyle\textnormal{FDP}_{\mathcal{N}}(R)=\textnormal{FDP}_{S_{t}}(R)\leq\delta E_{S_{t}}. 
+ (63) 
+ Since S t ⊆ 𝒩 ∩ [ T ] S_{t}\subseteq\mathcal{N}\cap[T] and the e-collection is increasing, E S t ≤ E 𝒩 ∩ [ T ] E_{S_{t}}\leq E_{\mathcal{N}\cap[T]} . Therefore 
+ sup t ≤ T sup R ∈ 𝒞 t FDP 𝒩 ​ ( R ) ≤ δ ​ E 𝒩 ∩ [ T ] . \displaystyle\sup_{t\leq T}\sup_{R\in\mathcal{C}_{t}}\textnormal{FDP}_{\mathcal{N}}(R)\leq\delta E_{\mathcal{N}\cap[T]}. 
+ (64) 
+ Taking expectations gives the finite-horizon bound because E 𝒩 ∩ [ T ] E_{\mathcal{N}\cap[T]} is an e-value for the finite intersection null H 𝒩 ∩ [ T ] H_{\mathcal{N}\cap[T]} : 
+ 𝔼 ⁡ [ sup t ≤ T sup R ∈ 𝒞 t FDP 𝒩 ​ ( R ) ] ≤ δ . \mathbb{E}\left[\sup_{t\leq T}\sup_{R\in\mathcal{C}_{t}}\textnormal{FDP}_{\mathcal{N}}(R)\right]\leq\delta. 
+ (65) 
+ Letting T → ∞ T\to\infty and applying monotone convergence yields the stated SupFDR bound.
+This proves the first claim; the stated consequence for any discovery sequence with R t ∈ 𝒞 t R_{t}\in\mathcal{C}_{t} is immediate. 
+ ∎ 
+ B.2 Proof of Proposition 5 
+ Proof. 
+ For a finite horizon T T , let 
+ 𝒞 T ≔ { R ⊆ [ T ] : E ~ i ≥ ( δ ​ γ i ​ | R | ) − 1 ​  for all  ​ i ∈ R } . \mathcal{C}_{T}\coloneqq\{R\subseteq[T]:\tilde{E}_{i}\geq(\delta\gamma_{i}|R|)^{-1}\text{ for all }i\in R\}. 
+ (66) 
+ For every R ∈ 𝒞 T R\in\mathcal{C}_{T} , 
+ FDP 𝒩 ​ ( R ) = ∑ i ∈ 𝒩 ∩ R 1 | R | ∨ 1 ≤ δ ​ ∑ i ∈ 𝒩 ∩ [ T ] γ i ​ E ~ i . \displaystyle\textnormal{FDP}_{\mathcal{N}}(R)=\sum_{i\in\mathcal{N}\cap R}\frac{1}{|R|\vee 1}\leq\delta\sum_{i\in\mathcal{N}\cap[T]}\gamma_{i}\tilde{E}_{i}. 
+ (67) 
+ Taking the supremum over R ∈ 𝒞 T R\in\mathcal{C}_{T} and then expectations yields 
+ 𝔼 ⁡ [ sup R ∈ 𝒞 T FDP 𝒩 ​ ( R ) ] ≤ δ ​ ∑ i ∈ 𝒩 ∩ [ T ] γ i ​ 𝔼 ​ [ E ~ i ] ≤ δ . \mathbb{E}\left[\sup_{R\in\mathcal{C}_{T}}\textnormal{FDP}_{\mathcal{N}}(R)\right]\leq\delta\sum_{i\in\mathcal{N}\cap[T]}\gamma_{i}\mathbb{E}[\tilde{E}_{i}]\leq\delta. 
+ (68) 
+ The collections 𝒞 T \mathcal{C}_{T} increase to 𝒞 \mathcal{C} , so monotone convergence gives the result.
+∎ 
+ B.3 Proof of Proposition 6 
+ Proof. 
+ For all t ∈ ℕ t\in\mathbb{N} , we note that 
+ ∑ i ∈ 𝒩 ∩ [ t ] γ i ​ 𝔼 ​ [ E ~ i ] = ∑ i ∈ 𝒩 ∩ [ t ] γ i ​ 𝔼 ​ [ E i + B i ] \displaystyle\sum_{i\in\mathcal{N}\cap[t]}\gamma_{i}\mathbb{E}[\tilde{E}_{i}]=\sum_{i\in\mathcal{N}\cap[t]}\gamma_{i}\mathbb{E}[E_{i}+B_{i}] 
+ (69) 
+ ≤ ∑ i ∈ 𝒩 ∩ [ t ] γ i ​ 𝔼 ​ [ E i ] − ∑ i ∈ [ t ] ∖ 𝒩 γ i ​ 𝔼 ​ [ B i ] \displaystyle\leq\sum_{i\in\mathcal{N}\cap[t]}\gamma_{i}\mathbb{E}[E_{i}]-\sum_{i\in[t]\setminus\mathcal{N}}\gamma_{i}\mathbb{E}[B_{i}] 
+ (70) 
+ ≤ ∑ i ∈ 𝒩 ∩ [ t ] γ i ​ 𝔼 ​ [ E i ] + ∑ i ∈ [ t ] ∖ 𝒩 γ i ≤ 1 . \displaystyle\leq\sum_{i\in\mathcal{N}\cap[t]}\gamma_{i}\mathbb{E}[E_{i}]+\sum_{i\in[t]\setminus\mathcal{N}}\gamma_{i}\leq 1. 
+ (71) 
+ The first inequality is due to the definition of 𝐁 \mathbf{B} as a 𝜸 \boldsymbol{\gamma} -weighted donation. The last inequality is due to the fact that E i E_{i} is an e-value for all i ∈ 𝒩 i\in\mathcal{N} and 𝜸 \boldsymbol{\gamma} sum to at most 1.
+∎ 
+ B.4 Proof of Proposition 7 
+ Proof. 
+ For any valid donation sequence 𝐁 \mathbf{B} and any R ∈ 𝒞 ⁡ ( 𝐁 ) R\in\mathcal{C}(\mathbf{B}) , weighted self-consistency gives the pathwise bound 
+ FDP 𝒩 ​ ( R ) ≤ δ ​ ∑ i ∈ 𝒩 γ i ​ ( E i + B i ) . \displaystyle\textnormal{FDP}_{\mathcal{N}}(R)\leq\delta\sum_{i\in\mathcal{N}}\gamma_{i}(E_{i}+B_{i}). 
+ (72) 
+ Taking the supremum over valid 𝐁 \mathbf{B} , the largest possible transfer into null coordinates is bounded by the amount withdrawn from nonnull coordinates, and each nonnull coordinate can withdraw at most E i ∧ 1 E_{i}\wedge 1 . Hence 
+ sup 𝐁 ∈ ℬ ∑ i ∈ 𝒩 γ i ​ ( E i + B i ) ≤ ∑ i ∈ 𝒩 γ i ​ E i + ∑ i ∉ 𝒩 γ i ​ ( E i ∧ 1 ) . \sup_{\mathbf{B}\in\mathcal{B}}\sum_{i\in\mathcal{N}}\gamma_{i}(E_{i}+B_{i})\leq\sum_{i\in\mathcal{N}}\gamma_{i}E_{i}+\sum_{i\notin\mathcal{N}}\gamma_{i}(E_{i}\wedge 1). 
+ (73) 
+ Taking expectations gives at most ∑ i γ i ≤ 1 \sum_{i}\gamma_{i}\leq 1 , proving the claim.
+∎ 
+ B.5 Proof of Theorem 8 
+ Proof. 
+ The proof sketch after Theorem   8 derives the test level ( 28 ) by maximizing the feasible donation to the new hypothesis while keeping all previous discoveries weighted self-consistent. Equivalently, for each t ∈ ℕ t\in\mathbb{N} , define the 𝜸 \boldsymbol{\gamma} -weighted donation sequence 𝐁 ( t ) \mathbf{B}^{(t)} by 
+ B i ( t ) = { W ¯ t / γ t  if  ​ i = t , ( ( δ ​ γ i ​ ( | R t − 1 | + 1 ) ) − 1 − E i ) ∨ − 1  if  ​ i ∈ R t − 1 , − ( E i ∧ 1 )  if  i < t , i ∉ R t − 1 , 0  if  ​ i > t . \displaystyle B_{i}^{(t)}=\begin{cases}\bar{W}_{t}/\gamma_{t}&\text{ if }i=t,\\
+((\delta\gamma_{i}(|R_{t-1}|+1))^{-1}-E_{i})\vee-1&\text{ if }i\in R_{t-1},\\
+-(E_{i}\wedge 1)&\text{ if }i<t,\ i\notin R_{t-1},\\
+0&\text{ if }i>t.\end{cases} 
+ (74) 
+ The derivation shows that R t ∈ 𝒞 ⁡ ( 𝐁 ( t ) ) R_{t}\in\mathcal{C}(\mathbf{B}^{(t)}) exactly when E t ≥ α t − 1 E_{t}\geq\alpha_{t}^{-1} , with α t \alpha_{t} as in ( 28 ). Moreover, γ t B t ( t ) = W ¯ t = − ∑ i ∈ [ t − 1 ] γ i B i ( t ) \gamma_{t}B_{t}^{(t)}=\bar{W}_{t}=-\sum_{i\in[t-1]}\gamma_{i}B_{i}^{(t)} , so 𝐁 ( t ) \mathbf{B}^{(t)} is a valid 𝜸 \boldsymbol{\gamma} -weighted donation. Therefore, by Proposition   7 , donation e-LOND controls the SupFDR at level δ \delta . 
+ Lastly, we show that donation e-LOND strictly improves over e-LOND. Let R t d-eLOND R^{\textnormal{d-eLOND}}_{t} and R t e-LOND R^{\textnormal{e-LOND}}_{t} and α t d-eLOND \alpha_{t}^{\textnormal{d-eLOND}} and α t e-LOND \alpha_{t}^{\textnormal{e-LOND}} be the discovery sets and test levels of donation e-LOND and e-LOND respectively. Then, if we assume R t − 1 d-eLOND ⊇ R t − 1 e-LOND R_{t-1}^{\textnormal{d-eLOND}}\supseteq R_{t-1}^{\textnormal{e-LOND}} by induction, we have that 
+ α t d-eLOND \displaystyle\alpha_{t}^{\textnormal{d-eLOND}} 
+ = δ ​ γ t ​ ( | R t − 1 d-eLOND | + 1 ) 1 − ( δ ⁡ ( | R t − 1 d-eLOND | + 1 ) ​ W ¯ t ∧ 1 ) \displaystyle{=}\frac{\delta\gamma_{t}(|R_{t-1}^{\textnormal{d-eLOND}}|+1)}{1-(\delta(|R_{t-1}^{\textnormal{d-eLOND}}|+1)\bar{W}_{t}\wedge 1)} 
+ (75) 
+ ≥ δ ​ γ t ​ ( | R t − 1 e-LOND | + 1 ) \displaystyle\geq\delta\gamma_{t}(|R_{t-1}^{\textnormal{e-LOND}}|+1) 
+ (76) 
+ = α t e-LOND , \displaystyle=\alpha_{t}^{\textnormal{e-LOND}}, 
+ (77) 
+ since ( 1 − ( δ ⁡ ( | R t − 1 d-eLOND | + 1 ) ​ W ¯ t ∧ 1 ) ) − 1 ≥ 1 (1-(\delta(|R_{t-1}^{\textnormal{d-eLOND}}|+1)\bar{W}_{t}\wedge 1))^{-1}\geq 1 . 
+ For a concrete instance where donation e-LOND make strictly more discoveries than e-LOND with positive probability, take t = 2 t=2 and let γ 1 > γ 2 \gamma_{1}>\gamma_{2} . If E 1 ≥ ( δ ​ γ 1 ) − 1 E_{1}\geq(\delta\gamma_{1})^{-1} , then both methods reject H 1 H_{1} and R 1 = { 1 } R_{1}=\{1\} , so α 2 d-eLOND > α 2 e-LOND \alpha_{2}^{\textnormal{d-eLOND}}>\alpha_{2}^{\textnormal{e-LOND}} . Therefore, whenever 
+ ℙ ⁡ ( E 1 ≥ ( δ ​ γ 1 ) − 1 ​  and  ​ ( α 2 d-eLOND ) − 1 ≤ E 2 < ( α 2 e-LOND ) − 1 ) > 0 , \displaystyle\mathbb{P}\left(E_{1}\geq(\delta\gamma_{1})^{-1}\text{ and }(\alpha_{2}^{\textnormal{d-eLOND}})^{-1}\leq E_{2}<(\alpha_{2}^{\textnormal{e-LOND}})^{-1}\right)>0, 
+ (78) 
+ donation e-LOND rejects H 2 H_{2} while e-LOND does not, which proves our desired result.
+∎ 
+ B.6 Proof of Theorem 9 
+ Proof. 
+ The above choice of E S E_{S} in ( 41 ) is a valid e-value for H S H_{S} since f t f_{t} is a valid calibrator for all t ∈ ℕ t\in\mathbb{N} and we are taking a weighted mean of ( f | S ∩ [ i ] | ​ ( P i ) ) i ∈ S (f_{|S\cap[i]|}(P_{i}))_{i\in S} with weights ( γ | S ∩ [ i ] | ) i ∈ S (\gamma_{|S\cap[i]|})_{i\in S} .
+Thus, since we want to have R t ∈ 𝒞 t R_{t}\in\mathcal{C}_{t} , we need to satisfy for all S ⊆ [ t − 1 ] S\subseteq[t-1] that 
+ δ ​ E S ∪ { t } \displaystyle\delta E_{S\cup\{t\}} 
+ = 𝟏 { P t ≤ δ γ | S | + 1 ( | S | + 1 ) / ℓ | S | + 1 } ⌈ ( P t ​ ℓ | S | + 1 / ( δ ​ γ | S | + 1 ) ) ∨ 1 ⌉ + δ ​ E S \displaystyle=\frac{\mathbf{1}\{P_{t}\leq\delta\gamma_{|S|+1}(|S|+1)/\ell_{|S|+1}\}}{\left\lceil(P_{t}\ell_{|S|+1}/(\delta\gamma_{|S|+1}))\vee 1\right\rceil}+\delta E_{S} 
+ (79) 
+ ≥ FDP S ∪ { t } ​ ( R t − 1 ∪ { t } ) . \displaystyle\geq\textnormal{FDP}_{S\cup\{t\}}(R_{t-1}\cup\{t\}). 
+ (80) 
+ If we rearrange this, we get the following condition for all S ⊆ [ t − 1 ] S\subseteq[t-1] : 
+ 𝟏 { P t ≤ δ γ | S | + 1 ( | S | + 1 ) / ℓ | S | + 1 } ⌈ ( P t ​ ℓ | S | + 1 / ( δ ​ γ | S | + 1 ) ) ∨ 1 ⌉ ≥ Δ ​ E S ​ ( t ) . \displaystyle\frac{\mathbf{1}\{P_{t}\leq\delta\gamma_{|S|+1}(|S|+1)/\ell_{|S|+1}\}}{\left\lceil(P_{t}\ell_{|S|+1}/(\delta\gamma_{|S|+1}))\vee 1\right\rceil}\geq\Delta E_{S}(t). 
+ (81) 
+ If Δ ​ E S ​ ( t ) ≤ 0 \Delta E_{S}(t)\leq 0 , this constraint is trivially satisfied by any P t ∈ [ 0 , 1 ] P_{t}\in[0,1] . Otherwise, we can derive the following condition on P t P_{t} : 
+ P t ≤ δ ​ γ | S | + 1 ℓ | S | + 1 ​ ⌊ ( δ ​ Δ ​ E S ​ ( t ) ) − 1 ∧ ( | S | + 1 ) ⌋ . \displaystyle P_{t}\leq\frac{\delta\gamma_{|S|+1}}{\ell_{|S|+1}}\left\lfloor\left(\delta\Delta E_{S}(t)\right)^{-1}\wedge(|S|+1)\right\rfloor. 
+ (82) 
+ Thus, we get that the above is equivalent to P t ≤ α t P_{t}\leq\alpha_{t} where α t \alpha_{t} is given in ( 42 ). As a result, we get that SupFDR control is ensured by r-LOND ¯ \overline{\textnormal{r-LOND}} as a result of Theorem   1 . 
+ To show that r-LOND ¯ \overline{\textnormal{r-LOND}} strictly improves over r-LOND, we first prove that the test levels of r-LOND ¯ \overline{\textnormal{r-LOND}} are always at least as large as those of r-LOND.
+Because R t − 1 ∈ 𝒞 t − 1 R_{t-1}\in\mathcal{C}_{t-1} , we have FDP S ​ ( R t − 1 ) ≤ δ ​ E S \textnormal{FDP}_{S}(R_{t-1})\leq\delta E_{S} for all S ⊆ [ t − 1 ] S\subseteq[t-1] . Thus, we also get that | S ∩ R t − 1 | ≤ δ ​ E S ​ | R t − 1 | |S\cap R_{t-1}|\leq\delta E_{S}|R_{t-1}| . As a result 
+ 1 + | S ∩ R t − 1 | − δ ​ E S ​ ( | R t − 1 | + 1 ) ≤ 1 − δ ​ E S ≤ 1 . \displaystyle 1+|S\cap R_{t-1}|-\delta E_{S}(|R_{t-1}|+1)\leq 1-\delta E_{S}\leq 1. 
+ (83) 
+ Equivalently, for any nonvacuous S S with k = | S | + 1 k=|S|+1 and r = | R t − 1 | + 1 r=|R_{t-1}|+1 , we have ( δ ​ Δ ​ E S ​ ( t ) ) − 1 ≥ r (\delta\Delta E_{S}(t))^{-1}\geq r . The candidate threshold in ( 42 ) is therefore at least 
+ δ ​ γ k ℓ k ​ ( k ∧ r ) . \frac{\delta\gamma_{k}}{\ell_{k}}(k\wedge r). 
+ (84) 
+ Since k ≤ t k\leq t and i ​ γ i / ℓ i i\gamma_{i}/\ell_{i} is nonincreasing, both γ i / ℓ i \gamma_{i}/\ell_{i} and i ​ γ i / ℓ i i\gamma_{i}/\ell_{i} are nonincreasing enough to imply 
+ γ k ℓ k ​ ( k ∧ r ) ≥ γ t ℓ t ​ ( t ∧ r ) . \frac{\gamma_{k}}{\ell_{k}}(k\wedge r)\geq\frac{\gamma_{t}}{\ell_{t}}(t\wedge r). 
+ (85) 
+ This is exactly the r-LOND level in ( 8 ) for the harmonic reshaping function. 
+ A concise sufficient condition to attain a strict improvement at time t t is that the terms being minimized over are all vacuous, i.e., that Δ ​ E S ​ ( t ) ≤ 0 \Delta E_{S}(t)\leq 0 for all nonempty S ⊆ [ t − 1 ] S\subseteq[t-1] .
+As a result, we get that the minimization in ( 42 ) is achieved by S = ∅ S=\emptyset which in turn implies that α t = δ ​ γ 1 \alpha_{t}=\delta\gamma_{1} . This can be strictly larger than the r-LOND level δ ​ γ t ​ ( ( | R t − 1 | + 1 ) ∧ t ) / ℓ t \delta\gamma_{t}((|R_{t-1}|+1)\wedge t)/\ell_{t} under the stated monotonicity condition. 
+ A concrete instance of this for t = 2 t=2 is on the event P 1 ≤ δ ​ γ 1 P_{1}\leq\delta\gamma_{1} . Then both r-LOND ¯ \overline{\textnormal{r-LOND}} and r-LOND reject H 1 H_{1} making R 1 = { 1 } R_{1}=\{1\} . Then, we have that 
+ Δ ​ E { 1 } ​ ( 2 ) = 1 + | { 1 } ∩ R 1 | δ ⁡ ( | R 1 | + 1 ) − E { 1 } = 1 δ − 1 δ = 0 , \displaystyle\Delta E_{\{1\}}(2)=\frac{1+|\{1\}\cap R_{1}|}{\delta(|R_{1}|+1)}-E_{\{1\}}=\frac{1}{\delta}-\frac{1}{\delta}=0, 
+ (86) 
+ because f 1 ​ ( P 1 ) = 1 / ( δ ​ γ 1 ) f_{1}(P_{1})=1/(\delta\gamma_{1}) and hence E { 1 } = γ 1 ​ f 1 ​ ( P 1 ) = 1 / δ E_{\{1\}}=\gamma_{1}f_{1}(P_{1})=1/\delta . Now, we use α t r-LOND \alpha_{t}^{\textnormal{r-LOND}} and α t r-LOND ¯ \alpha_{t}^{\overline{\textnormal{r-LOND}}} to differentiate the test levels of the different procedures. We have that α 2 r-LOND ¯ = δ ​ γ 1 \alpha_{2}^{\overline{\textnormal{r-LOND}}}=\delta\gamma_{1} , while α 2 r-LOND = 2 ​ δ ​ γ 2 / ℓ 2 \alpha_{2}^{\textnormal{r-LOND}}=2\delta\gamma_{2}/\ell_{2} . If i ​ γ i / ℓ i i\gamma_{i}/\ell_{i} is strictly decreasing at i = 2 i=2 , then γ 1 > 2 ​ γ 2 / ℓ 2 \gamma_{1}>2\gamma_{2}/\ell_{2} , so α 2 r-LOND ¯ > α 2 r-LOND \alpha_{2}^{\overline{\textnormal{r-LOND}}}>\alpha_{2}^{\textnormal{r-LOND}} . Consequently, any distribution that satisfies 
+ ℙ ( P 1 ≤ δ γ 1 , α 2 r-LOND < P 2 ≤ α 2 r-LOND ¯ ) > 0 , \displaystyle\mathbb{P}\left(P_{1}\leq\delta\gamma_{1},\ \alpha_{2}^{\textnormal{r-LOND}}<P_{2}\leq\alpha_{2}^{\overline{\textnormal{r-LOND}}}\right)>0, 
+ (87) 
+ will have r-LOND ¯ \overline{\textnormal{r-LOND}} reject H 2 H_{2} while r-LOND does not with positive probability, which establishes strict improvement.
+∎ 
+ B.7 Proof of Theorem 10 
+ Proof. 
+ Let E t = f t ​ ( P t ) E_{t}=f_{t}(P_{t}) for each t ∈ ℕ t\in\mathbb{N} . The calibrator f t f_{t} of Vovk and Wang (2021) guarantees that 𝐄 \mathbf{E} are valid e-values even under arbitrary dependence. Let α t d-eLOND \alpha_{t}^{\textnormal{d-eLOND}} denote the test level of donation e-LOND from ( 28 ), and let α t d-rLOND \alpha_{t}^{\textnormal{d-rLOND}} denote the test level of donation r-LOND from ( 44 ). Donation r-LOND therefore enjoys SupFDR control by Theorem   8 . 
+ To show that rejecting when P t ≤ α t d-rLOND P_{t}\leq\alpha_{t}^{\textnormal{d-rLOND}} is equivalent to rejecting when f t ​ ( P t ) ≥ ( α t d-eLOND ) − 1 f_{t}(P_{t})\geq(\alpha_{t}^{\textnormal{d-eLOND}})^{-1} , we directly compare rejection decisions. By the definition of f t f_{t} , the donation e-LOND condition f t ​ ( P t ) ≥ ( α t d-eLOND ) − 1 f_{t}(P_{t})\geq(\alpha_{t}^{\textnormal{d-eLOND}})^{-1} is equivalent to 
+ P t ≤ δ ​ γ t ​ t ℓ t and ⌈ ( P t ​ ℓ t / ( δ ​ γ t ) ) ∨ 1 ⌉ ≤ α t d-eLOND δ ​ γ t . \displaystyle P_{t}\leq\frac{\delta\gamma_{t}t}{\ell_{t}}\quad\text{and}\quad\left\lceil\left(P_{t}\ell_{t}/(\delta\gamma_{t})\right)\vee 1\right\rceil\leq\frac{\alpha_{t}^{\textnormal{d-eLOND}}}{\delta\gamma_{t}}. 
+ (88) 
+ Since the left-hand side is integer valued, the second inequality is equivalent to 
+ ⌈ ( P t ​ ℓ t / ( δ ​ γ t ) ) ∨ 1 ⌉ ≤ ⌊ α t d-eLOND δ ​ γ t ⌋ . \displaystyle\left\lceil\left(P_{t}\ell_{t}/(\delta\gamma_{t})\right)\vee 1\right\rceil\leq\left\lfloor\frac{\alpha_{t}^{\textnormal{d-eLOND}}}{\delta\gamma_{t}}\right\rfloor. 
+ (89) 
+ Combining with the indicator constraint P t ≤ δ ​ γ t ​ t / ℓ t P_{t}\leq\delta\gamma_{t}t/\ell_{t} , we get the equivalent condition 
+ P t ≤ δ ​ γ t ℓ t ​ ( ⌊ α t d-eLOND δ ​ γ t ⌋ ∧ t ) . \displaystyle P_{t}\leq\frac{\delta\gamma_{t}}{\ell_{t}}\left(\left\lfloor\frac{\alpha_{t}^{\textnormal{d-eLOND}}}{\delta\gamma_{t}}\right\rfloor\wedge t\right). 
+ (90) 
+ Substituting ( 28 ) for α t d-eLOND \alpha_{t}^{\textnormal{d-eLOND}} yields exactly the threshold in ( 44 ). Thus the rejection sets of donation r-LOND coincide with those of donation e-LOND, so the SupFDR control conclusion transfers. 
+ Lastly, we show that donation r-LOND can strictly improve over r-LOND. Let α t d-rLOND \alpha_{t}^{\textnormal{d-rLOND}} and α t r-LOND \alpha_{t}^{\textnormal{r-LOND}} denote the test levels of donation r-LOND and r-LOND respectively.
+A concise sufficient condition for strict inequality at time t t is that both procedures agree up to time t − 1 t-1 , with r t ≔ | R t − 1 | + 1 < t r_{t}\coloneqq|R_{t-1}|+1<t , and the donation wealth is large enough to increase the integer factor: 
+ ⌊ r t 1 − ( δ ​ r t ​ W ¯ t ∧ 1 ) ⌋ > r t . \left\lfloor\frac{r_{t}}{1-(\delta r_{t}\bar{W}_{t}\wedge 1)}\right\rfloor>r_{t}. 
+ (91) 
+ In general, using r t ≤ t r_{t}\leq t together with 0 ≤ δ ​ r t ​ W ¯ t ∧ 1 ≤ 1 0\leq\delta r_{t}\bar{W}_{t}\wedge 1\leq 1 , we have 
+ α t d-rLOND \displaystyle\alpha_{t}^{\textnormal{d-rLOND}} 
+ = δ ​ γ t ℓ t ​ ( ⌊ | R t − 1 | + 1 1 − ( δ ⁡ ( | R t − 1 | + 1 ) ​ W ¯ t ∧ 1 ) ⌋ ∧ t ) ≥ δ ​ γ t ℓ t ​ ( ( | R t − 1 | + 1 ) ∧ t ) \displaystyle=\frac{\delta\gamma_{t}}{\ell_{t}}\left(\left\lfloor\frac{|R_{t-1}|+1}{1-(\delta(|R_{t-1}|+1)\bar{W}_{t}\wedge 1)}\right\rfloor\wedge t\right)\geq\frac{\delta\gamma_{t}}{\ell_{t}}\big((|R_{t-1}|+1)\wedge t\big) 
+ (92) 
+ = α t r-LOND . \displaystyle=\alpha_{t}^{\textnormal{r-LOND}}. 
+ (93) 
+ Strict inequality holds whenever the displayed floor is larger than ( | R t − 1 | + 1 ) ∧ t (|R_{t-1}|+1)\wedge t . Thus, whenever for some t t , 
+ ℙ ⁡ ( α t r-LOND < P t ≤ α t d-rLOND ) > 0 , \displaystyle\mathbb{P}\left(\alpha_{t}^{\textnormal{r-LOND}}<P_{t}\leq\alpha_{t}^{\textnormal{d-rLOND}}\right)>0, 
+ (94) 
+ donation r-LOND rejects H t H_{t} while r-LOND does not, which gives strict improvement. Such events are easy to construct by placing positive mass on earlier p-values that create positive donation wealth while leaving r t < t r_{t}<t .
+∎ 
+ Appendix C Simulation extensions 
+ We provide additional simulation results and construction details referenced in the main text. 
+ C.1 Additional simulations 
+ We also include simulations in the same setup as Section   4 , although with μ = 4 \mu=4 in Figure   6 . We see similar results, with the closed and donation variants of each procedure improving over the corresponding baselines as the non-null fraction π 1 \pi_{1} increases. 
+ (a) E-value procedures. 
+ (b) P-value procedures. 
+ Figure 6 : Power-only local dependence simulation results over 200 trials for alternative signals of μ = 4 \mu=4 and δ = 0.1 \delta=0.1 . In both e-value and p-value families, donation and closed variants improve over the corresponding baselines as the non-null fraction π 1 \pi_{1} increases. 
+ C.2 Real data e-value formulation 
+ The real-data experiment in Table   2 uses the NYC taxi dataset with annotated anomaly windows. Let Z t Z_{t} denote the STL residual series, let C = { 1 , … , n cal } C=\{1,\ldots,n_{\mathrm{cal}}\} be the calibration indices, and let W t = { max ⁡ ( 1 , t − n win ) , … , t − 1 } W_{t}=\{\max(1,t-n_{\mathrm{win}}),\ldots,t-1\} be the rolling alternative window. We use two density estimates. First, f 0 f_{0} is the baseline residual density: a one-dimensional kernel density estimate fit to the calibration residuals { Z i : i ∈ C } \{Z_{i}:i\in C\} . Second, f t f_{t} is a time-local alternative residual density for the t t th test: we fit a bivariate kernel density estimate to the recent time-residual pairs { ( i , Z i ) : i ∈ W t } \{(i,Z_{i}):i\in W_{t}\} , then evaluate this fitted density with the time coordinate fixed at t t . Thus f t ​ ( z ) f_{t}(z) is the local density assigned to residual value z z near time t t , while f 0 ​ ( z ) f_{0}(z) is the calibration baseline density assigned to the same residual value. The likelihood ratio e-value used by the procedures is 
+ E t taxi ≔ f t ​ ( Z t ) / f 0 ​ ( Z t ) | C | − 1 ​ ∑ i ∈ C f t ​ ( Z i ) / f 0 ​ ( Z i ) . E_{t}^{\mathrm{taxi}}\coloneqq\frac{f_{t}(Z_{t})/f_{0}(Z_{t})}{|C|^{-1}\sum_{i\in C}f_{t}(Z_{i})/f_{0}(Z_{i})}. 
+ (95) 
+ This normalized likelihood-ratio score is used as an empirical anomaly e-value proxy in the reproduction. A formal e-value guarantee for such fitted density-ratio scores requires additional sample-splitting or exchangeability assumptions; for example, with an independently trained f t / f 0 f_{t}/f_{0} , the conformalized score 
+ E t conf ≔ ( | C | + 1 ) ​ f t ​ ( Z t ) / f 0 ​ ( Z t ) f t ​ ( Z t ) / f 0 ​ ( Z t ) + ∑ i ∈ C f t ​ ( Z i ) / f 0 ​ ( Z i ) E_{t}^{\mathrm{conf}}\coloneqq\frac{(|C|+1)f_{t}(Z_{t})/f_{0}(Z_{t})}{f_{t}(Z_{t})/f_{0}(Z_{t})+\sum_{i\in C}f_{t}(Z_{i})/f_{0}(Z_{i})} 
+ (96) 
+ has the usual calibration interpretation under exchangeability of the test residual and calibration residuals. We therefore interpret Table   2 as an empirical anomaly-detection illustration rather than as a separate verification of the formal SupFDR theorem under estimated density ratios. 
+ C.3 Simulation details 
+ The main simulations use the Gaussian local-dependence model described in Section   4 . For each hypothesis t t , draw a latent indicator A t ∼ Bernoulli ⁡ ( π 1 ) A_{t}\sim\mathrm{Bernoulli}(\pi_{1}) , set μ t = μ ​ A t \mu_{t}=\mu A_{t} , and generate a Gaussian vector ( X 1 , … , X m ) (X_{1},\ldots,X_{m}) with mean vector ( μ 1 , … , μ m ) (\mu_{1},\ldots,\mu_{m}) and covariance matrix 
+ Σ i ​ j = 0.5 | i − j | 𝟏 { | i − j | ≤ L } . \Sigma_{ij}=0.5^{|i-j|}\mathbf{1}\{|i-j|\leq L\}. 
+ (97) 
+ We use L = 100 L=100 and verify numerically that the resulting finite covariance matrix is positive semidefinite for the simulated values of m m . Under the null, each marginal observation is N ⁡ ( 0 , 1 ) N(0,1) ; under the alternative, each marginal observation is N ⁡ ( μ , 1 ) N(\mu,1) . The e-value for testing H t : μ t = 0 H_{t}:\mu_{t}=0 against the simple alternative μ t = μ \mu_{t}=\mu is the Gaussian likelihood ratio 
+ E t = exp ⁡ { μ ​ X t − μ 2 / 2 } . E_{t}=\exp\{\mu X_{t}-\mu^{2}/2\}. 
+ (98) 
+ The p-value counterpart is the one-sided Gaussian p-value 
+ P t = 1 − Φ ⁡ ( X t ) . P_{t}=1-\Phi(X_{t}). 
+ (99) 
+ Power is reported as the realized fraction of nonnull hypotheses rejected. In simulations where we report empirical error, the SupFDR estimate is computed as the trial average of sup t ≤ m FDP 𝒩 ​ ( R t ) \sup_{t\leq m}\textnormal{FDP}_{\mathcal{N}}(R_{t}) ; some supplemental plots also include final-time FDR diagnostics for comparison with earlier online-testing literature. 
+ Appendix D Improvements via donation beyond online multiple testing 
+ We will discuss several improvements we can make to e-value procedures using the donation framework that is beyond the online multiple testing setting. In particular, we will consider how we can use the donation framework to improve methods for the acceptance-to-rejection (ARC) model of Fischer et al. (2025) , the decision deadlines setup of Fisher (2022) , as well as the traditional offline multiple testing setting with a finite number of hypotheses. 
+ D.1 Online donation e-BH for acceptance-to-rejection (ARC) 
+ The acceptance-to-rejection (ARC) setup of Fischer et al. (2025) assumes that once one makes a rejection on a hypothesis, they cannot revoke it at a future time step, but allows one to make rejections on all previous unrejected hypotheses. This is equivalent to restricting the rejection set at each time step to be nested, i.e., R 1 ⊆ R 2 , … R_{1}\subseteq R_{2},\dots . 
+ The online e-BH procedure 
+ In the ARC setting, Fischer et al. (2025) showed that one can apply a weighted version of the e-BH procedure to an infinite stream of hypotheses using the weighted self-consistency framework and maintain FDR control. The concept of weighted self-consistency is a generalization of the online e-BH and e-LOND procedure, since the discovery sets of both are included in the simultaneous weighted self-consistency collection of discovery sets in ( 24 ), which guarantees control over the supremum of FDP of all discovery sets in the collection. 
+ For a given fixed sequence 𝜸 \boldsymbol{\gamma} , the online e-BH procedure makes the following number of discoveries at time t t : 
+ r t o-eBH ≔ max { r ∈ [ t ] : ∑ i ∈ [ t ] 𝟏 { E i ≥ 1 δ ​ γ i ​ r } ≥ r } , \displaystyle r_{t}^{\textnormal{o-eBH}}\coloneqq\max\left\{r\in[t]:\sum_{i\in[t]}\mathbf{1}\left\{E_{i}\geq\frac{1}{\delta\gamma_{i}r}\right\}\geq r\right\}, 
+ (100) 
+ with r t o-eBH = 0 r_{t}^{\textnormal{o-eBH}}=0 if the set is empty. The rejection set is then defined as: 
+ R t = { i ∈ [ t ] : E i ≥ 1 δ ​ γ i ​ r t o-eBH } . \displaystyle R_{t}=\left\{i\in[t]:E_{i}\geq\frac{1}{\delta\gamma_{i}r_{t}^{\textnormal{o-eBH}}}\right\}. 
+ (101) 
+ Using the donation framework, we can improve online e-BH. First, we define the notion of weighted order e-values, i.e., let γ ( i ) : t \gamma_{(i):t} and E ( i ) : t E_{(i):t} be the values of γ j \gamma_{j} and E j E_{j} corresponding to the i i th largest γ j ​ E j \gamma_{j}E_{j} among j ∈ [ t ] j\in[t] . Thus, we get the online donation e-BH procedure as follows. We can define the number of discoveries made as 
+ r t o-DeBH ≔ max { r ∈ [ t ] : \displaystyle r_{t}^{\textnormal{o-DeBH}}\coloneqq\max\Bigg\{r\in[t]: 
+ ∑ i ∈ [ r ] ( γ ( i ) : t E ( i ) : t − ( δ r ) − 1 ) ∧ γ ( i ) : t \displaystyle\sum_{i\in[r]}(\gamma_{(i):t}E_{(i):t}-(\delta r)^{-1})\wedge\gamma_{(i):t} 
+ + ∑ i ∈ { r + 1 , … , t } γ ( i ) : t ( E ( i ) : t ∧ 1 ) ≥ 0 } , \displaystyle\quad+\sum_{i\in\{r+1,\dots,t\}}\gamma_{(i):t}(E_{(i):t}\wedge 1)\geq 0\Bigg\}, 
+ (102) 
+ As a result, the discovery set R t R_{t} simply rejects the r t o-DeBH r_{t}^{\textnormal{o-DeBH}} largest indices of γ i ​ E i \gamma_{i}E_{i} among i ∈ [ t ] i\in[t] . 
+ Theorem 13 (Online donation e-BH controls SupFDR) . 
+ Online donation e-BH with the aforementioned rejection sets 𝐑 \mathbf{R} satisfies SupFDR ​ ( 𝐑 ) ≤ δ \textnormal{SupFDR}(\mathbf{R})\leq\delta for arbitrarily dependent e-values, and strictly improves over online e-BH. 
+ D.1.1 Simulation results 
+ We compare online e-BH and donation online e-BH in the ARC setting using the
+same local dependence simulation setup as in the main simulations section. 
+ Figure 7 : Power for online e-BH and donation online e-BH in ARC under the same setup as the main simulations section. 
+ Figure 8 : Empirical error diagnostics for online e-BH and donation online e-BH in ARC. Both methods stay controlled at the target level δ = 0.1 \delta=0.1 . 
+ D.2 Donation e-TOAD for decision deadlines 
+ On the other hand, Fisher (2022) studies an intermediate regime where each hypothesis t t has a deterministic deadline d t ≥ t d_{t}\geq t , i.e., one must make a rejection decision at time d t d_{t} for the t t th hypothesis, or else the null hypothesis will be accepted and remain unrejected permanently. Let 𝒜 t ≔ { i ∈ [ t ] : d i ≤ t } \mathcal{A}_{t}\coloneqq\{i\in[t]:d_{i}\leq t\} denote the set of hypotheses whose deadlines have not yet passed by time t t . The ARC model corresponds to setting d t = ∞ d_{t}=\infty for each t ∈ ℕ t\in\mathbb{N} , while the classical online multiple testing setting corresponds to making d t = t d_{t}=t for each t ∈ ℕ t\in\mathbb{N} . 
+ The e-TOAD procedure 
+ Fisher’s TOAD rule ( Fisher, 2022 ) now restricts rejection sets at certain deadlines. Let m t ≔ | 𝒜 t | m_{t}\coloneqq|\mathcal{A}_{t}| be the number of hypotheses whose deadlines have arrived by time t t . Now, we let γ ( i ) : 𝒜 t \gamma_{(i):\mathcal{A}_{t}} and E ( i ) : 𝒜 t E_{(i):\mathcal{A}_{t}} denote the values of γ i \gamma_{i} and E i E_{i} corresponding to the i i th largest γ i ​ E i \gamma_{i}E_{i} among i ∈ 𝒜 t i\in\mathcal{A}_{t} . Define 
+ r t eTOAD ≔ max { r ∈ { | R t − 1 ∖ 𝒜 t | , … , m t } : ∑ i ∈ 𝒜 t 𝟏 { E i ≥ 1 δ ​ γ i ​ r } ≥ r − | R t − 1 ∖ 𝒜 t | } , \displaystyle r_{t}^{\textnormal{eTOAD}}\coloneqq\max\left\{r\in\{|R_{t-1}\setminus\mathcal{A}_{t}|,\dots,m_{t}\}:\sum_{i\in\mathcal{A}_{t}}\mathbf{1}\left\{E_{i}\geq\frac{1}{\delta\gamma_{i}r}\right\}\geq r-|R_{t-1}\setminus\mathcal{A}_{t}|\right\}, 
+ (103) 
+ where r t eTOAD = 0 r_{t}^{\textnormal{eTOAD}}=0 if no such r r exists. Then, we define the corresponding discovery set as 
+ R t = R t − 1 ∪ { i ∈ 𝒜 t : E i ≥ 1 δ ​ γ i ​ r t eTOAD } . \displaystyle R_{t}=R_{t-1}\cup\left\{i\in\mathcal{A}_{t}:E_{i}\geq\frac{1}{\delta\gamma_{i}r_{t}^{\textnormal{eTOAD}}}\right\}. 
+ (104) 
+ When d t = t d_{t}=t for all t ∈ ℕ t\in\mathbb{N} , this is equivalent to e-LOND, and if d t = ∞ d_{t}=\infty , then this is the same as online e-BH. We can then define online donation e-TOAD using the following quantities: 
+ W ¯ t DeTOAD ​ ( r ) \displaystyle\bar{W}_{t}^{\textnormal{DeTOAD}}(r) 
+ ≔ ∑ i ∈ R t − 1 ∖ 𝒜 t ( γ i ​ E i − ( δ ​ r ) − 1 ) ∧ γ i \displaystyle\coloneqq\sum_{i\in R_{t-1}\setminus\mathcal{A}_{t}}(\gamma_{i}E_{i}-(\delta r)^{-1})\wedge\gamma_{i} 
+ + ∑ i ∈ [ t ] ∖ ( 𝒜 t ∪ R t − 1 ) γ i ( E i ∧ 1 ) , \displaystyle\quad+\sum_{i\in[t]\setminus(\mathcal{A}_{t}\cup R_{t-1})}\gamma_{i}(E_{i}\wedge 1), 
+ (105) 
+ r t DeTOAD \displaystyle r_{t}^{\textnormal{DeTOAD}} 
+ ≔ max { r ∈ { | R t − 1 ∖ 𝒜 t | , … , m t } : \displaystyle\coloneqq\max\Bigg\{r\in\{|R_{t-1}\setminus\mathcal{A}_{t}|,\dots,m_{t}\}: 
+ ∑ i ∈ [ r − | R t − 1 ∖ 𝒜 t | ] ( γ ( i ) : 𝒜 t E ( i ) : 𝒜 t − ( δ r ) − 1 ) ∧ γ ( i ) : 𝒜 t \displaystyle\quad\sum_{i\in[r-|R_{t-1}\setminus\mathcal{A}_{t}|]}(\gamma_{(i):\mathcal{A}_{t}}E_{(i):\mathcal{A}_{t}}-(\delta r)^{-1})\wedge\gamma_{(i):\mathcal{A}_{t}} 
+ + ∑ i ∈ { r − | R t − 1 ∖ 𝒜 t | + 1 , … , m t } γ ( i ) : 𝒜 t ( E ( i ) : 𝒜 t ∧ 1 ) \displaystyle\quad+\sum_{i\in\{r-|R_{t-1}\setminus\mathcal{A}_{t}|+1,\dots,m_{t}\}}\gamma_{(i):\mathcal{A}_{t}}(E_{(i):\mathcal{A}_{t}}\wedge 1) 
+ + W ¯ t DeTOAD ( r ) ≥ 0 } , \displaystyle\quad+\bar{W}_{t}^{\textnormal{DeTOAD}}(r)\geq 0\Bigg\}, 
+ (106) 
+ with r t DeTOAD = 0 r_{t}^{\textnormal{DeTOAD}}=0 if no such r r exists. Here, W ¯ t DeTOAD ​ ( r ) \bar{W}_{t}^{\textnormal{DeTOAD}}(r) is the excessive “wealth” that can be donated to (or accounted for from) e-values in 𝒜 t \mathcal{A}_{t} if a total of r r discoveries are made at time t t . The rejection set R t R_{t} is then defined as making r t DeTOAD − | R t − 1 | r_{t}^{\textnormal{DeTOAD}}-|R_{t-1}| new discoveries corresponding to the indices in 𝒜 t \mathcal{A}_{t} with the largest γ i ​ E i \gamma_{i}E_{i} values. 
+ Theorem 14 (Donation e-TOAD controls SupFDR) . 
+ Donation e-TOAD with the aforementioned discovery sets satisfies SupFDR ​ ( 𝐑 ) ≤ δ \textnormal{SupFDR}(\mathbf{R})\leq\delta for arbitrarily dependent e-values, and strictly improves over e-TOAD. 
+ Proof of Theorems   13 and  14 . 
+ The proofs of both of these theorems are similar to that of donation e-LOND: at each time t t , there exists a 𝜸 \boldsymbol{\gamma} -weighted donation sequence 𝐁 ( t ) \mathbf{B}^{(t)} with B i ( t ) ≥ − ( E i ∧ 1 ) B_{i}^{(t)}\geq-(E_{i}\wedge 1) and ∑ i ∈ [ t ] γ i ​ B i ≤ 0 \sum_{i\in[t]}\gamma_{i}B_{i}\leq 0 such that the compound e-values E ~ i ( t ) = E i + B i \tilde{E}_{i}^{(t)}=E_{i}+B_{i} satisfy γ i ​ E ~ i ( t ) ≥ ( δ ​ | R t | ) − 1 \gamma_{i}\tilde{E}_{i}^{(t)}\geq(\delta|R_{t}|)^{-1} for all i ∈ R t i\in R_{t} . By Proposition   6 , ( E ~ i ( t ) ) i ∈ [ t ] (\tilde{E}_{i}^{(t)})_{i\in[t]} are valid 𝜸 \boldsymbol{\gamma} -weighted compound e-values. The weighted self-consistency collection 𝒞 ⁡ ( 𝐁 ( t ) ) \mathcal{C}(\mathbf{B}^{(t)}) from ( 24 ) applied to these compound e-values contains the rejection set R t R_{t} for both procedures. Hence, we get SupFDR control via Proposition   7 . 
+ For online donation e-BH, set r t ⋆ = r t o-DeBH r_{t}^{\star}=r_{t}^{\textnormal{o-DeBH}} ; for donation e-TOAD, set r t ⋆ = r t DeTOAD r_{t}^{\star}=r_{t}^{\textnormal{DeTOAD}} . The choice of B i ( t ) B_{i}^{(t)} for both procedures can be chosen as follows: 
+ B i ( t ) ≔ { ( ( δ ​ γ i ​ r t ⋆ ) − 1 − E i ) ∨ − 1 , i ∈ R t , − ( E i ∧ 1 ) , i ∉ R t . \displaystyle B_{i}^{(t)}\coloneqq\begin{cases}((\delta\gamma_{i}r_{t}^{\star})^{-1}-E_{i})\vee-1,&i\in R_{t},\\
+-(E_{i}\wedge 1),&i\not\in R_{t}.\end{cases} 
+ (107) 
+ In the e-TOAD case, already rejected hypotheses in R t − 1 ∖ 𝒜 t R_{t-1}\setminus\mathcal{A}_{t} are included in R t R_{t} and therefore use the first branch, while unrejected inactive hypotheses use the second branch. By definition of each procedure this 𝐁 ( t ) \mathbf{B}^{(t)} is a 𝜸 \boldsymbol{\gamma} -weighted donation sequence in both cases. Thus, we have shown our desired results.
+∎ 
+ Similar to donation e-LOND, both donation online e-BH and donation e-TOAD strictly improve their non-donation counterparts since they consider a superset of rejection sets at each time t t . Set-inclusion comparisons assume a fixed deterministic tie-breaking convention for hypotheses tied in γ i ​ E i \gamma_{i}E_{i} ; alternatively, one may reject all hypotheses tied at the selected threshold in both the baseline and donation procedures. 
+ D.3 Donation e-BH for offline multiple testing 
+ We treat the offline batch as the t = m t=m snapshot of the ARC model with all deadlines at ∞ \infty and with γ 1 = ⋯ = γ m = 1 / m \gamma_{1}=\dots=\gamma_{m}=1/m and γ t = 0 \gamma_{t}=0 for all t > m t>m . Thus, we can order hypotheses directly by e-values E i E_{i} , writing E ( 1 ) ≥ ⋯ ≥ E ( m ) E_{(1)}\geq\dots\geq E_{(m)} . In this case, we can view eBH and donation eBH as taking R m R_{m} of online eBH and online donation eBH, respectively. 
+ Baseline e-BH. 
+ The classical e-BH rule has the same weighted self-consistency form as ( 100 ): 
+ r eBH \displaystyle r^{\textnormal{eBH}} 
+ ≔ max { r ∈ [ m ] : ∑ i ∈ [ m ] { E i ≥ m δ ​ r } ≥ r } , \displaystyle\coloneqq\max\left\{r\in[m]:\sum_{i\in[m]}\mathbf{1}\!\left\{E_{i}\geq\frac{m}{\delta r}\right\}\geq r\right\}, 
+ R eBH \displaystyle R^{\textnormal{eBH}} 
+ = { i ∈ [ m ] : E i ≥ m δ ​ r eBH } . \displaystyle=\left\{i\in[m]:E_{i}\geq\frac{m}{\delta r^{\textnormal{eBH}}}\right\}. 
+ (108) 
+ Donation-derived compound e-values. 
+ Here, we only need to consider vectors 𝐁 = ( B i ) i ∈ [ m ] \mathbf{B}=(B_{i})_{i\in[m]} . A vector is a valid donation sequence if B i ≥ − ( E i ∧ 1 ) B_{i}\geq-(E_{i}\wedge 1) and ∑ i = 1 m B i ≤ 0 \sum_{i=1}^{m}B_{i}\leq 0 . Let E ^ i ≔ E i + B i \hat{E}_{i}\coloneqq E_{i}+B_{i} . 
+ Proposition 15 . 
+ If ( E i ) i ∈ [ m ] (E_{i})_{i\in[m]} are e-values and 𝐁 \mathbf{B} is a valid donation sequence, then ( E ^ i ) i ∈ [ m ] (\hat{E}_{i})_{i\in[m]} are compound e-values, i.e., ∑ i ∈ 𝒩 𝔼 ⁡ [ E ^ i ] ≤ m \sum_{i\in\mathcal{N}}\mathbb{E}[\hat{E}_{i}]\leq m . 
+ This follows from Proposition   6 . 
+ Donation e-BH. 
+ The offline donation method can be seen as using ( 102 ) with t = m t=m : 
+ r DeBH ≔ max ⁡ { r ∈ [ m ] : ∑ i ∈ [ r ] ( γ ( i ) ​ E ( i ) − ( δ ​ r ) − 1 ) ∧ γ ( i ) + ∑ i = r + 1 m γ ( i ) ​ ( E ( i ) ∧ 1 ) ≥ 0 } . \displaystyle r^{\textnormal{DeBH}}\coloneqq\max\Big\{r\in[m]:\sum_{i\in[r]}(\gamma_{(i)}E_{(i)}-(\delta r)^{-1})\wedge\gamma_{(i)}+\sum_{i=r+1}^{m}\gamma_{(i)}(E_{(i)}\wedge 1)\geq 0\Big\}. 
+ (109) 
+ Then, we let the discovery set R DeBH R^{\textnormal{DeBH}} reject the r DeBH r^{\textnormal{DeBH}} largest e-values. 
+ Theorem 16 . 
+ Donation e-BH satisfies 𝔼 ⁡ [ FDP 𝒩 ​ ( R DeBH ) ] ≤ δ \mathbb{E}[\textnormal{FDP}_{\mathcal{N}}(R^{\textnormal{DeBH}})]\leq\delta for arbitrarily dependent e-values and strictly improves over e-BH . 
+ The proof follows from Theorem   13 since the offline method can be seen as a special case of the online ARC model. 
+ Remark 17 . 
+ While we have primarily discussed e-value based methods in this section, our results directly imply improvements of p-value methods. This includes the online BH method of Fischer et al. (2025) and the offline Su method ( Su, 2018 ) using the calibrator developed in Xu et al. (2025) , as well as the Benjamini-Yekutieli ( Benjamini and Yekutieli, 2001 ) methods via the calibrator specified in ( 39 ). We will not go into details here; the improvements follow directly from calibrating p-values to e-values and then applying one of the online or offline donation e-BH procedures, or the e-TOAD procedure if one is to use p-values in the decision deadlines setting. 
+ Appendix E Randomization for donation algorithms 
+ Xu and Ramdas (2026) introduced the notion of using randomization in the form of stochastic rounding to improve the power of a variety of multiple testing procedures, and Xu and Ramdas (2024) was able to show that randomized versions of e-LOND and r-LOND can be derived using this technique. We extend the use of randomization to donation procedures, and show that one can utilize randomization to further improve the power of donation e-LOND and donation r-LOND. The key idea we recognize here is that while donation procedures utilize part of the excess wealth of e-values over the rejection threshold, it does not use it completely. Thus, when there is excess wealth remaining even after donation (e.g., an e-value is just slightly below the threshold of rejection even after donating), we can use it to improve the power of a procedure. 
+ A stochastically rounded e-value (or compound e-value) is one where we have an e-value (or any nonnegative random variable) X X and a test level α ^ ∈ ( 0 , 1 ] \hat{\alpha}\in(0,1] that might be arbitrarily dependent on X X , and we produce the following random variable 
+ S α ^ ( X ) ≔ 𝟏 { U ≤ α ^ X } α ^ − 1 . \displaystyle S_{\hat{\alpha}}(X)\coloneqq\mathbf{1}\left\{U\leq\hat{\alpha}X\right\}\hat{\alpha}^{-1}. 
+ (110) 
+ Here, U U is a uniform random variable on [ 0 , 1 ] [0,1] that is independent of both X X and α ^ \hat{\alpha} , i.e., produced through external randomness. It is easy to see that 𝔼 ⁡ [ S α ^ ​ ( X ) ] ≤ 𝔼 ⁡ [ X ] \mathbb{E}[S_{\hat{\alpha}}(X)]\leq\mathbb{E}[X] . Thus, we can replace a compound e-value or an e-value with its stochastically rounded version and still maintain the validity properties of interest. 
+ As a result of the flexibility of stochastic rounding, there can be many ways to incorporate it into the donation framework. We will focus on improving donation e-LOND as an example, and show there is a simple way that will allow it to strictly improve over donation e-LOND. 
+ We first define a restricted version of stochastic rounding, where we only round the part of an unrejected e-value that cannot be utilized by the donation framework, i.e., ( E t − 1 ) (E_{t}-1) if E t ≥ 1 E_{t}\geq 1 and 0 otherwise. Thus, for α ^ ∈ ( 0 , 1 ) \hat{\alpha}\in(0,1) we define the restricted stochastic rounding of X X at level α ^ \hat{\alpha} as 
+ S ¯ α ^ ​ ( X ) ≔ { X X ≤ 1 ​  or  ​ X ≥ α ^ − 1 , 1 + 𝟏 { U ≤ α ^ ​ ( X − 1 ) 1 − α ^ } ( α ^ − 1 − 1 ) , X ∈ ( 1 , α ^ − 1 ) . \displaystyle\bar{S}_{\hat{\alpha}}(X)\coloneqq\begin{cases}X&X\leq 1\text{ or }X\geq\hat{\alpha}^{-1},\\
+1+\mathbf{1}\left\{U\leq\frac{\hat{\alpha}(X-1)}{1-\hat{\alpha}}\right\}(\hat{\alpha}^{-1}-1),&X\in(1,\hat{\alpha}^{-1}).\end{cases} 
+ (111) 
+ If α ^ ≥ 1 \hat{\alpha}\geq 1 , the hypothesis is already rejected by any e-value X ≥ 1 X\geq 1 , and we use the convention S ¯ α ^ ​ ( X ) = X \bar{S}_{\hat{\alpha}}(X)=X rather than applying the fractional rounding formula. 
+ Thus, we can apply the donation e-LOND sequence of test levels 𝜶 \boldsymbol{\alpha} in ( 28 ) to e-values S ¯ α 1 ​ ( E 1 ) , S ¯ α 2 ​ ( E 2 ) , … \bar{S}_{\alpha_{1}}(E_{1}),\bar{S}_{\alpha_{2}}(E_{2}),\dots and refer to this as randomized donation e-LOND . We first define the following quantities. 
+ α ^ t \displaystyle\hat{\alpha}_{t} 
+ ≔ δ ​ γ t ​ ( | R t − 1 | + 1 ) 1 − ( δ ⁡ ( | R t − 1 | + 1 ) ​ R ¯ t ∧ 1 ) . \displaystyle\coloneqq\frac{\delta\gamma_{t}(|R_{t-1}|+1)}{1-(\delta(|R_{t-1}|+1)\bar{R}_{t}\wedge 1)}. 
+ (112) 
+ R ¯ t \displaystyle\bar{R}_{t} 
+ ≔ ∑ i ∈ R t − 1 ( γ i ​ S ¯ α ^ i ​ ( E i ) − δ ​ ( | R t − 1 | + 1 ) − 1 ) ∧ γ i + ∑ i ∈ [ t − 1 ] ∖ R t − 1 γ i ​ ( S ¯ α ^ i ​ ( E i ) ∧ 1 ) . \displaystyle\coloneqq\sum_{i\in R_{t-1}}(\gamma_{i}\bar{S}_{\hat{\alpha}_{i}}(E_{i})-\delta(|R_{t-1}|+1)^{-1})\wedge\gamma_{i}+\sum_{i\in[t-1]\setminus R_{t-1}}\gamma_{i}(\bar{S}_{\hat{\alpha}_{i}}(E_{i})\wedge 1). 
+ (113) 
+ = ∑ i ∈ R t − 1 ( γ i ​ S ¯ α ^ i ​ ( E i ) − δ ​ ( | R t − 1 | + 1 ) − 1 ) ∧ γ i + ∑ i ∈ [ t − 1 ] ∖ R t − 1 γ i ​ ( E i ∧ 1 ) . \displaystyle=\sum_{i\in R_{t-1}}(\gamma_{i}\bar{S}_{\hat{\alpha}_{i}}(E_{i})-\delta(|R_{t-1}|+1)^{-1})\wedge\gamma_{i}+\sum_{i\in[t-1]\setminus R_{t-1}}\gamma_{i}(E_{i}\wedge 1). 
+ (114) 
+ α ^ t \hat{\alpha}_{t} is the threshold for the t t th hypothesis such that it will be deterministically rejected (i.e., doesn’t rely on randomization). R ¯ t \bar{R}_{t} is the analog of W ¯ t \bar{W}_{t} for donation e-LOND, but utilizes the stochastically rounded e-values instead. We then observe that we reject the t t th hypothesis when 
+ α t = α ^ t U t ​ ( 1 − α ^ t ) + α ^ t . \displaystyle\alpha_{t}=\frac{\hat{\alpha}_{t}}{U_{t}(1-\hat{\alpha}_{t})+\hat{\alpha}_{t}}. 
+ (115) 
+ where U 1 , U 2 , … U_{1},U_{2},\dots are uniform random variables on [ 0 , 1 ] [0,1] independent of 𝐄 \mathbf{E} . 
+ Theorem 18 . 
+ The randomized donation e-LOND algorithm ensures control of SupFDR, and strictly improves over donation e-LOND. 
+ Proof. 
+ We note SupFDR control arises from the fact that S ¯ α ^ t ​ ( E 1 ) , … \bar{S}_{\hat{\alpha}_{t}}(E_{1}),\dots are valid e-values due to the definition of restricted stochastic rounding. Thus, Theorem   8 immediately implies SupFDR control. We can see the strict improvement via the fact that U t U_{t} has nonzero chance of increasing α t \alpha_{t} over α ^ t \hat{\alpha}_{t} , which also is at least as large as α t \alpha_{t} of donation e-LOND defined in ( 28 ) via construction. Thus, we have shown our desired result.
+∎ 
+ E.1 Simulation results 
+ We compare donation e-LOND and randomized donation e-LOND under the same
+local dependence simulation setup as in the main simulations section. 
+ Figure 9 : Power for donation e-LOND and randomized donation e-LOND under the same setup as the main simulations section. 
+ Figure 10 : Empirical error diagnostics for donation e-LOND and randomized donation e-LOND. Both methods stay controlled at the target level δ = 0.1 \delta=0.1 in this simulation. 
+ Experimental support, please
+ view the build logs 
+ for errors. Generated by
+ L
+ A 
+ T
+ E 
+ xml 
+ .
+ Instructions for reporting errors 
+ We are continuing to improve HTML versions of papers, and your feedback helps enhance accessibility and mobile
+ support. To report errors in the HTML that will help us improve conversion and rendering, choose any of the
+ methods listed below: 
+ Click the "Report Issue" ( 
+ ) button, located in the page header. 
+ Tip: You can select the relevant text first, to include it in your report. 
+ Our team has already identified the following issues . We appreciate your time reviewing and reporting rendering errors we
+ may not have found yet. Your efforts will help us improve the HTML versions for all readers, because disability
+ should not be a barrier to accessing research. Thank you for your continued support in championing open access for
+ all. 
+ Have a free development cycle? Help support accessibility at arXiv! Our collaborators at LaTeXML maintain a list of packages that need conversion , and welcome developer contributions . 
+ We gratefully acknowledge support from
+ our major funders ,
+ member institutions , ,
+ and all contributors.
+ About 
+ · 
+ Help 
+ · 
+ Contact 
+ · 
+ Subscribe 
+ · 
+ Copyright 
+ · 
+ Privacy 
+ · 
+ Accessibility 
+ · 
+ Operational Status (opens in new tab) 
+ Major funding support from 

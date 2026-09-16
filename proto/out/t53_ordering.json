@@ -1,0 +1,3217 @@
+{
+ "config": {
+  "bucket_s": 7200,
+  "k": 1,
+  "alpha": 0.05,
+  "w0": 0.025,
+  "positions": [
+   0.55,
+   0.62,
+   0.7,
+   0.77,
+   0.85
+  ],
+  "seeds": [
+   0,
+   1
+  ],
+  "n_rand": 50,
+  "canonical": "deterministic metadata-hash within-bucket order (not timing-influenceable); power reported as median/IQR/range over 50 random pre-committed orders; first-flow = upper bound",
+  "note": "within-bucket order robustness; evidence-independent keys only"
+ },
+ "rows": [
+  {
+   "pos": 0.55,
+   "seed": 0,
+   "T": 57368,
+   "n_mal": 275,
+   "CEIL": 2448994.0,
+   "named": {
+    "shipped (bucket, first-flow)": {
+     "rej": 18,
+     "tp": 18,
+     "median_rstar": 118.0,
+     "rstar_sorted": [
+      10,
+      22,
+      25,
+      34,
+      41,
+      67,
+      84,
+      97,
+      111,
+      125,
+      179,
+      323,
+      379,
+      416,
+      518,
+      519,
+      645,
+      837
+     ],
+     "boundary": {
+      "cold_start_steps": 902,
+      "cold_start_closed_form": 902,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": 401,
+      "n_clearing_in_prefix": 4,
+      "n_clearing_anywhere": 4,
+      "n_rej": 18,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.06545454545454546
+    },
+    "bucket, group-id": {
+     "rej": 0,
+     "tp": 0,
+     "median_rstar": null,
+     "rstar_sorted": [],
+     "boundary": {
+      "cold_start_steps": 902,
+      "cold_start_closed_form": 902,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": null,
+      "n_clearing_in_prefix": 0,
+      "n_clearing_anywhere": 0,
+      "n_rej": 0,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.0
+    },
+    "bucket, last-flow": {
+     "rej": 0,
+     "tp": 0,
+     "median_rstar": null,
+     "rstar_sorted": [],
+     "boundary": {
+      "cold_start_steps": 902,
+      "cold_start_closed_form": 902,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": null,
+      "n_clearing_in_prefix": 0,
+      "n_clearing_anywhere": 0,
+      "n_rej": 0,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.0
+    },
+    "bucket, fixed-random": {
+     "rej": 2,
+     "tp": 2,
+     "median_rstar": 6576.0,
+     "rstar_sorted": [
+      70,
+      13082
+     ],
+     "boundary": {
+      "cold_start_steps": 902,
+      "cold_start_closed_form": 902,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": 26,
+      "n_clearing_in_prefix": 2,
+      "n_clearing_anywhere": 2,
+      "n_rej": 2,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.007272727272727273
+    },
+    "bucket, hashed-key (canonical)": {
+     "rej": 3,
+     "tp": 3,
+     "median_rstar": 24.0,
+     "rstar_sorted": [
+      23,
+      24,
+      33
+     ],
+     "boundary": {
+      "cold_start_steps": 902,
+      "cold_start_closed_form": 902,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": 686,
+      "n_clearing_in_prefix": 2,
+      "n_clearing_anywhere": 2,
+      "n_rej": 3,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.01090909090909091
+    },
+    "bucket, keyed hash (secret seed)": {
+     "rej": 0,
+     "tp": 0,
+     "median_rstar": null,
+     "rstar_sorted": [],
+     "boundary": {
+      "cold_start_steps": 902,
+      "cold_start_closed_form": 902,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": null,
+      "n_clearing_in_prefix": 0,
+      "n_clearing_anywhere": 0,
+      "n_rej": 0,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.0
+    }
+   },
+   "ensemble": {
+    "tp_min": 0,
+    "tp_q25": 0.0,
+    "tp_median": 1.0,
+    "tp_q75": 2.0,
+    "tp_max": 10,
+    "rstar_median_over_orders": 109.5,
+    "rstar_iqr": [
+     32.0,
+     428.0
+    ],
+    "n_orders_with_detection": 31
+   },
+   "first_flow_tp": 18,
+   "canonical_tp": 3,
+   "canonical_median_rstar": 24.0,
+   "canonical_rstar_sorted": [
+    23,
+    24,
+    33
+   ],
+   "keyed_tp": 0,
+   "keyed_median_rstar": null,
+   "first_flow_median_rstar": 118.0,
+   "perturbation": {
+    "perturbed_group": 25542,
+    "others_moved_first_flow": 373,
+    "others_moved_hashed_key": 0,
+    "frac_moved_first_flow": 0.006501995920999878
+   },
+   "first_flow_is_upper": true
+  },
+  {
+   "pos": 0.55,
+   "seed": 1,
+   "T": 57368,
+   "n_mal": 275,
+   "CEIL": 2448994.0,
+   "named": {
+    "shipped (bucket, first-flow)": {
+     "rej": 18,
+     "tp": 18,
+     "median_rstar": 101.0,
+     "rstar_sorted": [
+      7,
+      19,
+      23,
+      34,
+      41,
+      48,
+      67,
+      84,
+      94,
+      108,
+      117,
+      319,
+      379,
+      416,
+      518,
+      524,
+      645,
+      829
+     ],
+     "boundary": {
+      "cold_start_steps": 902,
+      "cold_start_closed_form": 902,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": 401,
+      "n_clearing_in_prefix": 4,
+      "n_clearing_anywhere": 4,
+      "n_rej": 18,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.06545454545454546
+    },
+    "bucket, group-id": {
+     "rej": 0,
+     "tp": 0,
+     "median_rstar": null,
+     "rstar_sorted": [],
+     "boundary": {
+      "cold_start_steps": 902,
+      "cold_start_closed_form": 902,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": null,
+      "n_clearing_in_prefix": 0,
+      "n_clearing_anywhere": 0,
+      "n_rej": 0,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.0
+    },
+    "bucket, last-flow": {
+     "rej": 0,
+     "tp": 0,
+     "median_rstar": null,
+     "rstar_sorted": [],
+     "boundary": {
+      "cold_start_steps": 902,
+      "cold_start_closed_form": 902,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": null,
+      "n_clearing_in_prefix": 0,
+      "n_clearing_anywhere": 0,
+      "n_rej": 0,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.0
+    },
+    "bucket, fixed-random": {
+     "rej": 2,
+     "tp": 2,
+     "median_rstar": 6573.5,
+     "rstar_sorted": [
+      65,
+      13082
+     ],
+     "boundary": {
+      "cold_start_steps": 902,
+      "cold_start_closed_form": 902,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": 26,
+      "n_clearing_in_prefix": 2,
+      "n_clearing_anywhere": 2,
+      "n_rej": 2,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.007272727272727273
+    },
+    "bucket, hashed-key (canonical)": {
+     "rej": 2,
+     "tp": 2,
+     "median_rstar": 26.5,
+     "rstar_sorted": [
+      23,
+      30
+     ],
+     "boundary": {
+      "cold_start_steps": 902,
+      "cold_start_closed_form": 902,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": 686,
+      "n_clearing_in_prefix": 2,
+      "n_clearing_anywhere": 2,
+      "n_rej": 2,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.007272727272727273
+    },
+    "bucket, keyed hash (secret seed)": {
+     "rej": 0,
+     "tp": 0,
+     "median_rstar": null,
+     "rstar_sorted": [],
+     "boundary": {
+      "cold_start_steps": 902,
+      "cold_start_closed_form": 902,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": null,
+      "n_clearing_in_prefix": 0,
+      "n_clearing_anywhere": 0,
+      "n_rej": 0,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.0
+    }
+   },
+   "ensemble": {
+    "tp_min": 0,
+    "tp_q25": 0.0,
+    "tp_median": 1.0,
+    "tp_q75": 2.0,
+    "tp_max": 9,
+    "rstar_median_over_orders": 105.0,
+    "rstar_iqr": [
+     30.0,
+     428.0
+    ],
+    "n_orders_with_detection": 31
+   },
+   "first_flow_tp": 18,
+   "canonical_tp": 2,
+   "canonical_median_rstar": 26.5,
+   "canonical_rstar_sorted": [
+    23,
+    30
+   ],
+   "keyed_tp": 0,
+   "keyed_median_rstar": null,
+   "first_flow_median_rstar": 101.0,
+   "perturbation": {
+    "perturbed_group": 25542,
+    "others_moved_first_flow": 373,
+    "others_moved_hashed_key": 0,
+    "frac_moved_first_flow": 0.006501995920999878
+   },
+   "first_flow_is_upper": true
+  },
+  {
+   "pos": 0.62,
+   "seed": 0,
+   "T": 49267,
+   "n_mal": 398,
+   "CEIL": 2449032.0,
+   "named": {
+    "shipped (bucket, first-flow)": {
+     "rej": 13,
+     "tp": 13,
+     "median_rstar": 72.0,
+     "rstar_sorted": [
+      36,
+      53,
+      58,
+      60,
+      60,
+      66,
+      72,
+      77,
+      91,
+      106,
+      120,
+      127,
+      134
+     ],
+     "boundary": {
+      "cold_start_steps": 902,
+      "cold_start_closed_form": 902,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": 349,
+      "n_clearing_in_prefix": 8,
+      "n_clearing_anywhere": 8,
+      "n_rej": 13,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.032663316582914576
+    },
+    "bucket, group-id": {
+     "rej": 3,
+     "tp": 3,
+     "median_rstar": 22.0,
+     "rstar_sorted": [
+      3,
+      22,
+      35
+     ],
+     "boundary": {
+      "cold_start_steps": 902,
+      "cold_start_closed_form": 902,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": 830,
+      "n_clearing_in_prefix": 3,
+      "n_clearing_anywhere": 3,
+      "n_rej": 3,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.007537688442211055
+    },
+    "bucket, last-flow": {
+     "rej": 0,
+     "tp": 0,
+     "median_rstar": null,
+     "rstar_sorted": [],
+     "boundary": {
+      "cold_start_steps": 902,
+      "cold_start_closed_form": 902,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": null,
+      "n_clearing_in_prefix": 0,
+      "n_clearing_anywhere": 0,
+      "n_rej": 0,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.0
+    },
+    "bucket, fixed-random": {
+     "rej": 1,
+     "tp": 1,
+     "median_rstar": 729.0,
+     "rstar_sorted": [
+      729
+     ],
+     "boundary": {
+      "cold_start_steps": 902,
+      "cold_start_closed_form": 902,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": 88,
+      "n_clearing_in_prefix": 1,
+      "n_clearing_anywhere": 1,
+      "n_rej": 1,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.002512562814070352
+    },
+    "bucket, hashed-key (canonical)": {
+     "rej": 11,
+     "tp": 11,
+     "median_rstar": 6.0,
+     "rstar_sorted": [
+      1,
+      3,
+      4,
+      5,
+      6,
+      6,
+      6,
+      7,
+      12,
+      17,
+      859
+     ],
+     "boundary": {
+      "cold_start_steps": 902,
+      "cold_start_closed_form": 902,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": 90,
+      "n_clearing_in_prefix": 1,
+      "n_clearing_anywhere": 1,
+      "n_rej": 11,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.02763819095477387
+    },
+    "bucket, keyed hash (secret seed)": {
+     "rej": 6,
+     "tp": 6,
+     "median_rstar": 14.5,
+     "rstar_sorted": [
+      2,
+      5,
+      10,
+      19,
+      31,
+      59
+     ],
+     "boundary": {
+      "cold_start_steps": 902,
+      "cold_start_closed_form": 902,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": 391,
+      "n_clearing_in_prefix": 3,
+      "n_clearing_anywhere": 3,
+      "n_rej": 6,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.01507537688442211
+    }
+   },
+   "ensemble": {
+    "tp_min": 0,
+    "tp_q25": 3.0,
+    "tp_median": 6.0,
+    "tp_q75": 9.0,
+    "tp_max": 11,
+    "rstar_median_over_orders": 16.0,
+    "rstar_iqr": [
+     7.5,
+     36.5
+    ],
+    "n_orders_with_detection": 44
+   },
+   "first_flow_tp": 13,
+   "canonical_tp": 11,
+   "canonical_median_rstar": 6.0,
+   "canonical_rstar_sorted": [
+    1,
+    3,
+    4,
+    5,
+    6,
+    6,
+    6,
+    7,
+    12,
+    17,
+    859
+   ],
+   "keyed_tp": 6,
+   "keyed_median_rstar": 14.5,
+   "first_flow_median_rstar": 72.0,
+   "perturbation": {
+    "perturbed_group": 8419,
+    "others_moved_first_flow": 348,
+    "others_moved_hashed_key": 0,
+    "frac_moved_first_flow": 0.007063695043234685
+   },
+   "first_flow_is_upper": true
+  },
+  {
+   "pos": 0.62,
+   "seed": 1,
+   "T": 49267,
+   "n_mal": 398,
+   "CEIL": 2449032.0,
+   "named": {
+    "shipped (bucket, first-flow)": {
+     "rej": 12,
+     "tp": 12,
+     "median_rstar": 69.0,
+     "rstar_sorted": [
+      30,
+      35,
+      35,
+      53,
+      66,
+      68,
+      70,
+      72,
+      77,
+      78,
+      93,
+      98
+     ],
+     "boundary": {
+      "cold_start_steps": 902,
+      "cold_start_closed_form": 902,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": 349,
+      "n_clearing_in_prefix": 8,
+      "n_clearing_anywhere": 8,
+      "n_rej": 12,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.03015075376884422
+    },
+    "bucket, group-id": {
+     "rej": 0,
+     "tp": 0,
+     "median_rstar": null,
+     "rstar_sorted": [],
+     "boundary": {
+      "cold_start_steps": 902,
+      "cold_start_closed_form": 902,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": null,
+      "n_clearing_in_prefix": 0,
+      "n_clearing_anywhere": 0,
+      "n_rej": 0,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.0
+    },
+    "bucket, last-flow": {
+     "rej": 0,
+     "tp": 0,
+     "median_rstar": null,
+     "rstar_sorted": [],
+     "boundary": {
+      "cold_start_steps": 902,
+      "cold_start_closed_form": 902,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": null,
+      "n_clearing_in_prefix": 0,
+      "n_clearing_anywhere": 0,
+      "n_rej": 0,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.0
+    },
+    "bucket, fixed-random": {
+     "rej": 1,
+     "tp": 1,
+     "median_rstar": 563.0,
+     "rstar_sorted": [
+      563
+     ],
+     "boundary": {
+      "cold_start_steps": 902,
+      "cold_start_closed_form": 902,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": 88,
+      "n_clearing_in_prefix": 1,
+      "n_clearing_anywhere": 1,
+      "n_rej": 1,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.002512562814070352
+    },
+    "bucket, hashed-key (canonical)": {
+     "rej": 8,
+     "tp": 8,
+     "median_rstar": 5.0,
+     "rstar_sorted": [
+      3,
+      3,
+      4,
+      4,
+      6,
+      6,
+      9,
+      659
+     ],
+     "boundary": {
+      "cold_start_steps": 902,
+      "cold_start_closed_form": 902,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": 90,
+      "n_clearing_in_prefix": 1,
+      "n_clearing_anywhere": 1,
+      "n_rej": 8,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.020100502512562814
+    },
+    "bucket, keyed hash (secret seed)": {
+     "rej": 5,
+     "tp": 5,
+     "median_rstar": 15.0,
+     "rstar_sorted": [
+      2,
+      6,
+      15,
+      31,
+      59
+     ],
+     "boundary": {
+      "cold_start_steps": 902,
+      "cold_start_closed_form": 902,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": 391,
+      "n_clearing_in_prefix": 3,
+      "n_clearing_anywhere": 3,
+      "n_rej": 5,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.01256281407035176
+    }
+   },
+   "ensemble": {
+    "tp_min": 0,
+    "tp_q25": 1.0,
+    "tp_median": 4.0,
+    "tp_q75": 6.75,
+    "tp_max": 11,
+    "rstar_median_over_orders": 20.0,
+    "rstar_iqr": [
+     11.0,
+     38.0
+    ],
+    "n_orders_with_detection": 41
+   },
+   "first_flow_tp": 12,
+   "canonical_tp": 8,
+   "canonical_median_rstar": 5.0,
+   "canonical_rstar_sorted": [
+    3,
+    3,
+    4,
+    4,
+    6,
+    6,
+    9,
+    659
+   ],
+   "keyed_tp": 5,
+   "keyed_median_rstar": 15.0,
+   "first_flow_median_rstar": 69.0,
+   "perturbation": {
+    "perturbed_group": 8419,
+    "others_moved_first_flow": 348,
+    "others_moved_hashed_key": 0,
+    "frac_moved_first_flow": 0.007063695043234685
+   },
+   "first_flow_is_upper": true
+  },
+  {
+   "pos": 0.7,
+   "seed": 0,
+   "T": 37231,
+   "n_mal": 287,
+   "CEIL": 2287989.0,
+   "named": {
+    "shipped (bucket, first-flow)": {
+     "rej": 30,
+     "tp": 30,
+     "median_rstar": 1850.5,
+     "rstar_sorted": [
+      288,
+      300,
+      346,
+      429,
+      431,
+      795,
+      961,
+      1587,
+      1618,
+      1621,
+      1676,
+      1748,
+      1772,
+      1778,
+      1824,
+      1877,
+      1929,
+      2000,
+      2024,
+      2328,
+      2421,
+      2569,
+      2679,
+      2773,
+      3464,
+      3466,
+      3559,
+      4145,
+      4397,
+      5445
+     ],
+     "boundary": {
+      "cold_start_steps": 865,
+      "cold_start_closed_form": 865,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": 160,
+      "n_clearing_in_prefix": 16,
+      "n_clearing_anywhere": 16,
+      "n_rej": 30,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.10452961672473868
+    },
+    "bucket, group-id": {
+     "rej": 0,
+     "tp": 0,
+     "median_rstar": null,
+     "rstar_sorted": [],
+     "boundary": {
+      "cold_start_steps": 865,
+      "cold_start_closed_form": 865,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": null,
+      "n_clearing_in_prefix": 0,
+      "n_clearing_anywhere": 0,
+      "n_rej": 0,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.0
+    },
+    "bucket, last-flow": {
+     "rej": 0,
+     "tp": 0,
+     "median_rstar": null,
+     "rstar_sorted": [],
+     "boundary": {
+      "cold_start_steps": 865,
+      "cold_start_closed_form": 865,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": null,
+      "n_clearing_in_prefix": 0,
+      "n_clearing_anywhere": 0,
+      "n_rej": 0,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.0
+    },
+    "bucket, fixed-random": {
+     "rej": 9,
+     "tp": 9,
+     "median_rstar": 30.0,
+     "rstar_sorted": [
+      8,
+      8,
+      10,
+      18,
+      30,
+      225,
+      297,
+      1771,
+      8966
+     ],
+     "boundary": {
+      "cold_start_steps": 865,
+      "cold_start_closed_form": 865,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": 25,
+      "n_clearing_in_prefix": 3,
+      "n_clearing_anywhere": 3,
+      "n_rej": 9,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.0313588850174216
+    },
+    "bucket, hashed-key (canonical)": {
+     "rej": 0,
+     "tp": 0,
+     "median_rstar": null,
+     "rstar_sorted": [],
+     "boundary": {
+      "cold_start_steps": 865,
+      "cold_start_closed_form": 865,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": null,
+      "n_clearing_in_prefix": 0,
+      "n_clearing_anywhere": 0,
+      "n_rej": 0,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.0
+    },
+    "bucket, keyed hash (secret seed)": {
+     "rej": 3,
+     "tp": 3,
+     "median_rstar": 97.0,
+     "rstar_sorted": [
+      91,
+      97,
+      122
+     ],
+     "boundary": {
+      "cold_start_steps": 865,
+      "cold_start_closed_form": 865,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": 604,
+      "n_clearing_in_prefix": 1,
+      "n_clearing_anywhere": 1,
+      "n_rej": 3,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.010452961672473868
+    }
+   },
+   "ensemble": {
+    "tp_min": 0,
+    "tp_q25": 1.0,
+    "tp_median": 2.5,
+    "tp_q75": 5.0,
+    "tp_max": 12,
+    "rstar_median_over_orders": 93.0,
+    "rstar_iqr": [
+     42.25,
+     304.25
+    ],
+    "n_orders_with_detection": 43
+   },
+   "first_flow_tp": 30,
+   "canonical_tp": 0,
+   "canonical_median_rstar": null,
+   "canonical_rstar_sorted": [],
+   "keyed_tp": 3,
+   "keyed_median_rstar": 97.0,
+   "first_flow_median_rstar": 1850.5,
+   "perturbation": {
+    "perturbed_group": 7735,
+    "others_moved_first_flow": 4,
+    "others_moved_hashed_key": 0,
+    "frac_moved_first_flow": 0.00010744023636852001
+   },
+   "first_flow_is_upper": true
+  },
+  {
+   "pos": 0.7,
+   "seed": 1,
+   "T": 37231,
+   "n_mal": 287,
+   "CEIL": 2287989.0,
+   "named": {
+    "shipped (bucket, first-flow)": {
+     "rej": 0,
+     "tp": 0,
+     "median_rstar": null,
+     "rstar_sorted": [],
+     "boundary": {
+      "cold_start_steps": 865,
+      "cold_start_closed_form": 865,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": null,
+      "n_clearing_in_prefix": 0,
+      "n_clearing_anywhere": 0,
+      "n_rej": 0,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.0
+    },
+    "bucket, group-id": {
+     "rej": 0,
+     "tp": 0,
+     "median_rstar": null,
+     "rstar_sorted": [],
+     "boundary": {
+      "cold_start_steps": 865,
+      "cold_start_closed_form": 865,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": null,
+      "n_clearing_in_prefix": 0,
+      "n_clearing_anywhere": 0,
+      "n_rej": 0,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.0
+    },
+    "bucket, last-flow": {
+     "rej": 0,
+     "tp": 0,
+     "median_rstar": null,
+     "rstar_sorted": [],
+     "boundary": {
+      "cold_start_steps": 865,
+      "cold_start_closed_form": 865,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": null,
+      "n_clearing_in_prefix": 0,
+      "n_clearing_anywhere": 0,
+      "n_rej": 0,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.0
+    },
+    "bucket, fixed-random": {
+     "rej": 0,
+     "tp": 0,
+     "median_rstar": null,
+     "rstar_sorted": [],
+     "boundary": {
+      "cold_start_steps": 865,
+      "cold_start_closed_form": 865,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": null,
+      "n_clearing_in_prefix": 0,
+      "n_clearing_anywhere": 0,
+      "n_rej": 0,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.0
+    },
+    "bucket, hashed-key (canonical)": {
+     "rej": 0,
+     "tp": 0,
+     "median_rstar": null,
+     "rstar_sorted": [],
+     "boundary": {
+      "cold_start_steps": 865,
+      "cold_start_closed_form": 865,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": null,
+      "n_clearing_in_prefix": 0,
+      "n_clearing_anywhere": 0,
+      "n_rej": 0,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.0
+    },
+    "bucket, keyed hash (secret seed)": {
+     "rej": 0,
+     "tp": 0,
+     "median_rstar": null,
+     "rstar_sorted": [],
+     "boundary": {
+      "cold_start_steps": 865,
+      "cold_start_closed_form": 865,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": null,
+      "n_clearing_in_prefix": 0,
+      "n_clearing_anywhere": 0,
+      "n_rej": 0,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.0
+    }
+   },
+   "ensemble": {
+    "tp_min": 0,
+    "tp_q25": 0.0,
+    "tp_median": 0.0,
+    "tp_q75": 0.0,
+    "tp_max": 0,
+    "rstar_median_over_orders": null,
+    "rstar_iqr": null,
+    "n_orders_with_detection": 0
+   },
+   "first_flow_tp": 0,
+   "canonical_tp": 0,
+   "canonical_median_rstar": null,
+   "canonical_rstar_sorted": [],
+   "keyed_tp": 0,
+   "keyed_median_rstar": null,
+   "first_flow_median_rstar": null,
+   "perturbation": {
+    "perturbed_group": 7735,
+    "others_moved_first_flow": 4,
+    "others_moved_hashed_key": 0,
+    "frac_moved_first_flow": 0.00010744023636852001
+   },
+   "first_flow_is_upper": true
+  },
+  {
+   "pos": 0.77,
+   "seed": 0,
+   "T": 31672,
+   "n_mal": 246,
+   "CEIL": 2116419.0,
+   "named": {
+    "shipped (bucket, first-flow)": {
+     "rej": 31,
+     "tp": 31,
+     "median_rstar": 1165.0,
+     "rstar_sorted": [
+      20,
+      133,
+      143,
+      153,
+      232,
+      278,
+      297,
+      458,
+      572,
+      653,
+      755,
+      871,
+      1054,
+      1059,
+      1154,
+      1165,
+      1311,
+      1314,
+      1447,
+      1463,
+      1676,
+      1726,
+      1737,
+      1953,
+      2003,
+      2386,
+      2671,
+      3736,
+      4135,
+      5516,
+      7886
+     ],
+     "boundary": {
+      "cold_start_steps": 824,
+      "cold_start_closed_form": 824,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": 36,
+      "n_clearing_in_prefix": 9,
+      "n_clearing_anywhere": 9,
+      "n_rej": 31,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.12601626016260162
+    },
+    "bucket, group-id": {
+     "rej": 0,
+     "tp": 0,
+     "median_rstar": null,
+     "rstar_sorted": [],
+     "boundary": {
+      "cold_start_steps": 824,
+      "cold_start_closed_form": 824,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": null,
+      "n_clearing_in_prefix": 0,
+      "n_clearing_anywhere": 0,
+      "n_rej": 0,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.0
+    },
+    "bucket, last-flow": {
+     "rej": 0,
+     "tp": 0,
+     "median_rstar": null,
+     "rstar_sorted": [],
+     "boundary": {
+      "cold_start_steps": 824,
+      "cold_start_closed_form": 824,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": null,
+      "n_clearing_in_prefix": 0,
+      "n_clearing_anywhere": 0,
+      "n_rej": 0,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.0
+    },
+    "bucket, fixed-random": {
+     "rej": 1,
+     "tp": 1,
+     "median_rstar": 409.0,
+     "rstar_sorted": [
+      409
+     ],
+     "boundary": {
+      "cold_start_steps": 824,
+      "cold_start_closed_form": 824,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": 371,
+      "n_clearing_in_prefix": 1,
+      "n_clearing_anywhere": 1,
+      "n_rej": 1,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.0040650406504065045
+    },
+    "bucket, hashed-key (canonical)": {
+     "rej": 0,
+     "tp": 0,
+     "median_rstar": null,
+     "rstar_sorted": [],
+     "boundary": {
+      "cold_start_steps": 824,
+      "cold_start_closed_form": 824,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": null,
+      "n_clearing_in_prefix": 0,
+      "n_clearing_anywhere": 0,
+      "n_rej": 0,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.0
+    },
+    "bucket, keyed hash (secret seed)": {
+     "rej": 3,
+     "tp": 3,
+     "median_rstar": 323.0,
+     "rstar_sorted": [
+      219,
+      323,
+      663
+     ],
+     "boundary": {
+      "cold_start_steps": 824,
+      "cold_start_closed_form": 824,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": 409,
+      "n_clearing_in_prefix": 2,
+      "n_clearing_anywhere": 2,
+      "n_rej": 3,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.012195121951219513
+    }
+   },
+   "ensemble": {
+    "tp_min": 0,
+    "tp_q25": 0.0,
+    "tp_median": 1.0,
+    "tp_q75": 3.0,
+    "tp_max": 6,
+    "rstar_median_over_orders": 175.0,
+    "rstar_iqr": [
+     79.0,
+     402.5
+    ],
+    "n_orders_with_detection": 29
+   },
+   "first_flow_tp": 31,
+   "canonical_tp": 0,
+   "canonical_median_rstar": null,
+   "canonical_rstar_sorted": [],
+   "keyed_tp": 3,
+   "keyed_median_rstar": 323.0,
+   "first_flow_median_rstar": 1165.0,
+   "perturbation": {
+    "perturbed_group": 2805,
+    "others_moved_first_flow": 7,
+    "others_moved_hashed_key": 0,
+    "frac_moved_first_flow": 0.0002210223864102807
+   },
+   "first_flow_is_upper": true
+  },
+  {
+   "pos": 0.77,
+   "seed": 1,
+   "T": 31672,
+   "n_mal": 246,
+   "CEIL": 2116419.0,
+   "named": {
+    "shipped (bucket, first-flow)": {
+     "rej": 31,
+     "tp": 31,
+     "median_rstar": 1289.0,
+     "rstar_sorted": [
+      37,
+      133,
+      143,
+      153,
+      232,
+      278,
+      297,
+      458,
+      598,
+      634,
+      755,
+      883,
+      1054,
+      1135,
+      1165,
+      1289,
+      1329,
+      1416,
+      1484,
+      1490,
+      1676,
+      1771,
+      1883,
+      1978,
+      2003,
+      2308,
+      2737,
+      4258,
+      4619,
+      5486,
+      7886
+     ],
+     "boundary": {
+      "cold_start_steps": 824,
+      "cold_start_closed_form": 824,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": 36,
+      "n_clearing_in_prefix": 10,
+      "n_clearing_anywhere": 10,
+      "n_rej": 31,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.12601626016260162
+    },
+    "bucket, group-id": {
+     "rej": 0,
+     "tp": 0,
+     "median_rstar": null,
+     "rstar_sorted": [],
+     "boundary": {
+      "cold_start_steps": 824,
+      "cold_start_closed_form": 824,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": null,
+      "n_clearing_in_prefix": 0,
+      "n_clearing_anywhere": 0,
+      "n_rej": 0,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.0
+    },
+    "bucket, last-flow": {
+     "rej": 0,
+     "tp": 0,
+     "median_rstar": null,
+     "rstar_sorted": [],
+     "boundary": {
+      "cold_start_steps": 824,
+      "cold_start_closed_form": 824,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": null,
+      "n_clearing_in_prefix": 0,
+      "n_clearing_anywhere": 0,
+      "n_rej": 0,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.0
+    },
+    "bucket, fixed-random": {
+     "rej": 1,
+     "tp": 1,
+     "median_rstar": 409.0,
+     "rstar_sorted": [
+      409
+     ],
+     "boundary": {
+      "cold_start_steps": 824,
+      "cold_start_closed_form": 824,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": 371,
+      "n_clearing_in_prefix": 1,
+      "n_clearing_anywhere": 1,
+      "n_rej": 1,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.0040650406504065045
+    },
+    "bucket, hashed-key (canonical)": {
+     "rej": 0,
+     "tp": 0,
+     "median_rstar": null,
+     "rstar_sorted": [],
+     "boundary": {
+      "cold_start_steps": 824,
+      "cold_start_closed_form": 824,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": null,
+      "n_clearing_in_prefix": 0,
+      "n_clearing_anywhere": 0,
+      "n_rej": 0,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.0
+    },
+    "bucket, keyed hash (secret seed)": {
+     "rej": 3,
+     "tp": 3,
+     "median_rstar": 323.0,
+     "rstar_sorted": [
+      212,
+      323,
+      663
+     ],
+     "boundary": {
+      "cold_start_steps": 824,
+      "cold_start_closed_form": 824,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": 409,
+      "n_clearing_in_prefix": 2,
+      "n_clearing_anywhere": 2,
+      "n_rej": 3,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.012195121951219513
+    }
+   },
+   "ensemble": {
+    "tp_min": 0,
+    "tp_q25": 0.0,
+    "tp_median": 1.0,
+    "tp_q75": 3.0,
+    "tp_max": 6,
+    "rstar_median_over_orders": 178.0,
+    "rstar_iqr": [
+     56.0,
+     393.5
+    ],
+    "n_orders_with_detection": 29
+   },
+   "first_flow_tp": 31,
+   "canonical_tp": 0,
+   "canonical_median_rstar": null,
+   "canonical_rstar_sorted": [],
+   "keyed_tp": 3,
+   "keyed_median_rstar": 323.0,
+   "first_flow_median_rstar": 1289.0,
+   "perturbation": {
+    "perturbed_group": 2805,
+    "others_moved_first_flow": 7,
+    "others_moved_hashed_key": 0,
+    "frac_moved_first_flow": 0.0002210223864102807
+   },
+   "first_flow_is_upper": true
+  },
+  {
+   "pos": 0.85,
+   "seed": 0,
+   "T": 31568,
+   "n_mal": 255,
+   "CEIL": 1813114.0,
+   "named": {
+    "shipped (bucket, first-flow)": {
+     "rej": 72,
+     "tp": 72,
+     "median_rstar": 5201.5,
+     "rstar_sorted": [
+      7,
+      65,
+      136,
+      145,
+      145,
+      164,
+      171,
+      180,
+      181,
+      257,
+      261,
+      323,
+      356,
+      426,
+      483,
+      551,
+      615,
+      1170,
+      1494,
+      1545,
+      1562,
+      1595,
+      1620,
+      1803,
+      1895,
+      1964,
+      2333,
+      2506,
+      2598,
+      2609,
+      2704,
+      2745,
+      2748,
+      2880,
+      3199,
+      3689,
+      6714,
+      10299,
+      10706,
+      10874,
+      11962,
+      14288,
+      14329,
+      19553,
+      20919,
+      21101,
+      23085,
+      23097,
+      23905,
+      25528,
+      25952,
+      28815,
+      31793,
+      36414,
+      45750,
+      47792,
+      72901,
+      88158,
+      89336,
+      92322,
+      94362,
+      160681,
+      180910,
+      3083150,
+      69195773,
+      73256297,
+      79438693,
+      89149876,
+      89365016,
+      114077982,
+      121886279,
+      145525527
+     ],
+     "boundary": {
+      "cold_start_steps": 748,
+      "cold_start_closed_form": 748,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": 4,
+      "n_clearing_in_prefix": 40,
+      "n_clearing_anywhere": 40,
+      "n_rej": 72,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.2823529411764706
+    },
+    "bucket, group-id": {
+     "rej": 24,
+     "tp": 24,
+     "median_rstar": 125.0,
+     "rstar_sorted": [
+      2,
+      2,
+      5,
+      8,
+      37,
+      43,
+      65,
+      82,
+      85,
+      90,
+      90,
+      102,
+      148,
+      464,
+      1135,
+      2492,
+      6226,
+      8440,
+      21330,
+      81028,
+      101785,
+      333784,
+      704699,
+      3317627
+     ],
+     "boundary": {
+      "cold_start_steps": 748,
+      "cold_start_closed_form": 748,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": 23,
+      "n_clearing_in_prefix": 5,
+      "n_clearing_anywhere": 5,
+      "n_rej": 24,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.09411764705882353
+    },
+    "bucket, last-flow": {
+     "rej": 0,
+     "tp": 0,
+     "median_rstar": null,
+     "rstar_sorted": [],
+     "boundary": {
+      "cold_start_steps": 748,
+      "cold_start_closed_form": 748,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": null,
+      "n_clearing_in_prefix": 0,
+      "n_clearing_anywhere": 0,
+      "n_rej": 0,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.0
+    },
+    "bucket, fixed-random": {
+     "rej": 38,
+     "tp": 38,
+     "median_rstar": 71.5,
+     "rstar_sorted": [
+      1,
+      3,
+      3,
+      4,
+      5,
+      7,
+      7,
+      9,
+      9,
+      10,
+      12,
+      15,
+      15,
+      26,
+      27,
+      36,
+      52,
+      53,
+      57,
+      86,
+      100,
+      133,
+      153,
+      187,
+      191,
+      306,
+      319,
+      351,
+      439,
+      442,
+      782,
+      1186,
+      1529,
+      1571,
+      1577,
+      31046,
+      45218,
+      47070
+     ],
+     "boundary": {
+      "cold_start_steps": 748,
+      "cold_start_closed_form": 748,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": 112,
+      "n_clearing_in_prefix": 2,
+      "n_clearing_anywhere": 2,
+      "n_rej": 38,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.14901960784313725
+    },
+    "bucket, hashed-key (canonical)": {
+     "rej": 34,
+     "tp": 34,
+     "median_rstar": 115.5,
+     "rstar_sorted": [
+      2,
+      7,
+      13,
+      14,
+      20,
+      38,
+      40,
+      43,
+      51,
+      53,
+      55,
+      69,
+      76,
+      97,
+      107,
+      107,
+      113,
+      118,
+      154,
+      196,
+      208,
+      232,
+      262,
+      279,
+      459,
+      486,
+      535,
+      758,
+      916,
+      3965,
+      9395,
+      27345,
+      46561,
+      58616
+     ],
+     "boundary": {
+      "cold_start_steps": 748,
+      "cold_start_closed_form": 748,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": 240,
+      "n_clearing_in_prefix": 3,
+      "n_clearing_anywhere": 3,
+      "n_rej": 34,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.13333333333333333
+    },
+    "bucket, keyed hash (secret seed)": {
+     "rej": 24,
+     "tp": 24,
+     "median_rstar": 160.5,
+     "rstar_sorted": [
+      1,
+      3,
+      7,
+      8,
+      17,
+      33,
+      39,
+      42,
+      68,
+      109,
+      113,
+      120,
+      201,
+      304,
+      306,
+      345,
+      388,
+      545,
+      682,
+      1974,
+      4281,
+      35281,
+      49687,
+      67942
+     ],
+     "boundary": {
+      "cold_start_steps": 748,
+      "cold_start_closed_form": 748,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": 231,
+      "n_clearing_in_prefix": 4,
+      "n_clearing_anywhere": 4,
+      "n_rej": 24,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.09411764705882353
+    }
+   },
+   "ensemble": {
+    "tp_min": 0,
+    "tp_q25": 20.0,
+    "tp_median": 23.5,
+    "tp_q75": 28.75,
+    "tp_max": 44,
+    "rstar_median_over_orders": 98.0,
+    "rstar_iqr": [
+     51.0,
+     129.0
+    ],
+    "n_orders_with_detection": 49
+   },
+   "first_flow_tp": 72,
+   "canonical_tp": 34,
+   "canonical_median_rstar": 115.5,
+   "canonical_rstar_sorted": [
+    2,
+    7,
+    13,
+    14,
+    20,
+    38,
+    40,
+    43,
+    51,
+    53,
+    55,
+    69,
+    76,
+    97,
+    107,
+    107,
+    113,
+    118,
+    154,
+    196,
+    208,
+    232,
+    262,
+    279,
+    459,
+    486,
+    535,
+    758,
+    916,
+    3965,
+    9395,
+    27345,
+    46561,
+    58616
+   ],
+   "keyed_tp": 24,
+   "keyed_median_rstar": 160.5,
+   "first_flow_median_rstar": 5201.5,
+   "perturbation": {
+    "perturbed_group": 8751,
+    "others_moved_first_flow": 3,
+    "others_moved_hashed_key": 0,
+    "frac_moved_first_flow": 9.503595526974372e-05
+   },
+   "first_flow_is_upper": true
+  },
+  {
+   "pos": 0.85,
+   "seed": 1,
+   "T": 31568,
+   "n_mal": 255,
+   "CEIL": 1813114.0,
+   "named": {
+    "shipped (bucket, first-flow)": {
+     "rej": 71,
+     "tp": 71,
+     "median_rstar": 6802.0,
+     "rstar_sorted": [
+      7,
+      22,
+      62,
+      134,
+      143,
+      143,
+      164,
+      169,
+      190,
+      261,
+      294,
+      323,
+      362,
+      444,
+      475,
+      509,
+      554,
+      578,
+      1210,
+      1275,
+      1494,
+      1617,
+      1620,
+      1803,
+      1869,
+      1964,
+      2450,
+      2506,
+      2598,
+      2609,
+      2704,
+      2745,
+      2880,
+      3199,
+      3648,
+      6802,
+      8720,
+      9763,
+      10241,
+      10874,
+      14288,
+      14329,
+      16417,
+      20919,
+      21101,
+      22647,
+      22918,
+      23085,
+      23816,
+      25431,
+      28815,
+      32040,
+      36414,
+      45662,
+      47792,
+      72901,
+      77649,
+      88158,
+      91828,
+      94541,
+      160681,
+      180910,
+      3091174,
+      69086348,
+      73231325,
+      79268467,
+      89009219,
+      89369332,
+      114049777,
+      120899653,
+      145096310
+     ],
+     "boundary": {
+      "cold_start_steps": 748,
+      "cold_start_closed_form": 748,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": 4,
+      "n_clearing_in_prefix": 40,
+      "n_clearing_anywhere": 40,
+      "n_rej": 71,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.2784313725490196
+    },
+    "bucket, group-id": {
+     "rej": 24,
+     "tp": 24,
+     "median_rstar": 123.5,
+     "rstar_sorted": [
+      2,
+      2,
+      5,
+      7,
+      36,
+      43,
+      64,
+      82,
+      85,
+      90,
+      93,
+      102,
+      145,
+      464,
+      1138,
+      2486,
+      6226,
+      8441,
+      21232,
+      80855,
+      101785,
+      333694,
+      706538,
+      3316487
+     ],
+     "boundary": {
+      "cold_start_steps": 748,
+      "cold_start_closed_form": 748,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": 23,
+      "n_clearing_in_prefix": 5,
+      "n_clearing_anywhere": 5,
+      "n_rej": 24,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.09411764705882353
+    },
+    "bucket, last-flow": {
+     "rej": 0,
+     "tp": 0,
+     "median_rstar": null,
+     "rstar_sorted": [],
+     "boundary": {
+      "cold_start_steps": 748,
+      "cold_start_closed_form": 748,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": null,
+      "n_clearing_in_prefix": 0,
+      "n_clearing_anywhere": 0,
+      "n_rej": 0,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.0
+    },
+    "bucket, fixed-random": {
+     "rej": 36,
+     "tp": 36,
+     "median_rstar": 48.0,
+     "rstar_sorted": [
+      1,
+      1,
+      1,
+      2,
+      2,
+      2,
+      3,
+      4,
+      5,
+      6,
+      11,
+      13,
+      14,
+      17,
+      23,
+      31,
+      44,
+      46,
+      50,
+      85,
+      113,
+      133,
+      134,
+      164,
+      167,
+      272,
+      275,
+      355,
+      387,
+      893,
+      968,
+      1571,
+      1577,
+      27239,
+      40420,
+      45101
+     ],
+     "boundary": {
+      "cold_start_steps": 748,
+      "cold_start_closed_form": 748,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": 112,
+      "n_clearing_in_prefix": 2,
+      "n_clearing_anywhere": 2,
+      "n_rej": 36,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.1411764705882353
+    },
+    "bucket, hashed-key (canonical)": {
+     "rej": 32,
+     "tp": 32,
+     "median_rstar": 109.0,
+     "rstar_sorted": [
+      7,
+      12,
+      13,
+      14,
+      28,
+      40,
+      46,
+      50,
+      53,
+      55,
+      60,
+      69,
+      76,
+      78,
+      96,
+      107,
+      111,
+      118,
+      193,
+      232,
+      262,
+      279,
+      455,
+      486,
+      535,
+      750,
+      919,
+      3020,
+      9426,
+      26653,
+      46374,
+      58620
+     ],
+     "boundary": {
+      "cold_start_steps": 748,
+      "cold_start_closed_form": 748,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": 240,
+      "n_clearing_in_prefix": 3,
+      "n_clearing_anywhere": 3,
+      "n_rej": 32,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.12549019607843137
+    },
+    "bucket, keyed hash (secret seed)": {
+     "rej": 24,
+     "tp": 24,
+     "median_rstar": 165.5,
+     "rstar_sorted": [
+      2,
+      3,
+      7,
+      8,
+      16,
+      17,
+      29,
+      46,
+      67,
+      109,
+      120,
+      130,
+      201,
+      304,
+      306,
+      345,
+      386,
+      551,
+      682,
+      1969,
+      4272,
+      35180,
+      49528,
+      66922
+     ],
+     "boundary": {
+      "cold_start_steps": 748,
+      "cold_start_closed_form": 748,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": 231,
+      "n_clearing_in_prefix": 4,
+      "n_clearing_anywhere": 4,
+      "n_rej": 24,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.09411764705882353
+    }
+   },
+   "ensemble": {
+    "tp_min": 0,
+    "tp_q25": 17.0,
+    "tp_median": 21.5,
+    "tp_q75": 25.0,
+    "tp_max": 42,
+    "rstar_median_over_orders": 102.0,
+    "rstar_iqr": [
+     56.0,
+     136.0
+    ],
+    "n_orders_with_detection": 49
+   },
+   "first_flow_tp": 71,
+   "canonical_tp": 32,
+   "canonical_median_rstar": 109.0,
+   "canonical_rstar_sorted": [
+    7,
+    12,
+    13,
+    14,
+    28,
+    40,
+    46,
+    50,
+    53,
+    55,
+    60,
+    69,
+    76,
+    78,
+    96,
+    107,
+    111,
+    118,
+    193,
+    232,
+    262,
+    279,
+    455,
+    486,
+    535,
+    750,
+    919,
+    3020,
+    9426,
+    26653,
+    46374,
+    58620
+   ],
+   "keyed_tp": 24,
+   "keyed_median_rstar": 165.5,
+   "first_flow_median_rstar": 6802.0,
+   "perturbation": {
+    "perturbed_group": 8751,
+    "others_moved_first_flow": 3,
+    "others_moved_hashed_key": 0,
+    "frac_moved_first_flow": 9.503595526974372e-05
+   },
+   "first_flow_is_upper": true
+  }
+ ],
+ "positions": [
+  {
+   "pos": 0.55,
+   "seed": 0,
+   "T": 57368,
+   "n_mal": 275,
+   "CEIL": 2448994.0,
+   "named": {
+    "shipped (bucket, first-flow)": {
+     "rej": 18,
+     "tp": 18,
+     "median_rstar": 118.0,
+     "rstar_sorted": [
+      10,
+      22,
+      25,
+      34,
+      41,
+      67,
+      84,
+      97,
+      111,
+      125,
+      179,
+      323,
+      379,
+      416,
+      518,
+      519,
+      645,
+      837
+     ],
+     "boundary": {
+      "cold_start_steps": 902,
+      "cold_start_closed_form": 902,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": 401,
+      "n_clearing_in_prefix": 4,
+      "n_clearing_anywhere": 4,
+      "n_rej": 18,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.06545454545454546
+    },
+    "bucket, group-id": {
+     "rej": 0,
+     "tp": 0,
+     "median_rstar": null,
+     "rstar_sorted": [],
+     "boundary": {
+      "cold_start_steps": 902,
+      "cold_start_closed_form": 902,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": null,
+      "n_clearing_in_prefix": 0,
+      "n_clearing_anywhere": 0,
+      "n_rej": 0,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.0
+    },
+    "bucket, last-flow": {
+     "rej": 0,
+     "tp": 0,
+     "median_rstar": null,
+     "rstar_sorted": [],
+     "boundary": {
+      "cold_start_steps": 902,
+      "cold_start_closed_form": 902,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": null,
+      "n_clearing_in_prefix": 0,
+      "n_clearing_anywhere": 0,
+      "n_rej": 0,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.0
+    },
+    "bucket, fixed-random": {
+     "rej": 2,
+     "tp": 2,
+     "median_rstar": 6576.0,
+     "rstar_sorted": [
+      70,
+      13082
+     ],
+     "boundary": {
+      "cold_start_steps": 902,
+      "cold_start_closed_form": 902,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": 26,
+      "n_clearing_in_prefix": 2,
+      "n_clearing_anywhere": 2,
+      "n_rej": 2,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.007272727272727273
+    },
+    "bucket, hashed-key (canonical)": {
+     "rej": 3,
+     "tp": 3,
+     "median_rstar": 24.0,
+     "rstar_sorted": [
+      23,
+      24,
+      33
+     ],
+     "boundary": {
+      "cold_start_steps": 902,
+      "cold_start_closed_form": 902,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": 686,
+      "n_clearing_in_prefix": 2,
+      "n_clearing_anywhere": 2,
+      "n_rej": 3,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.01090909090909091
+    },
+    "bucket, keyed hash (secret seed)": {
+     "rej": 0,
+     "tp": 0,
+     "median_rstar": null,
+     "rstar_sorted": [],
+     "boundary": {
+      "cold_start_steps": 902,
+      "cold_start_closed_form": 902,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": null,
+      "n_clearing_in_prefix": 0,
+      "n_clearing_anywhere": 0,
+      "n_rej": 0,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.0
+    }
+   },
+   "ensemble": {
+    "tp_min": 0,
+    "tp_q25": 0.0,
+    "tp_median": 1.0,
+    "tp_q75": 2.0,
+    "tp_max": 10,
+    "rstar_median_over_orders": 109.5,
+    "rstar_iqr": [
+     32.0,
+     428.0
+    ],
+    "n_orders_with_detection": 31
+   },
+   "first_flow_tp": 18,
+   "canonical_tp": 3,
+   "canonical_median_rstar": 24.0,
+   "canonical_rstar_sorted": [
+    23,
+    24,
+    33
+   ],
+   "keyed_tp": 0,
+   "keyed_median_rstar": null,
+   "first_flow_median_rstar": 118.0,
+   "perturbation": {
+    "perturbed_group": 25542,
+    "others_moved_first_flow": 373,
+    "others_moved_hashed_key": 0,
+    "frac_moved_first_flow": 0.006501995920999878
+   },
+   "first_flow_is_upper": true
+  },
+  {
+   "pos": 0.62,
+   "seed": 0,
+   "T": 49267,
+   "n_mal": 398,
+   "CEIL": 2449032.0,
+   "named": {
+    "shipped (bucket, first-flow)": {
+     "rej": 13,
+     "tp": 13,
+     "median_rstar": 72.0,
+     "rstar_sorted": [
+      36,
+      53,
+      58,
+      60,
+      60,
+      66,
+      72,
+      77,
+      91,
+      106,
+      120,
+      127,
+      134
+     ],
+     "boundary": {
+      "cold_start_steps": 902,
+      "cold_start_closed_form": 902,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": 349,
+      "n_clearing_in_prefix": 8,
+      "n_clearing_anywhere": 8,
+      "n_rej": 13,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.032663316582914576
+    },
+    "bucket, group-id": {
+     "rej": 3,
+     "tp": 3,
+     "median_rstar": 22.0,
+     "rstar_sorted": [
+      3,
+      22,
+      35
+     ],
+     "boundary": {
+      "cold_start_steps": 902,
+      "cold_start_closed_form": 902,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": 830,
+      "n_clearing_in_prefix": 3,
+      "n_clearing_anywhere": 3,
+      "n_rej": 3,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.007537688442211055
+    },
+    "bucket, last-flow": {
+     "rej": 0,
+     "tp": 0,
+     "median_rstar": null,
+     "rstar_sorted": [],
+     "boundary": {
+      "cold_start_steps": 902,
+      "cold_start_closed_form": 902,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": null,
+      "n_clearing_in_prefix": 0,
+      "n_clearing_anywhere": 0,
+      "n_rej": 0,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.0
+    },
+    "bucket, fixed-random": {
+     "rej": 1,
+     "tp": 1,
+     "median_rstar": 729.0,
+     "rstar_sorted": [
+      729
+     ],
+     "boundary": {
+      "cold_start_steps": 902,
+      "cold_start_closed_form": 902,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": 88,
+      "n_clearing_in_prefix": 1,
+      "n_clearing_anywhere": 1,
+      "n_rej": 1,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.002512562814070352
+    },
+    "bucket, hashed-key (canonical)": {
+     "rej": 11,
+     "tp": 11,
+     "median_rstar": 6.0,
+     "rstar_sorted": [
+      1,
+      3,
+      4,
+      5,
+      6,
+      6,
+      6,
+      7,
+      12,
+      17,
+      859
+     ],
+     "boundary": {
+      "cold_start_steps": 902,
+      "cold_start_closed_form": 902,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": 90,
+      "n_clearing_in_prefix": 1,
+      "n_clearing_anywhere": 1,
+      "n_rej": 11,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.02763819095477387
+    },
+    "bucket, keyed hash (secret seed)": {
+     "rej": 6,
+     "tp": 6,
+     "median_rstar": 14.5,
+     "rstar_sorted": [
+      2,
+      5,
+      10,
+      19,
+      31,
+      59
+     ],
+     "boundary": {
+      "cold_start_steps": 902,
+      "cold_start_closed_form": 902,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": 391,
+      "n_clearing_in_prefix": 3,
+      "n_clearing_anywhere": 3,
+      "n_rej": 6,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.01507537688442211
+    }
+   },
+   "ensemble": {
+    "tp_min": 0,
+    "tp_q25": 3.0,
+    "tp_median": 6.0,
+    "tp_q75": 9.0,
+    "tp_max": 11,
+    "rstar_median_over_orders": 16.0,
+    "rstar_iqr": [
+     7.5,
+     36.5
+    ],
+    "n_orders_with_detection": 44
+   },
+   "first_flow_tp": 13,
+   "canonical_tp": 11,
+   "canonical_median_rstar": 6.0,
+   "canonical_rstar_sorted": [
+    1,
+    3,
+    4,
+    5,
+    6,
+    6,
+    6,
+    7,
+    12,
+    17,
+    859
+   ],
+   "keyed_tp": 6,
+   "keyed_median_rstar": 14.5,
+   "first_flow_median_rstar": 72.0,
+   "perturbation": {
+    "perturbed_group": 8419,
+    "others_moved_first_flow": 348,
+    "others_moved_hashed_key": 0,
+    "frac_moved_first_flow": 0.007063695043234685
+   },
+   "first_flow_is_upper": true
+  },
+  {
+   "pos": 0.7,
+   "seed": 0,
+   "T": 37231,
+   "n_mal": 287,
+   "CEIL": 2287989.0,
+   "named": {
+    "shipped (bucket, first-flow)": {
+     "rej": 30,
+     "tp": 30,
+     "median_rstar": 1850.5,
+     "rstar_sorted": [
+      288,
+      300,
+      346,
+      429,
+      431,
+      795,
+      961,
+      1587,
+      1618,
+      1621,
+      1676,
+      1748,
+      1772,
+      1778,
+      1824,
+      1877,
+      1929,
+      2000,
+      2024,
+      2328,
+      2421,
+      2569,
+      2679,
+      2773,
+      3464,
+      3466,
+      3559,
+      4145,
+      4397,
+      5445
+     ],
+     "boundary": {
+      "cold_start_steps": 865,
+      "cold_start_closed_form": 865,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": 160,
+      "n_clearing_in_prefix": 16,
+      "n_clearing_anywhere": 16,
+      "n_rej": 30,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.10452961672473868
+    },
+    "bucket, group-id": {
+     "rej": 0,
+     "tp": 0,
+     "median_rstar": null,
+     "rstar_sorted": [],
+     "boundary": {
+      "cold_start_steps": 865,
+      "cold_start_closed_form": 865,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": null,
+      "n_clearing_in_prefix": 0,
+      "n_clearing_anywhere": 0,
+      "n_rej": 0,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.0
+    },
+    "bucket, last-flow": {
+     "rej": 0,
+     "tp": 0,
+     "median_rstar": null,
+     "rstar_sorted": [],
+     "boundary": {
+      "cold_start_steps": 865,
+      "cold_start_closed_form": 865,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": null,
+      "n_clearing_in_prefix": 0,
+      "n_clearing_anywhere": 0,
+      "n_rej": 0,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.0
+    },
+    "bucket, fixed-random": {
+     "rej": 9,
+     "tp": 9,
+     "median_rstar": 30.0,
+     "rstar_sorted": [
+      8,
+      8,
+      10,
+      18,
+      30,
+      225,
+      297,
+      1771,
+      8966
+     ],
+     "boundary": {
+      "cold_start_steps": 865,
+      "cold_start_closed_form": 865,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": 25,
+      "n_clearing_in_prefix": 3,
+      "n_clearing_anywhere": 3,
+      "n_rej": 9,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.0313588850174216
+    },
+    "bucket, hashed-key (canonical)": {
+     "rej": 0,
+     "tp": 0,
+     "median_rstar": null,
+     "rstar_sorted": [],
+     "boundary": {
+      "cold_start_steps": 865,
+      "cold_start_closed_form": 865,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": null,
+      "n_clearing_in_prefix": 0,
+      "n_clearing_anywhere": 0,
+      "n_rej": 0,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.0
+    },
+    "bucket, keyed hash (secret seed)": {
+     "rej": 3,
+     "tp": 3,
+     "median_rstar": 97.0,
+     "rstar_sorted": [
+      91,
+      97,
+      122
+     ],
+     "boundary": {
+      "cold_start_steps": 865,
+      "cold_start_closed_form": 865,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": 604,
+      "n_clearing_in_prefix": 1,
+      "n_clearing_anywhere": 1,
+      "n_rej": 3,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.010452961672473868
+    }
+   },
+   "ensemble": {
+    "tp_min": 0,
+    "tp_q25": 1.0,
+    "tp_median": 2.5,
+    "tp_q75": 5.0,
+    "tp_max": 12,
+    "rstar_median_over_orders": 93.0,
+    "rstar_iqr": [
+     42.25,
+     304.25
+    ],
+    "n_orders_with_detection": 43
+   },
+   "first_flow_tp": 30,
+   "canonical_tp": 0,
+   "canonical_median_rstar": null,
+   "canonical_rstar_sorted": [],
+   "keyed_tp": 3,
+   "keyed_median_rstar": 97.0,
+   "first_flow_median_rstar": 1850.5,
+   "perturbation": {
+    "perturbed_group": 7735,
+    "others_moved_first_flow": 4,
+    "others_moved_hashed_key": 0,
+    "frac_moved_first_flow": 0.00010744023636852001
+   },
+   "first_flow_is_upper": true
+  },
+  {
+   "pos": 0.77,
+   "seed": 0,
+   "T": 31672,
+   "n_mal": 246,
+   "CEIL": 2116419.0,
+   "named": {
+    "shipped (bucket, first-flow)": {
+     "rej": 31,
+     "tp": 31,
+     "median_rstar": 1165.0,
+     "rstar_sorted": [
+      20,
+      133,
+      143,
+      153,
+      232,
+      278,
+      297,
+      458,
+      572,
+      653,
+      755,
+      871,
+      1054,
+      1059,
+      1154,
+      1165,
+      1311,
+      1314,
+      1447,
+      1463,
+      1676,
+      1726,
+      1737,
+      1953,
+      2003,
+      2386,
+      2671,
+      3736,
+      4135,
+      5516,
+      7886
+     ],
+     "boundary": {
+      "cold_start_steps": 824,
+      "cold_start_closed_form": 824,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": 36,
+      "n_clearing_in_prefix": 9,
+      "n_clearing_anywhere": 9,
+      "n_rej": 31,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.12601626016260162
+    },
+    "bucket, group-id": {
+     "rej": 0,
+     "tp": 0,
+     "median_rstar": null,
+     "rstar_sorted": [],
+     "boundary": {
+      "cold_start_steps": 824,
+      "cold_start_closed_form": 824,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": null,
+      "n_clearing_in_prefix": 0,
+      "n_clearing_anywhere": 0,
+      "n_rej": 0,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.0
+    },
+    "bucket, last-flow": {
+     "rej": 0,
+     "tp": 0,
+     "median_rstar": null,
+     "rstar_sorted": [],
+     "boundary": {
+      "cold_start_steps": 824,
+      "cold_start_closed_form": 824,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": null,
+      "n_clearing_in_prefix": 0,
+      "n_clearing_anywhere": 0,
+      "n_rej": 0,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.0
+    },
+    "bucket, fixed-random": {
+     "rej": 1,
+     "tp": 1,
+     "median_rstar": 409.0,
+     "rstar_sorted": [
+      409
+     ],
+     "boundary": {
+      "cold_start_steps": 824,
+      "cold_start_closed_form": 824,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": 371,
+      "n_clearing_in_prefix": 1,
+      "n_clearing_anywhere": 1,
+      "n_rej": 1,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.0040650406504065045
+    },
+    "bucket, hashed-key (canonical)": {
+     "rej": 0,
+     "tp": 0,
+     "median_rstar": null,
+     "rstar_sorted": [],
+     "boundary": {
+      "cold_start_steps": 824,
+      "cold_start_closed_form": 824,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": null,
+      "n_clearing_in_prefix": 0,
+      "n_clearing_anywhere": 0,
+      "n_rej": 0,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.0
+    },
+    "bucket, keyed hash (secret seed)": {
+     "rej": 3,
+     "tp": 3,
+     "median_rstar": 323.0,
+     "rstar_sorted": [
+      219,
+      323,
+      663
+     ],
+     "boundary": {
+      "cold_start_steps": 824,
+      "cold_start_closed_form": 824,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": 409,
+      "n_clearing_in_prefix": 2,
+      "n_clearing_anywhere": 2,
+      "n_rej": 3,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.012195121951219513
+    }
+   },
+   "ensemble": {
+    "tp_min": 0,
+    "tp_q25": 0.0,
+    "tp_median": 1.0,
+    "tp_q75": 3.0,
+    "tp_max": 6,
+    "rstar_median_over_orders": 175.0,
+    "rstar_iqr": [
+     79.0,
+     402.5
+    ],
+    "n_orders_with_detection": 29
+   },
+   "first_flow_tp": 31,
+   "canonical_tp": 0,
+   "canonical_median_rstar": null,
+   "canonical_rstar_sorted": [],
+   "keyed_tp": 3,
+   "keyed_median_rstar": 323.0,
+   "first_flow_median_rstar": 1165.0,
+   "perturbation": {
+    "perturbed_group": 2805,
+    "others_moved_first_flow": 7,
+    "others_moved_hashed_key": 0,
+    "frac_moved_first_flow": 0.0002210223864102807
+   },
+   "first_flow_is_upper": true
+  },
+  {
+   "pos": 0.85,
+   "seed": 0,
+   "T": 31568,
+   "n_mal": 255,
+   "CEIL": 1813114.0,
+   "named": {
+    "shipped (bucket, first-flow)": {
+     "rej": 72,
+     "tp": 72,
+     "median_rstar": 5201.5,
+     "rstar_sorted": [
+      7,
+      65,
+      136,
+      145,
+      145,
+      164,
+      171,
+      180,
+      181,
+      257,
+      261,
+      323,
+      356,
+      426,
+      483,
+      551,
+      615,
+      1170,
+      1494,
+      1545,
+      1562,
+      1595,
+      1620,
+      1803,
+      1895,
+      1964,
+      2333,
+      2506,
+      2598,
+      2609,
+      2704,
+      2745,
+      2748,
+      2880,
+      3199,
+      3689,
+      6714,
+      10299,
+      10706,
+      10874,
+      11962,
+      14288,
+      14329,
+      19553,
+      20919,
+      21101,
+      23085,
+      23097,
+      23905,
+      25528,
+      25952,
+      28815,
+      31793,
+      36414,
+      45750,
+      47792,
+      72901,
+      88158,
+      89336,
+      92322,
+      94362,
+      160681,
+      180910,
+      3083150,
+      69195773,
+      73256297,
+      79438693,
+      89149876,
+      89365016,
+      114077982,
+      121886279,
+      145525527
+     ],
+     "boundary": {
+      "cold_start_steps": 748,
+      "cold_start_closed_form": 748,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": 4,
+      "n_clearing_in_prefix": 40,
+      "n_clearing_anywhere": 40,
+      "n_rej": 72,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.2823529411764706
+    },
+    "bucket, group-id": {
+     "rej": 24,
+     "tp": 24,
+     "median_rstar": 125.0,
+     "rstar_sorted": [
+      2,
+      2,
+      5,
+      8,
+      37,
+      43,
+      65,
+      82,
+      85,
+      90,
+      90,
+      102,
+      148,
+      464,
+      1135,
+      2492,
+      6226,
+      8440,
+      21330,
+      81028,
+      101785,
+      333784,
+      704699,
+      3317627
+     ],
+     "boundary": {
+      "cold_start_steps": 748,
+      "cold_start_closed_form": 748,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": 23,
+      "n_clearing_in_prefix": 5,
+      "n_clearing_anywhere": 5,
+      "n_rej": 24,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.09411764705882353
+    },
+    "bucket, last-flow": {
+     "rej": 0,
+     "tp": 0,
+     "median_rstar": null,
+     "rstar_sorted": [],
+     "boundary": {
+      "cold_start_steps": 748,
+      "cold_start_closed_form": 748,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": null,
+      "n_clearing_in_prefix": 0,
+      "n_clearing_anywhere": 0,
+      "n_rej": 0,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.0
+    },
+    "bucket, fixed-random": {
+     "rej": 38,
+     "tp": 38,
+     "median_rstar": 71.5,
+     "rstar_sorted": [
+      1,
+      3,
+      3,
+      4,
+      5,
+      7,
+      7,
+      9,
+      9,
+      10,
+      12,
+      15,
+      15,
+      26,
+      27,
+      36,
+      52,
+      53,
+      57,
+      86,
+      100,
+      133,
+      153,
+      187,
+      191,
+      306,
+      319,
+      351,
+      439,
+      442,
+      782,
+      1186,
+      1529,
+      1571,
+      1577,
+      31046,
+      45218,
+      47070
+     ],
+     "boundary": {
+      "cold_start_steps": 748,
+      "cold_start_closed_form": 748,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": 112,
+      "n_clearing_in_prefix": 2,
+      "n_clearing_anywhere": 2,
+      "n_rej": 38,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.14901960784313725
+    },
+    "bucket, hashed-key (canonical)": {
+     "rej": 34,
+     "tp": 34,
+     "median_rstar": 115.5,
+     "rstar_sorted": [
+      2,
+      7,
+      13,
+      14,
+      20,
+      38,
+      40,
+      43,
+      51,
+      53,
+      55,
+      69,
+      76,
+      97,
+      107,
+      107,
+      113,
+      118,
+      154,
+      196,
+      208,
+      232,
+      262,
+      279,
+      459,
+      486,
+      535,
+      758,
+      916,
+      3965,
+      9395,
+      27345,
+      46561,
+      58616
+     ],
+     "boundary": {
+      "cold_start_steps": 748,
+      "cold_start_closed_form": 748,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": 240,
+      "n_clearing_in_prefix": 3,
+      "n_clearing_anywhere": 3,
+      "n_rej": 34,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.13333333333333333
+    },
+    "bucket, keyed hash (secret seed)": {
+     "rej": 24,
+     "tp": 24,
+     "median_rstar": 160.5,
+     "rstar_sorted": [
+      1,
+      3,
+      7,
+      8,
+      17,
+      33,
+      39,
+      42,
+      68,
+      109,
+      113,
+      120,
+      201,
+      304,
+      306,
+      345,
+      388,
+      545,
+      682,
+      1974,
+      4281,
+      35281,
+      49687,
+      67942
+     ],
+     "boundary": {
+      "cold_start_steps": 748,
+      "cold_start_closed_form": 748,
+      "cold_start_matches_closed_form": true,
+      "first_clearing_step": 231,
+      "n_clearing_in_prefix": 4,
+      "n_clearing_anywhere": 4,
+      "n_rej": 24,
+      "zero_iff_empty_prefix": true
+     },
+     "recall": 0.09411764705882353
+    }
+   },
+   "ensemble": {
+    "tp_min": 0,
+    "tp_q25": 20.0,
+    "tp_median": 23.5,
+    "tp_q75": 28.75,
+    "tp_max": 44,
+    "rstar_median_over_orders": 98.0,
+    "rstar_iqr": [
+     51.0,
+     129.0
+    ],
+    "n_orders_with_detection": 49
+   },
+   "first_flow_tp": 72,
+   "canonical_tp": 34,
+   "canonical_median_rstar": 115.5,
+   "canonical_rstar_sorted": [
+    2,
+    7,
+    13,
+    14,
+    20,
+    38,
+    40,
+    43,
+    51,
+    53,
+    55,
+    69,
+    76,
+    97,
+    107,
+    107,
+    113,
+    118,
+    154,
+    196,
+    208,
+    232,
+    262,
+    279,
+    459,
+    486,
+    535,
+    758,
+    916,
+    3965,
+    9395,
+    27345,
+    46561,
+    58616
+   ],
+   "keyed_tp": 24,
+   "keyed_median_rstar": 160.5,
+   "first_flow_median_rstar": 5201.5,
+   "perturbation": {
+    "perturbed_group": 8751,
+    "others_moved_first_flow": 3,
+    "others_moved_hashed_key": 0,
+    "frac_moved_first_flow": 9.503595526974372e-05
+   },
+   "first_flow_is_upper": true
+  }
+ ],
+ "first_flow_is_upper_bound_everywhere": true,
+ "canonical_never_exceeds_first_flow": true
+}

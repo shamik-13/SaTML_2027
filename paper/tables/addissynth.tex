@@ -1,0 +1,36 @@
+\begin{table}[t]
+\centering
+\caption{The ADDIS state attack on a \textbf{synthetic stream where ADDIS's guarantee genuinely
+holds}, isolating the mechanism from the real-window validity failure. The two-point conformal
+evidence used elsewhere cannot supply this: its ADDIS horizon-escape (the spending index never
+advances) is the \emph{same} property that makes its null p-values non-conservative, so no two-point
+stream is both escape-feasible and guarantee-valid. We therefore use genuinely uniformly-conservative
+null p-values ($\mathrm{Unif}(0,1)$, independent, the assumption ADDIS needs). The stream is
+synthetic, so LSPR23's grouping plays no part and the result is \textbf{order-invariant} by
+construction. \emph{Top:} ADDIS
+controls $\FDR$ --- an expectation, not a per-realisation bound (the mixed arm's worst single
+realisation is $\FDP=0.104$, above $q$, which the guarantee permits) --- on this
+stream: the honest \emph{all-null} test (every rejection false) gives mean $\FDP=0.010\le q{=}0.05$, and with 120
+strong targets present mean $\FDP=0.047$ at recall
+1.00 (200 seeds each). \emph{Bottom:} the attack is adversarial state \emph{poisoning} ---
+prepending $B$ attacker-generated \emph{alternative} (non-null) precursor episodes with
+$p\in(\lambda,\tau]$. ADDIS constrains only \emph{true-null} p-values, so alternatives may take any
+value: the legitimate nulls stay $\mathrm{Unif}(0,1)$ and ADDIS's guarantee holds on the \emph{attacked}
+stream, not merely the clean one. These selected non-candidates advance the spending index and silence
+every rejection at a median $B^{\star}=140$ over 300 guarantee-valid streams
+(range 140--255; the tail from a rare null false positive that transiently
+restores wealth). So even where ADDIS's guarantee holds \emph{after} the attack, an adversary who only
+adds traffic drives the controller to silence --- a property of the mechanism, not an artefact of the
+dataset already violating the assumption.}
+\label{apptab:addissynth}
+\begin{tabular}{lrr}
+\toprule
+ & mean $\FDP$ & $\le q{=}0.05$? \\
+\midrule
+all-null (every rejection false) & 0.010 & yes \\
+mixed (120 targets, recall 1.00) & 0.047 & yes \\
+\midrule
+\multicolumn{3}{l}{\emph{state poisoning: median $B^{\star}{=}140$ (range 140--255) silences all}} \\
+\bottomrule
+\end{tabular}
+\end{table}

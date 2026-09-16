@@ -1,0 +1,49 @@
+\begin{table}[t]
+\centering
+\caption{Joint zero-evidence controller-state rerun: LSPR23, detector seed 0, \textbf{canonical}
+order, two-hour host-pair episodes, e-LOND, both windows and both spending regimes. Upper panel: the
+static, sequential and state-free attackers of \cref{sec:costcurve}; lower panel: the per-host-pair
+volume cap against the sequential attacker. Design and reading: \cref{app:joint}.}
+\label{apptab:joint}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{llrrrrrrrrr}
+\toprule
+window & regime & true det.\ (FD) & median $r^{\star}_t$ / $\sum_{t\in\mathcal D} r^{\star}_t$ & static: remain & $J_{\mathrm{seq}}$ ($\div$ $\sum_{t\in\mathcal D} r^{\star}_t$) & med.\ pad (padded) & spared & padded arity (per-alert) & \% episodes $\ge$ & $c_{\mathrm{int}}$ \\
+\midrule
+0.55 & horizon-free & 3 (0) & 24 / 80 & 0 & 30 (0.375) & 15 & 1 & 44.5 (63) & 6.1\% & 2 \\
+0.55 & horizon-aware & 105 (0) & 2{,}946 / 627{,}495 & 0 & 5{,}650 (0.009) & 48.5 & 13 & 91 (2{,}989) & 3.8\% & 3 \\
+0.62 & horizon-free & 11 (0) & 6 / 926 & 0 & 859 (0.928) & 859 & 10 & 881 (20) & 0.5\% & 41 \\
+0.62 & horizon-aware & 107 (1) & 3{,}908 / 977{,}567 & 0 & 9{,}992 (0.010) & 33 & 4 & 55 (3{,}928) & 4.3\% & 3 \\
+\bottomrule
+\end{tabular}}
+
+\vspace{3pt}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{rrrrrrr}
+\toprule
+& \multicolumn{3}{c}{0.55 horizon-aware (105 true det.)} & \multicolumn{3}{c}{0.62 horizon-aware (107 true det.)} \\
+cap $n$ & fire (struct.+casc.) & per-alert fire & benign $>n$ & fire (struct.+casc.) & per-alert fire & benign $>n$ \\
+\midrule
+30 & 105 (87+18) & 105 & 7.36\% & 107 (85+22) & 107 & 7.30\% \\
+100 & 96 (44+52) & 100 & 3.40\% & 79 (33+46) & 103 & 2.86\% \\
+300 & 19 (1+18) & 91 & 1.04\% & 60 (22+38) & 95 & 1.59\% \\
+1{,}000 & 0 (0+0) & 80 & 0.50\% & 0 (0+0) & 82 & 0.41\% \\
+3{,}000 & 0 (0+0) & 52 & 0.21\% & 0 (0+0) & 59 & 0.19\% \\
+\bottomrule
+\end{tabular}}
+\par\vspace{3pt}
+{\footnotesize\raggedright \emph{Notes.} ``true det.\ (FD)'': true detections and false discoveries on
+the unperturbed run; ``median $r^{\star}_t$ / $\sum_{t\in\mathcal D} r^{\star}_t$'': the per-alert oracle cost and the
+per-alert sum of \cref{tab:costcurve}. ``remain'': true detections still rejected after the rerun (the
+one 0.62 horizon-aware false discovery also disappears). ``padded'' statistics are over the alerts the
+sequential attacker actually padded; ``spared'' alerts fire only at a level raised by earlier rejections
+and need no pad once those are gone. ``padded arity (per-alert)'': the sequential attacker's median
+padded arity, with the per-alert reading of \cref{sec:costcurve} in parentheses; ``\% episodes $\ge$'':
+the share of deployment episodes at least that large. $c_{\mathrm{int}}=\lfloor\rho\rfloor+1$
+(\cref{cor:dilution}). Lower panel: ``fire (struct.+casc.)'' splits the surviving alerts into structural
+(the pad would not fit even at $R=0$) and cascade victims (it would have fitted at $R=0$); ``per-alert
+fire'' is $m_t+r^{\star}_t>n$ on the unperturbed pads; ``benign $>n$'': the share of benign deployment
+episodes whose arity exceeds the cap, i.e.\ the episodes an implemented admission policy would alter;
+no baseline episode is truncated or rescored in this experiment. Caps are the sampled grid; nothing is
+claimed between grid points.\par}
+\end{table}

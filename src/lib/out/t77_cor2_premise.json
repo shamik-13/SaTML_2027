@@ -1,0 +1,689 @@
+{
+ "config": {
+  "stage": "t77_cor2_premise",
+  "alpha": 0.05,
+  "k": 1,
+  "w0": 0.025,
+  "order": "keyhash",
+  "orders": [
+   "keyhash"
+  ],
+  "canonical_order": "keyhash",
+  "gammas": [
+   "poly",
+   "uniform"
+  ],
+  "orgs": [
+   "fox",
+   "harrison",
+   "russellmitchell",
+   "santos",
+   "shaw",
+   "wardbeck",
+   "wheeler",
+   "wilson"
+  ],
+  "orgs_host": [
+   "shaw",
+   "wilson"
+  ],
+  "premise": "cor:dilution: no non-attacker hypothesis carries evidence >= T/alpha",
+  "control": "every cell must reproduce t76_joint_ait's stored baseline",
+  "source_t76": "t76_joint_ait"
+ },
+ "rows": [
+  {
+   "org": "fox",
+   "arm": "flow",
+   "order": "keyhash",
+   "T": 3662,
+   "NC": 118153,
+   "CEIL": 118154.0,
+   "rho": 1.6132441288913164,
+   "c_int": 2,
+   "cold_start_threshold": 73240.0,
+   "n_own": 14,
+   "n_nonown": 3648,
+   "max_nonown_ev": 0.0,
+   "max_nonown_ratio": 0.0,
+   "premise_fails_cold_start": false,
+   "n_nonown_at_cold_start": 0,
+   "n_nonown_firing": 0,
+   "max_nonown_fire_fraction": 0.0,
+   "max_own_ev": 118154.0,
+   "c_crit": 1.6132441288913164,
+   "own_attains_ceiling": true,
+   "baseline": {
+    "poly": {
+     "rejections": 11,
+     "true": 11,
+     "false_discoveries": 0,
+     "own_alerts": 11,
+     "nonown_alerts": 0,
+     "nonown_alerts_at_R0": 0,
+     "nonown_alerts_level_raised": 0,
+     "nonown_alerts_at_cold_start": 0,
+     "first_own_alert_pos": 3,
+     "nonown_alerts_before_first_own": 0,
+     "nonown_alert_details": []
+    },
+    "uniform": {
+     "rejections": 11,
+     "true": 11,
+     "false_discoveries": 0,
+     "own_alerts": 11,
+     "nonown_alerts": 0,
+     "nonown_alerts_at_R0": 0,
+     "nonown_alerts_level_raised": 0,
+     "nonown_alerts_at_cold_start": 0,
+     "first_own_alert_pos": 4,
+     "nonown_alerts_before_first_own": 0,
+     "nonown_alert_details": []
+    }
+   }
+  },
+  {
+   "org": "harrison",
+   "arm": "flow",
+   "order": "keyhash",
+   "T": 2270,
+   "NC": 158160,
+   "CEIL": 158161.0,
+   "rho": 3.4837224669603524,
+   "c_int": 4,
+   "cold_start_threshold": 45400.0,
+   "n_own": 14,
+   "n_nonown": 2256,
+   "max_nonown_ev": 0.0,
+   "max_nonown_ratio": 0.0,
+   "premise_fails_cold_start": false,
+   "n_nonown_at_cold_start": 0,
+   "n_nonown_firing": 0,
+   "max_nonown_fire_fraction": 0.0,
+   "max_own_ev": 158161.0,
+   "c_crit": 3.4837224669603524,
+   "own_attains_ceiling": true,
+   "baseline": {
+    "poly": {
+     "rejections": 9,
+     "true": 9,
+     "false_discoveries": 0,
+     "own_alerts": 9,
+     "nonown_alerts": 0,
+     "nonown_alerts_at_R0": 0,
+     "nonown_alerts_level_raised": 0,
+     "nonown_alerts_at_cold_start": 0,
+     "first_own_alert_pos": 5,
+     "nonown_alerts_before_first_own": 0,
+     "nonown_alert_details": []
+    },
+    "uniform": {
+     "rejections": 9,
+     "true": 9,
+     "false_discoveries": 0,
+     "own_alerts": 9,
+     "nonown_alerts": 0,
+     "nonown_alerts_at_R0": 0,
+     "nonown_alerts_level_raised": 0,
+     "nonown_alerts_at_cold_start": 0,
+     "first_own_alert_pos": 5,
+     "nonown_alerts_before_first_own": 0,
+     "nonown_alert_details": []
+    }
+   }
+  },
+  {
+   "org": "russellmitchell",
+   "arm": "flow",
+   "order": "keyhash",
+   "T": 1664,
+   "NC": 99635,
+   "CEIL": 99636.0,
+   "rho": 2.9938701923076922,
+   "c_int": 3,
+   "cold_start_threshold": 33280.0,
+   "n_own": 14,
+   "n_nonown": 1650,
+   "max_nonown_ev": 49818.0,
+   "max_nonown_ratio": 1.4969350961538461,
+   "premise_fails_cold_start": true,
+   "n_nonown_at_cold_start": 1,
+   "n_nonown_firing": 1,
+   "max_nonown_fire_fraction": 0.5,
+   "max_own_ev": 99636.0,
+   "c_crit": 2.9938701923076922,
+   "own_attains_ceiling": true,
+   "baseline": {
+    "poly": {
+     "rejections": 15,
+     "true": 14,
+     "false_discoveries": 1,
+     "own_alerts": 14,
+     "nonown_alerts": 1,
+     "nonown_alerts_at_R0": 1,
+     "nonown_alerts_level_raised": 0,
+     "nonown_alerts_at_cold_start": 1,
+     "first_own_alert_pos": 0,
+     "nonown_alerts_before_first_own": 0,
+     "nonown_alert_details": [
+      {
+       "pos": 73,
+       "ev": 49818.0,
+       "R_before": 14,
+       "level": 0.0003351651128960352,
+       "level_R0": 2.234434085973568e-05,
+       "ev_over_cold_start": 1.4969350961538461,
+       "fires_at_R0": true
+      }
+     ]
+    },
+    "uniform": {
+     "rejections": 15,
+     "true": 14,
+     "false_discoveries": 1,
+     "own_alerts": 14,
+     "nonown_alerts": 1,
+     "nonown_alerts_at_R0": 1,
+     "nonown_alerts_level_raised": 0,
+     "nonown_alerts_at_cold_start": 1,
+     "first_own_alert_pos": 0,
+     "nonown_alerts_before_first_own": 0,
+     "nonown_alert_details": [
+      {
+       "pos": 73,
+       "ev": 49818.0,
+       "R_before": 14,
+       "level": 0.00045072115384615387,
+       "level_R0": 3.0048076923076925e-05,
+       "ev_over_cold_start": 1.4969350961538461,
+       "fires_at_R0": true
+      }
+     ]
+    }
+   }
+  },
+  {
+   "org": "santos",
+   "arm": "flow",
+   "order": "keyhash",
+   "T": 1877,
+   "NC": 151319,
+   "CEIL": 151320.0,
+   "rho": 4.030900372935536,
+   "c_int": 5,
+   "cold_start_threshold": 37540.0,
+   "n_own": 9,
+   "n_nonown": 1868,
+   "max_nonown_ev": 12610.0,
+   "max_nonown_ratio": 0.3359083644112946,
+   "premise_fails_cold_start": false,
+   "n_nonown_at_cold_start": 0,
+   "n_nonown_firing": 1,
+   "max_nonown_fire_fraction": 0.08333333333333333,
+   "max_own_ev": 151320.0,
+   "c_crit": 4.030900372935536,
+   "own_attains_ceiling": true,
+   "baseline": {
+    "poly": {
+     "rejections": 8,
+     "true": 8,
+     "false_discoveries": 0,
+     "own_alerts": 8,
+     "nonown_alerts": 0,
+     "nonown_alerts_at_R0": 0,
+     "nonown_alerts_level_raised": 0,
+     "nonown_alerts_at_cold_start": 0,
+     "first_own_alert_pos": 63,
+     "nonown_alerts_before_first_own": 0,
+     "nonown_alert_details": []
+    },
+    "uniform": {
+     "rejections": 10,
+     "true": 9,
+     "false_discoveries": 1,
+     "own_alerts": 9,
+     "nonown_alerts": 1,
+     "nonown_alerts_at_R0": 0,
+     "nonown_alerts_level_raised": 1,
+     "nonown_alerts_at_cold_start": 0,
+     "first_own_alert_pos": 63,
+     "nonown_alerts_before_first_own": 0,
+     "nonown_alert_details": [
+      {
+       "pos": 585,
+       "ev": 12610.0,
+       "R_before": 9,
+       "level": 0.0002663825253063399,
+       "level_R0": 2.663825253063399e-05,
+       "ev_over_cold_start": 0.3359083644112946,
+       "fires_at_R0": false
+      }
+     ]
+    }
+   }
+  },
+  {
+   "org": "shaw",
+   "arm": "flow",
+   "order": "keyhash",
+   "T": 4417,
+   "NC": 202200,
+   "CEIL": 202201.0,
+   "rho": 2.2888951777224364,
+   "c_int": 3,
+   "cold_start_threshold": 88340.0,
+   "n_own": 6,
+   "n_nonown": 4411,
+   "max_nonown_ev": 202201.0,
+   "max_nonown_ratio": 2.288895177722436,
+   "premise_fails_cold_start": true,
+   "n_nonown_at_cold_start": 2,
+   "n_nonown_firing": 3,
+   "max_nonown_fire_fraction": 1.0,
+   "max_own_ev": 134800.66666666666,
+   "c_crit": 1.5259301184816239,
+   "own_attains_ceiling": false,
+   "baseline": {
+    "poly": {
+     "rejections": 6,
+     "true": 3,
+     "false_discoveries": 3,
+     "own_alerts": 3,
+     "nonown_alerts": 3,
+     "nonown_alerts_at_R0": 1,
+     "nonown_alerts_level_raised": 2,
+     "nonown_alerts_at_cold_start": 2,
+     "first_own_alert_pos": 35,
+     "nonown_alerts_before_first_own": 0,
+     "nonown_alert_details": [
+      {
+       "pos": 62,
+       "ev": 202201.0,
+       "R_before": 1,
+       "level": 5.7812721757858505e-05,
+       "level_R0": 2.8906360878929252e-05,
+       "ev_over_cold_start": 2.288895177722436,
+       "fires_at_R0": true
+      },
+      {
+       "pos": 99,
+       "ev": 50550.25,
+       "R_before": 3,
+       "level": 5.520752664665225e-05,
+       "level_R0": 1.3801881661663062e-05,
+       "ev_over_cold_start": 0.572223794430609,
+       "fires_at_R0": false
+      },
+      {
+       "pos": 194,
+       "ev": 101100.5,
+       "R_before": 5,
+       "level": 2.844684927146153e-05,
+       "level_R0": 4.7411415452435885e-06,
+       "ev_over_cold_start": 1.144447588861218,
+       "fires_at_R0": false
+      }
+     ]
+    },
+    "uniform": {
+     "rejections": 6,
+     "true": 3,
+     "false_discoveries": 3,
+     "own_alerts": 3,
+     "nonown_alerts": 3,
+     "nonown_alerts_at_R0": 2,
+     "nonown_alerts_level_raised": 1,
+     "nonown_alerts_at_cold_start": 2,
+     "first_own_alert_pos": 35,
+     "nonown_alerts_before_first_own": 0,
+     "nonown_alert_details": [
+      {
+       "pos": 62,
+       "ev": 202201.0,
+       "R_before": 1,
+       "level": 2.2639800769753225e-05,
+       "level_R0": 1.1319900384876613e-05,
+       "ev_over_cold_start": 2.288895177722436,
+       "fires_at_R0": true
+      },
+      {
+       "pos": 99,
+       "ev": 50550.25,
+       "R_before": 3,
+       "level": 4.527960153950645e-05,
+       "level_R0": 1.1319900384876613e-05,
+       "ev_over_cold_start": 0.572223794430609,
+       "fires_at_R0": false
+      },
+      {
+       "pos": 194,
+       "ev": 101100.5,
+       "R_before": 5,
+       "level": 6.791940230925968e-05,
+       "level_R0": 1.1319900384876613e-05,
+       "ev_over_cold_start": 1.144447588861218,
+       "fires_at_R0": true
+      }
+     ]
+    }
+   }
+  },
+  {
+   "org": "wardbeck",
+   "arm": "flow",
+   "order": "keyhash",
+   "T": 2021,
+   "NC": 221624,
+   "CEIL": 221625.0,
+   "rho": 5.483052944087086,
+   "c_int": 6,
+   "cold_start_threshold": 40420.0,
+   "n_own": 9,
+   "n_nonown": 2012,
+   "max_nonown_ev": 0.0,
+   "max_nonown_ratio": 0.0,
+   "premise_fails_cold_start": false,
+   "n_nonown_at_cold_start": 0,
+   "n_nonown_firing": 0,
+   "max_nonown_fire_fraction": 0.0,
+   "max_own_ev": 221625.0,
+   "c_crit": 5.483052944087086,
+   "own_attains_ceiling": true,
+   "baseline": {
+    "poly": {
+     "rejections": 8,
+     "true": 8,
+     "false_discoveries": 0,
+     "own_alerts": 8,
+     "nonown_alerts": 0,
+     "nonown_alerts_at_R0": 0,
+     "nonown_alerts_level_raised": 0,
+     "nonown_alerts_at_cold_start": 0,
+     "first_own_alert_pos": 22,
+     "nonown_alerts_before_first_own": 0,
+     "nonown_alert_details": []
+    },
+    "uniform": {
+     "rejections": 8,
+     "true": 8,
+     "false_discoveries": 0,
+     "own_alerts": 8,
+     "nonown_alerts": 0,
+     "nonown_alerts_at_R0": 0,
+     "nonown_alerts_level_raised": 0,
+     "nonown_alerts_at_cold_start": 0,
+     "first_own_alert_pos": 22,
+     "nonown_alerts_before_first_own": 0,
+     "nonown_alert_details": []
+    }
+   }
+  },
+  {
+   "org": "wheeler",
+   "arm": "flow",
+   "order": "keyhash",
+   "T": 3371,
+   "NC": 223034,
+   "CEIL": 223035.0,
+   "rho": 3.3081429842776626,
+   "c_int": 4,
+   "cold_start_threshold": 67420.0,
+   "n_own": 16,
+   "n_nonown": 3355,
+   "max_nonown_ev": 1296.7151162790697,
+   "max_nonown_ratio": 0.01923338944347478,
+   "premise_fails_cold_start": false,
+   "n_nonown_at_cold_start": 0,
+   "n_nonown_firing": 1,
+   "max_nonown_fire_fraction": 0.005813953488372093,
+   "max_own_ev": 223035.0,
+   "c_crit": 3.3081429842776626,
+   "own_attains_ceiling": true,
+   "baseline": {
+    "poly": {
+     "rejections": 15,
+     "true": 15,
+     "false_discoveries": 0,
+     "own_alerts": 15,
+     "nonown_alerts": 0,
+     "nonown_alerts_at_R0": 0,
+     "nonown_alerts_level_raised": 0,
+     "nonown_alerts_at_cold_start": 0,
+     "first_own_alert_pos": 30,
+     "nonown_alerts_before_first_own": 0,
+     "nonown_alert_details": []
+    },
+    "uniform": {
+     "rejections": 15,
+     "true": 15,
+     "false_discoveries": 0,
+     "own_alerts": 15,
+     "nonown_alerts": 0,
+     "nonown_alerts_at_R0": 0,
+     "nonown_alerts_level_raised": 0,
+     "nonown_alerts_at_cold_start": 0,
+     "first_own_alert_pos": 30,
+     "nonown_alerts_before_first_own": 0,
+     "nonown_alert_details": []
+    }
+   }
+  },
+  {
+   "org": "wilson",
+   "arm": "flow",
+   "order": "keyhash",
+   "T": 5082,
+   "NC": 299808,
+   "CEIL": 299809.0,
+   "rho": 2.949714679260134,
+   "c_int": 3,
+   "cold_start_threshold": 101640.0,
+   "n_own": 13,
+   "n_nonown": 5069,
+   "max_nonown_ev": 0.0,
+   "max_nonown_ratio": 0.0,
+   "premise_fails_cold_start": false,
+   "n_nonown_at_cold_start": 0,
+   "n_nonown_firing": 0,
+   "max_nonown_fire_fraction": 0.0,
+   "max_own_ev": 299809.0,
+   "c_crit": 2.949714679260134,
+   "own_attains_ceiling": true,
+   "baseline": {
+    "poly": {
+     "rejections": 11,
+     "true": 11,
+     "false_discoveries": 0,
+     "own_alerts": 11,
+     "nonown_alerts": 0,
+     "nonown_alerts_at_R0": 0,
+     "nonown_alerts_level_raised": 0,
+     "nonown_alerts_at_cold_start": 0,
+     "first_own_alert_pos": 43,
+     "nonown_alerts_before_first_own": 0,
+     "nonown_alert_details": []
+    },
+    "uniform": {
+     "rejections": 11,
+     "true": 11,
+     "false_discoveries": 0,
+     "own_alerts": 11,
+     "nonown_alerts": 0,
+     "nonown_alerts_at_R0": 0,
+     "nonown_alerts_level_raised": 0,
+     "nonown_alerts_at_cold_start": 0,
+     "first_own_alert_pos": 43,
+     "nonown_alerts_before_first_own": 0,
+     "nonown_alert_details": []
+    }
+   }
+  },
+  {
+   "org": "shaw",
+   "arm": "host",
+   "order": "keyhash",
+   "T": 4417,
+   "NC": 202200,
+   "CEIL": 202201.0,
+   "rho": 2.2888951777224364,
+   "c_int": 3,
+   "cold_start_threshold": 88340.0,
+   "n_own": 6,
+   "n_nonown": 4411,
+   "max_nonown_ev": 202201.0,
+   "max_nonown_ratio": 2.288895177722436,
+   "premise_fails_cold_start": true,
+   "n_nonown_at_cold_start": 4,
+   "n_nonown_firing": 8,
+   "max_nonown_fire_fraction": 1.0,
+   "max_own_ev": 134800.66666666666,
+   "c_crit": 1.5259301184816239,
+   "own_attains_ceiling": false,
+   "baseline": {
+    "poly": {
+     "rejections": 4,
+     "true": 3,
+     "false_discoveries": 1,
+     "own_alerts": 3,
+     "nonown_alerts": 1,
+     "nonown_alerts_at_R0": 0,
+     "nonown_alerts_level_raised": 1,
+     "nonown_alerts_at_cold_start": 1,
+     "first_own_alert_pos": 35,
+     "nonown_alerts_before_first_own": 0,
+     "nonown_alert_details": [
+      {
+       "pos": 194,
+       "ev": 202201.0,
+       "R_before": 3,
+       "level": 1.8964566180974354e-05,
+       "level_R0": 4.7411415452435885e-06,
+       "ev_over_cold_start": 2.288895177722436,
+       "fires_at_R0": false
+      }
+     ]
+    },
+    "uniform": {
+     "rejections": 9,
+     "true": 3,
+     "false_discoveries": 6,
+     "own_alerts": 3,
+     "nonown_alerts": 6,
+     "nonown_alerts_at_R0": 4,
+     "nonown_alerts_level_raised": 2,
+     "nonown_alerts_at_cold_start": 4,
+     "first_own_alert_pos": 35,
+     "nonown_alerts_before_first_own": 0,
+     "nonown_alert_details": [
+      {
+       "pos": 194,
+       "ev": 202201.0,
+       "R_before": 3,
+       "level": 4.527960153950645e-05,
+       "level_R0": 1.1319900384876613e-05,
+       "ev_over_cold_start": 2.288895177722436,
+       "fires_at_R0": true
+      },
+      {
+       "pos": 3352,
+       "ev": 24938.123333333333,
+       "R_before": 4,
+       "level": 5.659950192438306e-05,
+       "level_R0": 1.1319900384876613e-05,
+       "ev_over_cold_start": 0.2822970719191004,
+       "fires_at_R0": false
+      },
+      {
+       "pos": 3726,
+       "ev": 148990.2105263158,
+       "R_before": 5,
+       "level": 6.791940230925968e-05,
+       "level_R0": 1.1319900384876613e-05,
+       "ev_over_cold_start": 1.6865543414796897,
+       "fires_at_R0": true
+      },
+      {
+       "pos": 4030,
+       "ev": 72792.36,
+       "R_before": 6,
+       "level": 7.92393026941363e-05,
+       "level_R0": 1.1319900384876613e-05,
+       "ev_over_cold_start": 0.824002263980077,
+       "fires_at_R0": false
+      },
+      {
+       "pos": 4326,
+       "ev": 123567.27777777778,
+       "R_before": 7,
+       "level": 9.05592030790129e-05,
+       "level_R0": 1.1319900384876613e-05,
+       "ev_over_cold_start": 1.398769275274822,
+       "fires_at_R0": true
+      },
+      {
+       "pos": 4365,
+       "ev": 202201.0,
+       "R_before": 8,
+       "level": 0.0001018791034638895,
+       "level_R0": 1.1319900384876613e-05,
+       "ev_over_cold_start": 2.288895177722436,
+       "fires_at_R0": true
+      }
+     ]
+    }
+   }
+  },
+  {
+   "org": "wilson",
+   "arm": "host",
+   "order": "keyhash",
+   "T": 5082,
+   "NC": 299808,
+   "CEIL": 299809.0,
+   "rho": 2.949714679260134,
+   "c_int": 3,
+   "cold_start_threshold": 101640.0,
+   "n_own": 13,
+   "n_nonown": 5069,
+   "max_nonown_ev": 0.0,
+   "max_nonown_ratio": 0.0,
+   "premise_fails_cold_start": false,
+   "n_nonown_at_cold_start": 0,
+   "n_nonown_firing": 0,
+   "max_nonown_fire_fraction": 0.0,
+   "max_own_ev": 299809.0,
+   "c_crit": 2.949714679260134,
+   "own_attains_ceiling": true,
+   "baseline": {
+    "poly": {
+     "rejections": 6,
+     "true": 6,
+     "false_discoveries": 0,
+     "own_alerts": 6,
+     "nonown_alerts": 0,
+     "nonown_alerts_at_R0": 0,
+     "nonown_alerts_level_raised": 0,
+     "nonown_alerts_at_cold_start": 0,
+     "first_own_alert_pos": 58,
+     "nonown_alerts_before_first_own": 0,
+     "nonown_alert_details": []
+    },
+    "uniform": {
+     "rejections": 6,
+     "true": 6,
+     "false_discoveries": 0,
+     "own_alerts": 6,
+     "nonown_alerts": 0,
+     "nonown_alerts_at_R0": 0,
+     "nonown_alerts_level_raised": 0,
+     "nonown_alerts_at_cold_start": 0,
+     "first_own_alert_pos": 58,
+     "nonown_alerts_before_first_own": 0,
+     "nonown_alert_details": []
+    }
+   }
+  }
+ ],
+ "control_reproduced": true,
+ "n_cells": 10
+}

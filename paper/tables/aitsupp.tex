@@ -1,0 +1,45 @@
+\begin{table}[t]
+\centering
+\caption{Full suppression pipeline on the benign-inclusive AIT testbed: per organisation, a
+leave-one-organisation-out detector, in-organisation benign calibration preceding the first attack,
+two-hour host-pair episodes, e-LOND, and each detected malicious episode suppressed by replaying real
+ordinary-to-victim flows against the running controller level (200 draws). Rows are sequenced by
+\textbf{first-flow} arrival and are conditional on the detected set that order produces; the flow-only
+folds under both orders are \cref{apptab:aitorder}. Design and reading: \cref{app:ait}.}
+\label{apptab:aitsupp}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{lrrrrrr}
+\toprule
+org & det. & pad fire & $r^{\star}_{t,\mathrm{emp}}$ & $r^{\star}_t$ (closed) & suppr. & succ. \\
+\midrule
+\multicolumn{7}{l}{\emph{flow-only detector}} \\
+fox & 13/14 & 1.3e-04 & 277 & 277 & 13/13 & 1.00 \\
+harrison & 10/14 & 1.8e-04 & 1{,}412.5 & 1{,}412.5 & 10/10 & 1.00 \\
+russellmitchell & 14/14 & 5.2e-04 & 3{,}551.5 & 3{,}365.5 & 14/14 & 0.97 \\
+santos & 9/9 & 4.7e-04 & 212 & 212 & 8/9 & 0.79 \\
+shaw & 3/6 & 0.0e+00 & 404 & 404 & 3/3 & 1.00 \\
+wardbeck & 9/9 & 3.2e-04 & 13{,}142 & 8{,}294 & 9/9 & 0.90 \\
+wheeler & 15/16 & 2.1e-04 & 1{,}609 & 1{,}609 & 15/15 & 1.00 \\
+wilson & 12/13 & 4.3e-05 & 793 & 793 & 12/12 & 1.00 \\
+\midrule
+\multicolumn{7}{l}{\emph{host-conditioned detector, end-to-end}} \\
+fox & 9/14 & 0.0e+00 & 115 & 55 & 9/9 & 1.00 \\
+harrison & 7/14 & 2.9e-04 & 792.5 & 692 & 6/7 & 0.86 \\
+russellmitchell & 9/14 & 0.0e+00 & 1{,}140 & 1{,}140 & 9/9 & 1.00 \\
+santos & 5/9 & 0.0e+00 & 43 & 43 & 5/5 & 1.00 \\
+shaw & 3/6 & 7.0e-02 & 269 & 269 & 3/3 & 1.00 \\
+wardbeck & 9/9 & 1.3e-03 & 8{,}471.5 & 8{,}263.5 & 8/9 & 0.74 \\
+wheeler & 15/16 & 3.6e-04 & 1{,}609 & 1{,}486 & 11/15 & 0.61 \\
+wilson & 6/13 & 0.0e+00 & 355 & 355 & 6/6 & 1.00 \\
+\bottomrule
+\end{tabular}}
+\par\vspace{3pt}
+{\footnotesize\raggedright \emph{Notes.} ``det.'': e-LOND true detections over malicious episodes; ``pad
+fire'': the real ordinary-to-victim firing rate as observed; ``$r^{\star}_{t,\mathrm{emp}}$'': the empirical median
+replay cost over suppressible episodes; ``$r^{\star}_t$ (closed)'': the zero-pad closed-form lower bound over
+the same episodes ($\le$ empirical by construction); ``suppr.'': detected episodes for which at least
+one of the 200 draws brought the group below threshold inside the scored range --- a
+possibility count, not a reliability one; ``succ.'': the mean per-draw success, which is the
+reliability the count does not carry. An episode outside ``suppr.'' had no successful draw within that
+budget, which does not establish that it cannot be padded.\par}
+\end{table}

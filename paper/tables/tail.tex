@@ -1,0 +1,28 @@
+\begin{table}[t]
+\centering
+\caption{Benign firing rate vs nominal by window (seed 0). ``ratio'' is the measured/nominal benign
+firing rate at $k=1$, and ``95\% CI'' is its exact Clopper--Pearson binomial interval given the
+observed firing count out of the benign flows.
+The interval separates the theoretical guarantee from the empirical diagnostic: at the four
+non-stress windows only $0$--$3$ benign flows fire (expectation $\approx\!1$), so the interval is
+wide and \textbf{includes 1} --- the diagnostic cannot \emph{prove} validity, only fail to reject
+it; at position 0.85 the interval \textbf{excludes 1} by orders of magnitude, a clear violation. The
+last four columns are the ratio at rank depth $k\in\{1,10,100,1000\}$. This diagnostic is
+\textbf{order-invariant}: it scores benign \emph{flows} against the calibration threshold, with no
+controller and so no stream sequence to permute.}
+\label{apptab:tail}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{lrrrrrrrr}
+\toprule
+ & & & & & \multicolumn{4}{c}{ratio at rank depth $k$} \\
+\cmidrule(lr){6-9}
+position & AUROC & fired benign & ratio & 95\% CI & $k{=}1$ & $k{=}10$ & $k{=}100$ & $k{=}1000$ \\
+\midrule
+0.55 & 0.916 & 1 & 1.07 & $[0.03,\,5.96]$ & 1.07 & 0.64 & 0.51 & 3.85 \\
+0.62 & 0.799 & 1 & 1.16 & $[0.03,\,6.45]$ & 1.16 & 7.17 & 0.91 & 5.09 \\
+0.70 & 0.914 & 3 & 3.79 & $[0.78,\,11.06]$ & 3.79 & 0.50 & 0.09 & 0.11 \\
+0.77 & 0.828 & 2 & 2.72 & $[0.33,\,9.82]$ & 2.72 & 0.95 & 0.98 & 2.41 \\
+0.85 & 0.999 & 46 & 50.90 & $[37.26,\,67.89]$ & 50.90 & 9.18 & 4.49 & 6.80 \\
+\bottomrule
+\end{tabular}}
+\end{table}

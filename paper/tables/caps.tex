@@ -1,0 +1,21 @@
+\begin{table}[t]
+\centering
+\caption{Aggregation-cap sweep (median over five positions $\times$ two seeds): the frozen
+$n_0=p_{99}$ is chosen for validity and attack cost, not power. ``\% groups $m>n_0$'' is the
+share of groups whose size exceeds the cap; ``front-load cost'' is the number of appended
+flows needed to defeat the front-loading defence. All counts here use the \textbf{first-flow} within-bucket order, the optimistic upper bound over the orders we audit, not the canonical metadata-hash order \cref{tab:main} reports (\cref{apptab:ordering}); the order shifts detections and the level an alert fires at, and shifts nothing else.}
+\label{apptab:caps}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{lrrrrr}
+\toprule
+cap & $n_0$ & \% groups $m>n_0$ & det.\ raw & det.\ trunc.\ & front-load cost \\
+\midrule
+mean & 47 & 5.72 & 39.5 & 35 & 16 \\
+p50 & 2 & 37.58 & 99 & 71 & 1 \\
+p90 & 21 & 10.24 & 68.5 & 60 & 8 \\
+p99 & 408 & 1.08 & 0 & 0 & 116 \\
+p999 & 7,258 & 0.12 & 0 & 0 & 3,560 \\
+max & 97,911 & 0.01 & 0 & 0 & -- \\
+\bottomrule
+\end{tabular}}
+\end{table}

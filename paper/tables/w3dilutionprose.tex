@@ -1,0 +1,20 @@
+\emph{The black-box pool and the dilution replay.} The pad flows of \cref{apptab:w3dilution} are real
+flows of the black-box pool, selected on network-observable frequency alone: the most common
+$(\text{proto},\text{port})$ over the training prefix, which precedes both calibration and deployment
+--- no labels, no detector output, no knowledge of the attacker's own traffic. It picks proto 17/port 53 at
+both windows, the same service the label-using rule would, and the resulting pool is measured to be 0.0000\% attack-labelled
+(an audit, not a selection criterion). The selection rule matters: taking the mode over \emph{all}
+window traffic instead picks the attacker's own flood at the stress window, a pool 90\%
+attack-labelled that does not dilute. Zero pad fires out of the sampled flows at both windows is
+evidence for the structural premise (ordinary victim-service traffic scores like ordinary traffic),
+not proof that the firing probability is zero; the Clopper--Pearson bound in the table says how much
+that observation leaves open. Both within-bucket orders are attacked. The key-hash rows are the
+canonical order the paper reports, under which a pad provably moves no other hypothesis's spending
+weight, so the \cref{assump:groupval} argument is clean; the first-flow rows re-run the identical chain
+--- same detector, same pool, same pricing --- on the detected set the initial first-flow order
+produces, which \cref{apptab:ordering} shows is the largest over the orders we audit. Every detection is
+suppressible under both, and the canonical medians reproduce \cref{tab:main}. The canonical
+primary-window set is small, so read it as three individually-priced episodes (costs 23, 24, 33 flows)
+rather than as a rate; the canonical costs are lower than the first-flow ones because the two orders
+detect different episodes at different steps of the level sequence, not because the canonical order is
+weaker.

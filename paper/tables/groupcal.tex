@@ -1,0 +1,34 @@
+\begin{table*}[t]
+\centering
+\caption{What calibrating the \emph{grouped unit} costs (seed 0; \cref{sec:groupcal}). Left: the
+shipped construction, calibrated on benign \emph{flows}. Right: split conformal on the group, same
+key and protocol, which would need only calibration/test \emph{group} exchangeability. The evidence
+ceiling falls by the flows-per-group ratio ($40$--$49\times$) with $T$ unchanged, so the margin
+collapses and detection at the primary and secondary windows goes to zero. That is the feasibility boundary, not
+a weak statistic: the cold-start window is tens of hypotheses and the first \emph{firing} group
+arrives hundreds of positions later (at $0.55$, $110$ groups fire and none lands inside the window);
+feasible-step counts match $\lfloor(\alpha\ceil(R{+}1)/\zeta(1.6))^{1/1.6}\rfloor$ at every
+configuration. The last two columns qualify the repair without refuting it: the \emph{max} statistic --- the
+padding-robust one --- is strongly arity-dependent, and arity is what the adversary controls, so
+group exchangeability may be fragile under group-formation shift, though the correlation alone
+neither refutes it nor shows that it fails; the \emph{mean} is arity-invariant to within noise and is exactly the rule
+\cref{thm:padding} defeats. Position $0.85$ is the stress window and
+its detections are not guarantee-bearing (\cref{sec:tail}). The flow-calibration columns use the \textbf{first-flow} within-bucket order (the optimistic upper bound), not the canonical order of \cref{tab:main}; the group arm matches its tie-break to the same order, so the two remain comparable (\cref{apptab:ordering}).}
+\label{apptab:groupcal}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lrrrrrrrrrrr}
+\toprule
+ & \multicolumn{3}{c}{flow calibration} & \multicolumn{6}{c}{group calibration} &
+ \multicolumn{2}{c}{arity corr.} \\
+\cmidrule(lr){2-4}\cmidrule(lr){5-10}\cmidrule(lr){11-12}
+Position & $\lvert C\rvert$ & margin & det. & $\lvert C\rvert$ & margin & det.\ max &
+det.\ mean & cold start & 1st fire & max & mean \\
+\midrule
+0.55 & 2,448,993 & $+0.067$ & 18 & 52,279 & $-0.977$ & 0 & 0 & 81 & 401 & +0.35 & +0.04 \\
+0.62 & 2,449,031 & $+0.243$ & 13 & 53,897 & $-0.973$ & 0 & 0 & 83 & 349 & +0.36 & +0.01 \\
+0.70 & 2,287,988 & $+0.536$ & 30 & 57,093 & $-0.962$ & 1 & 0 & 86 & 6 & +0.23 & -0.12 \\
+0.77 & 2,116,418 & $+0.671$ & 31 & 48,869 & $-0.961$ & 2 & 1 & 78 & 11 & +0.34 & -0.01 \\
+0.85 & 1,813,113 & $+0.436$ & 72 & 36,944 & $-0.971$ & 42 & 42 & 65 & 4 & +0.30 & -0.07 \\
+\bottomrule
+\end{tabular}}
+\end{table*}

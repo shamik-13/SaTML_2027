@@ -1,0 +1,36 @@
+# Pinned environment for the reproduction package.
+#
+# WHY PINNED.  The artifact promises deterministic reproduction. Two of these libraries can break
+# that promise silently across versions:
+#
+#   * scikit-learn -- HistGradientBoostingClassifier's fitted trees, and therefore every anomaly
+#     score, depend on the implementation. A different minor version can move the scores, hence the
+#     conformal ranks, hence the e-values, hence which episodes are detected. This matters ONLY in
+#     MODE="full", which refits the detector.
+#   * matplotlib -- affects the rendered figures, not the numbers.
+#
+# WHAT WAS VERIFIED AT THESE VERSIONS (on python 3.14.6, macOS arm64):
+#   * MODE="paper": paper.ipynb executes end to end with 0 errors in under a minute, renders all
+#     6 submission figures inline and rebuilds every generated table from the cached results.
+#   * All 48 generated table files (36 tables and their prose companions) regenerate BYTE-IDENTICAL
+#     from the cached results.
+#   * All 6 figures regenerate byte-identical (modulo PDF creation timestamps).
+#
+# WHAT WAS NOT VERIFIED.  MODE="full" was not re-run for this pinning, because it needs the LSPR23
+# download. The shipped results in lib/out/ were produced by an earlier full run whose exact library
+# versions were not recorded -- the artifacts store their experiment config, not their environment.
+# So these pins are the versions under which the CACHED path is known to reproduce exactly; treat
+# them as the best available starting point for a full re-run, not as a certified match to the run
+# that produced lib/out/. Recording the environment alongside future runs closes this gap.
+
+numpy==2.5.2
+scipy==1.18.1
+scikit-learn==1.9.0
+pandas==3.0.5
+matplotlib==3.11.1
+
+# Notebook execution. `jupyter` pulls a large stack; nbclient alone is enough to run the notebook
+# headlessly, which is what the checks above did.
+nbformat==5.11.1
+nbclient==0.11.0
+ipykernel==7.3.0

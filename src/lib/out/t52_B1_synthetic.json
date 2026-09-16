@@ -1,0 +1,136 @@
+{
+ "config": {
+  "T": 20000,
+  "n_target": 120,
+  "p_alt": 1e-06,
+  "lam": 0.25,
+  "tau": 0.5,
+  "alpha": 0.05,
+  "w0": 0.025,
+  "n_seed": 200,
+  "p_precursor": 0.375,
+  "null": "independent Uniform(0,1) -- uniformly conservative, ADDIS-valid"
+ },
+ "validity": {
+  "all_null": {
+   "mean_fdp": 0.01,
+   "max_fdp": 1.0,
+   "frac_seed_any_rej": 0.01,
+   "controlled": true
+  },
+  "mixed": {
+   "mean_fdp": 0.04727369367912543,
+   "max_fdp": 0.1044776119402985,
+   "mean_recall": 1.0,
+   "mean_tp": 120.0,
+   "controlled": true
+  }
+ },
+ "uniform_conservative_diag": [
+  {
+   "x": 0.01,
+   "lhs": 0.010068868581871037,
+   "ok": true
+  },
+  {
+   "x": 0.05,
+   "lhs": 0.050023442709317405,
+   "ok": true
+  },
+  {
+   "x": 0.1,
+   "lhs": 0.1003457924585454,
+   "ok": true
+  },
+  {
+   "x": 0.25,
+   "lhs": 0.2501741958250984,
+   "ok": true
+  },
+  {
+   "x": 0.5,
+   "lhs": 0.5004513596271559,
+   "ok": true
+  },
+  {
+   "x": 1.0,
+   "lhs": 1.0,
+   "ok": true
+  }
+ ],
+ "attack": {
+  "n_det_clean": 120,
+  "bstar_distribution": {
+   "n_streams": 300,
+   "min": 140,
+   "q25": 140.0,
+   "median": 140.0,
+   "q75": 140.0,
+   "max": 255,
+   "n_stable": 300
+  },
+  "witness_seed7": {
+   "b_star": 140,
+   "stable_above": true,
+   "sweep": [
+    {
+     "B": 0,
+     "total_rej": 122,
+     "targets_kept": 120,
+     "kept_frac": 1.0
+    },
+    {
+     "B": 32,
+     "total_rej": 122,
+     "targets_kept": 120,
+     "kept_frac": 1.0
+    },
+    {
+     "B": 128,
+     "total_rej": 122,
+     "targets_kept": 120,
+     "kept_frac": 1.0
+    },
+    {
+     "B": 139,
+     "total_rej": 122,
+     "targets_kept": 120,
+     "kept_frac": 1.0
+    },
+    {
+     "B": 140,
+     "total_rej": 0,
+     "targets_kept": 0,
+     "kept_frac": 0.0
+    },
+    {
+     "B": 141,
+     "total_rej": 0,
+     "targets_kept": 0,
+     "kept_frac": 0.0
+    },
+    {
+     "B": 256,
+     "total_rej": 0,
+     "targets_kept": 0,
+     "kept_frac": 0.0
+    },
+    {
+     "B": 280,
+     "total_rej": 0,
+     "targets_kept": 0,
+     "kept_frac": 0.0
+    }
+   ]
+  },
+  "precursors": "alternative (non-null), p in (lam,tau] = SELECTED non-candidates; true nulls stay U(0,1) so ADDIS's assumption & FDR guarantee hold on the ATTACKED stream",
+  "note": "silence is absorbing over the finite realization; a rare null false positive can transiently restore wealth, so B* is reported as a distribution with a stability check",
+  "clean": {
+   "rej": 122,
+   "tp": 120,
+   "fp": 2,
+   "fdp": 0.01639344262295082,
+   "recall": 1.0
+  }
+ }
+}

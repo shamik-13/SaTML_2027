@@ -1,0 +1,1839 @@
+{
+ "config": {
+  "pos": [
+   0.62,
+   0.85
+  ],
+  "bucket_s": 7200,
+  "header_bytes_per_packet": 40.0,
+  "host_rates_bps": [
+   1000000.0,
+   10000000.0,
+   100000000.0,
+   1000000000.0
+  ],
+  "quantiles": [
+   0.1,
+   0.5,
+   0.9
+  ],
+  "budgets": [
+   {
+    "name": "padding, one episode (median)",
+    "flows": 34,
+    "window_s": 7200,
+    "source": "section 4.30, r_90 median over 257 like-for-like episodes"
+   },
+   {
+    "name": "padding, one episode (p90)",
+    "flows": 227,
+    "window_s": 7200,
+    "source": "section 4.30, r_90 p90"
+   },
+   {
+    "name": "padding, all 147 ADDIS detections",
+    "flows": 4998,
+    "window_s": 7200,
+    "source": "section 4.30 median x section 4.33's detection count"
+   },
+   {
+    "name": "padding at ADDIS's own level, one episode",
+    "flows": 34465311,
+    "window_s": 7200,
+    "source": "section 4.33 median_pad_per_episode"
+   },
+   {
+    "name": "ADDIS spending-state attack",
+    "flows": 92015637,
+    "window_s": null,
+    "source": "section 4.33: B* = 203 precursors x 453,279 flows at |C|+1 = 1,813,114; priced over this position's OWN deployment span"
+   }
+  ],
+  "derivation": "t41a_E8_derivation.py"
+ },
+ "blackbox_service": {
+  "0.62": {
+   "deployment": 1700053,
+   "training": 1700053,
+   "same": true
+  },
+  "0.85": {
+   "deployment": 1700053,
+   "training": 1700053,
+   "same": true
+  }
+ },
+ "volume_ratio": {
+  "0.62": {
+   "n_window_flows": 2453026,
+   "n_dataset_flows": 16353511,
+   "ratios": {
+    "padding, one episode (median)": {
+     "vs_window": 1.3860431972592219e-05,
+     "vs_dataset": 2.079064244980787e-06
+    },
+    "padding, one episode (p90)": {
+     "vs_window": 9.253876640524805e-05,
+     "vs_dataset": 1.3880811282665844e-05
+    },
+    "padding, all 147 ADDIS detections": {
+     "vs_window": 0.002037483499971056,
+     "vs_dataset": 0.00030562244401217574
+    },
+    "padding at ADDIS's own level, one episode": {
+     "vs_window": 14.050120544992184,
+     "vs_dataset": 2.1075175233012655
+    },
+    "ADDIS spending-state attack": {
+     "vs_window": 37.51107285450705,
+     "vs_dataset": 5.626659437230329
+    }
+   }
+  },
+  "0.85": {
+   "n_window_flows": 2453026,
+   "n_dataset_flows": 16353511,
+   "ratios": {
+    "padding, one episode (median)": {
+     "vs_window": 1.3860431972592219e-05,
+     "vs_dataset": 2.079064244980787e-06
+    },
+    "padding, one episode (p90)": {
+     "vs_window": 9.253876640524805e-05,
+     "vs_dataset": 1.3880811282665844e-05
+    },
+    "padding, all 147 ADDIS detections": {
+     "vs_window": 0.002037483499971056,
+     "vs_dataset": 0.00030562244401217574
+    },
+    "padding at ADDIS's own level, one episode": {
+     "vs_window": 14.050120544992184,
+     "vs_dataset": 2.1075175233012655
+    },
+    "ADDIS spending-state attack": {
+     "vs_window": 37.51107285450705,
+     "vs_dataset": 5.626659437230329
+    }
+   }
+  }
+ },
+ "duration_unit": {
+  "0.62": {
+   "selected": "microseconds",
+   "table": {
+    "seconds": 6.0,
+    "milliseconds": 3.0,
+    "microseconds": 9.026875777449805e-09,
+    "nanoseconds": 3.0
+   },
+   "coverage": {
+    "n_used": 1939266,
+    "frac_used": 0.7905607196988536
+   },
+   "margin_decades": 2.9999999909731243
+  },
+  "0.85": {
+   "selected": "microseconds",
+   "table": {
+    "seconds": 6.0,
+    "milliseconds": 3.0,
+    "microseconds": 8.830124581494476e-09,
+    "nanoseconds": 3.0
+   },
+   "coverage": {
+    "n_used": 2065976,
+    "frac_used": 0.8422152883825936
+   },
+   "margin_decades": 2.9999999911698754
+  }
+ },
+ "window_span_s": {
+  "0.62": 26501.934367,
+  "0.85": 8651.447272
+ },
+ "pools": [
+  {
+   "pos": 0.62,
+   "pool": "generic benign",
+   "n_flows": 2116418,
+   "pkts_q": [
+    1.0,
+    4.0,
+    35.0
+   ],
+   "payload_q": [
+    118.0,
+    257.0,
+    5367.0
+   ],
+   "wire_q": [
+    191.0,
+    428.0,
+    6861.0
+   ],
+   "pkts_mean": 33.87667700803905,
+   "payload_mean": 9785.042413644185,
+   "wire_mean": 11140.109493965747,
+   "duration_s_median": 0.003038,
+   "duration_unit": "microseconds"
+  },
+  {
+   "pos": 0.62,
+   "pool": "attacker-origin",
+   "n_flows": 376004,
+   "pkts_q": [
+    3.0,
+    5.0,
+    39.0
+   ],
+   "payload_q": [
+    192.0,
+    508.0,
+    7380.0
+   ],
+   "wire_q": [
+    327.0,
+    704.0,
+    9200.700000000012
+   ],
+   "pkts_mean": 23.614706226529506,
+   "payload_mean": 5567.189833086882,
+   "wire_mean": 6511.778082148062,
+   "duration_s_median": 0.015422,
+   "duration_unit": "microseconds"
+  },
+  {
+   "pos": 0.62,
+   "pool": "black-box (most common benign service)",
+   "n_flows": 768715,
+   "pkts_q": [
+    3.0,
+    4.0,
+    4.0
+   ],
+   "payload_q": [
+    151.0,
+    236.0,
+    452.0
+   ],
+   "wire_q": [
+    268.0,
+    392.0,
+    662.0
+   ],
+   "pkts_mean": 3.8411843140825925,
+   "payload_mean": 296.96666905159907,
+   "wire_mean": 450.6140416149028,
+   "duration_s_median": 0.002402,
+   "duration_unit": "microseconds"
+  },
+  {
+   "pos": 0.62,
+   "pool": "black-box [service chosen on the TRAINING window]",
+   "n_flows": 768715,
+   "pkts_q": [
+    3.0,
+    4.0,
+    4.0
+   ],
+   "payload_q": [
+    151.0,
+    236.0,
+    452.0
+   ],
+   "wire_q": [
+    268.0,
+    392.0,
+    662.0
+   ],
+   "pkts_mean": 3.8411843140825925,
+   "payload_mean": 296.96666905159907,
+   "wire_mean": 450.6140416149028,
+   "duration_s_median": 0.002402,
+   "duration_unit": "microseconds"
+  },
+  {
+   "pos": 0.85,
+   "pool": "generic benign",
+   "n_flows": 1638722,
+   "pkts_q": [
+    1.0,
+    4.0,
+    31.0
+   ],
+   "payload_q": [
+    116.0,
+    256.0,
+    4156.0
+   ],
+   "wire_q": [
+    192.0,
+    416.0,
+    5711.0
+   ],
+   "pkts_mean": 26.54552388995815,
+   "payload_mean": 4892.9991957147095,
+   "wire_mean": 5954.820151313035,
+   "duration_s_median": 0.002943,
+   "duration_unit": "microseconds"
+  },
+  {
+   "pos": 0.85,
+   "pool": "attacker-origin",
+   "n_flows": 301016,
+   "pkts_q": [
+    3.0,
+    6.0,
+    37.0
+   ],
+   "payload_q": [
+    192.0,
+    524.0,
+    6712.0
+   ],
+   "wire_q": [
+    325.0,
+    764.0,
+    8338.0
+   ],
+   "pkts_mean": 25.204517367847558,
+   "payload_mean": 5193.827703510777,
+   "wire_mean": 6202.008398224679,
+   "duration_s_median": 0.039575,
+   "duration_unit": "microseconds"
+  },
+  {
+   "pos": 0.85,
+   "pool": "black-box (most common benign service)",
+   "n_flows": 584850,
+   "pkts_q": [
+    3.0,
+    4.0,
+    4.0
+   ],
+   "payload_q": [
+    151.0,
+    232.0,
+    434.0
+   ],
+   "wire_q": [
+    268.0,
+    392.0,
+    612.0
+   ],
+   "pkts_mean": 3.850789091219971,
+   "payload_mean": 284.0274429340857,
+   "wire_mean": 438.0590065828845,
+   "duration_s_median": 0.002347,
+   "duration_unit": "microseconds"
+  },
+  {
+   "pos": 0.85,
+   "pool": "black-box [service chosen on the TRAINING window]",
+   "n_flows": 584850,
+   "pkts_q": [
+    3.0,
+    4.0,
+    4.0
+   ],
+   "payload_q": [
+    151.0,
+    232.0,
+    434.0
+   ],
+   "wire_q": [
+    268.0,
+    392.0,
+    612.0
+   ],
+   "pkts_mean": 3.850789091219971,
+   "payload_mean": 284.0274429340857,
+   "wire_mean": 438.0590065828845,
+   "duration_s_median": 0.002347,
+   "duration_unit": "microseconds"
+  }
+ ],
+ "budgets_priced": [
+  {
+   "pos": 0.62,
+   "budget": "padding, one episode (median)",
+   "flows": 34,
+   "pool": "generic benign",
+   "window_s": 7200,
+   "window_is_own_span": false,
+   "iid_expected_bytes": 378763.7227948354,
+   "typical_bytes": 14552.0,
+   "chosen_min_bytes": 1360.0,
+   "chosen_sum_bytes": 1360.0,
+   "packets": {
+    "0.1": 34.0,
+    "0.5": 136.0,
+    "0.9": 1190.0
+   },
+   "packets_mean": 1151.8070182733277,
+   "payload_bytes": {
+    "0.1": 4012.0,
+    "0.5": 8738.0,
+    "0.9": 182478.0
+   },
+   "payload_bytes_mean": 332691.4420639023,
+   "wire_bytes": {
+    "0.1": 6494.0,
+    "0.5": 14552.0,
+    "0.9": 233274.0
+   },
+   "wire_bytes_mean": 378763.7227948354,
+   "bits_per_s": 16.16888888888889,
+   "hosts": {
+    "1000000": 1,
+    "10000000": 1,
+    "100000000": 1,
+    "1000000000": 1
+   }
+  },
+  {
+   "pos": 0.62,
+   "budget": "padding, one episode (median)",
+   "flows": 34,
+   "pool": "attacker-origin",
+   "window_s": 7200,
+   "window_is_own_span": false,
+   "iid_expected_bytes": 221400.4547930341,
+   "typical_bytes": 23936.0,
+   "chosen_min_bytes": 1360.0,
+   "chosen_sum_bytes": 1360.0,
+   "packets": {
+    "0.1": 102.0,
+    "0.5": 170.0,
+    "0.9": 1326.0
+   },
+   "packets_mean": 802.9000117020032,
+   "payload_bytes": {
+    "0.1": 6528.0,
+    "0.5": 17272.0,
+    "0.9": 250920.0
+   },
+   "payload_bytes_mean": 189284.454324954,
+   "wire_bytes": {
+    "0.1": 11118.0,
+    "0.5": 23936.0,
+    "0.9": 312823.8000000004
+   },
+   "wire_bytes_mean": 221400.4547930341,
+   "bits_per_s": 26.595555555555556,
+   "hosts": {
+    "1000000": 1,
+    "10000000": 1,
+    "100000000": 1,
+    "1000000000": 1
+   }
+  },
+  {
+   "pos": 0.62,
+   "budget": "padding, one episode (median)",
+   "flows": 34,
+   "pool": "black-box (most common benign service)",
+   "window_s": 7200,
+   "window_is_own_span": false,
+   "iid_expected_bytes": 15320.877414906696,
+   "typical_bytes": 13328.0,
+   "chosen_min_bytes": 2040.0,
+   "chosen_sum_bytes": 2382.0,
+   "packets": {
+    "0.1": 102.0,
+    "0.5": 136.0,
+    "0.9": 136.0
+   },
+   "packets_mean": 130.60026667880814,
+   "payload_bytes": {
+    "0.1": 5134.0,
+    "0.5": 8024.0,
+    "0.9": 15368.0
+   },
+   "payload_bytes_mean": 10096.866747754368,
+   "wire_bytes": {
+    "0.1": 9112.0,
+    "0.5": 13328.0,
+    "0.9": 22508.0
+   },
+   "wire_bytes_mean": 15320.877414906696,
+   "bits_per_s": 14.80888888888889,
+   "hosts": {
+    "1000000": 1,
+    "10000000": 1,
+    "100000000": 1,
+    "1000000000": 1
+   }
+  },
+  {
+   "pos": 0.62,
+   "budget": "padding, one episode (median)",
+   "flows": 34,
+   "pool": "black-box [service chosen on the TRAINING window]",
+   "window_s": 7200,
+   "window_is_own_span": false,
+   "iid_expected_bytes": 15320.877414906696,
+   "typical_bytes": 13328.0,
+   "chosen_min_bytes": 2040.0,
+   "chosen_sum_bytes": 2382.0,
+   "packets": {
+    "0.1": 102.0,
+    "0.5": 136.0,
+    "0.9": 136.0
+   },
+   "packets_mean": 130.60026667880814,
+   "payload_bytes": {
+    "0.1": 5134.0,
+    "0.5": 8024.0,
+    "0.9": 15368.0
+   },
+   "payload_bytes_mean": 10096.866747754368,
+   "wire_bytes": {
+    "0.1": 9112.0,
+    "0.5": 13328.0,
+    "0.9": 22508.0
+   },
+   "wire_bytes_mean": 15320.877414906696,
+   "bits_per_s": 14.80888888888889,
+   "hosts": {
+    "1000000": 1,
+    "10000000": 1,
+    "100000000": 1,
+    "1000000000": 1
+   }
+  },
+  {
+   "pos": 0.62,
+   "budget": "padding, one episode (p90)",
+   "flows": 227,
+   "pool": "generic benign",
+   "window_s": 7200,
+   "window_is_own_span": false,
+   "iid_expected_bytes": 2528804.8551302245,
+   "typical_bytes": 97156.0,
+   "chosen_min_bytes": 9080.0,
+   "chosen_sum_bytes": 9080.0,
+   "packets": {
+    "0.1": 227.0,
+    "0.5": 908.0,
+    "0.9": 7945.0
+   },
+   "packets_mean": 7690.005680824865,
+   "payload_bytes": {
+    "0.1": 26786.0,
+    "0.5": 58339.0,
+    "0.9": 1218309.0
+   },
+   "payload_bytes_mean": 2221204.62789723,
+   "wire_bytes": {
+    "0.1": 43357.0,
+    "0.5": 97156.0,
+    "0.9": 1557447.0
+   },
+   "wire_bytes_mean": 2528804.8551302245,
+   "bits_per_s": 107.95111111111112,
+   "hosts": {
+    "1000000": 1,
+    "10000000": 1,
+    "100000000": 1,
+    "1000000000": 1
+   }
+  },
+  {
+   "pos": 0.62,
+   "budget": "padding, one episode (p90)",
+   "flows": 227,
+   "pool": "attacker-origin",
+   "window_s": 7200,
+   "window_is_own_span": false,
+   "iid_expected_bytes": 1478173.6246476101,
+   "typical_bytes": 159808.0,
+   "chosen_min_bytes": 9080.0,
+   "chosen_sum_bytes": 13807.0,
+   "packets": {
+    "0.1": 681.0,
+    "0.5": 1135.0,
+    "0.9": 8853.0
+   },
+   "packets_mean": 5360.5383134221975,
+   "payload_bytes": {
+    "0.1": 43584.0,
+    "0.5": 115316.0,
+    "0.9": 1675260.0
+   },
+   "payload_bytes_mean": 1263752.092110722,
+   "wire_bytes": {
+    "0.1": 74229.0,
+    "0.5": 159808.0,
+    "0.9": 2088558.9000000027
+   },
+   "wire_bytes_mean": 1478173.6246476101,
+   "bits_per_s": 177.56444444444443,
+   "hosts": {
+    "1000000": 1,
+    "10000000": 1,
+    "100000000": 1,
+    "1000000000": 1
+   }
+  },
+  {
+   "pos": 0.62,
+   "budget": "padding, one episode (p90)",
+   "flows": 227,
+   "pool": "black-box (most common benign service)",
+   "window_s": 7200,
+   "window_is_own_span": false,
+   "iid_expected_bytes": 102289.38744658294,
+   "typical_bytes": 88984.0,
+   "chosen_min_bytes": 13620.0,
+   "chosen_sum_bytes": 18281.0,
+   "packets": {
+    "0.1": 681.0,
+    "0.5": 908.0,
+    "0.9": 908.0
+   },
+   "packets_mean": 871.9488392967485,
+   "payload_bytes": {
+    "0.1": 34277.0,
+    "0.5": 53572.0,
+    "0.9": 102604.0
+   },
+   "payload_bytes_mean": 67411.433874713,
+   "wire_bytes": {
+    "0.1": 60836.0,
+    "0.5": 88984.0,
+    "0.9": 150274.0
+   },
+   "wire_bytes_mean": 102289.38744658294,
+   "bits_per_s": 98.8711111111111,
+   "hosts": {
+    "1000000": 1,
+    "10000000": 1,
+    "100000000": 1,
+    "1000000000": 1
+   }
+  },
+  {
+   "pos": 0.62,
+   "budget": "padding, one episode (p90)",
+   "flows": 227,
+   "pool": "black-box [service chosen on the TRAINING window]",
+   "window_s": 7200,
+   "window_is_own_span": false,
+   "iid_expected_bytes": 102289.38744658294,
+   "typical_bytes": 88984.0,
+   "chosen_min_bytes": 13620.0,
+   "chosen_sum_bytes": 18281.0,
+   "packets": {
+    "0.1": 681.0,
+    "0.5": 908.0,
+    "0.9": 908.0
+   },
+   "packets_mean": 871.9488392967485,
+   "payload_bytes": {
+    "0.1": 34277.0,
+    "0.5": 53572.0,
+    "0.9": 102604.0
+   },
+   "payload_bytes_mean": 67411.433874713,
+   "wire_bytes": {
+    "0.1": 60836.0,
+    "0.5": 88984.0,
+    "0.9": 150274.0
+   },
+   "wire_bytes_mean": 102289.38744658294,
+   "bits_per_s": 98.8711111111111,
+   "hosts": {
+    "1000000": 1,
+    "10000000": 1,
+    "100000000": 1,
+    "1000000000": 1
+   }
+  },
+  {
+   "pos": 0.62,
+   "budget": "padding, all 147 ADDIS detections",
+   "flows": 4998,
+   "pool": "generic benign",
+   "window_s": 7200,
+   "window_is_own_span": false,
+   "iid_expected_bytes": 55678267.250840805,
+   "typical_bytes": 2139144.0,
+   "chosen_min_bytes": 199920.0,
+   "chosen_sum_bytes": 383291.0,
+   "packets": {
+    "0.1": 4998.0,
+    "0.5": 19992.0,
+    "0.9": 174930.0
+   },
+   "packets_mean": 169315.6316861792,
+   "payload_bytes": {
+    "0.1": 589764.0,
+    "0.5": 1284486.0,
+    "0.9": 26824266.0
+   },
+   "payload_bytes_mean": 48905641.98339364,
+   "wire_bytes": {
+    "0.1": 954618.0,
+    "0.5": 2139144.0,
+    "0.9": 34291278.0
+   },
+   "wire_bytes_mean": 55678267.250840805,
+   "bits_per_s": 2376.826666666667,
+   "hosts": {
+    "1000000": 1,
+    "10000000": 1,
+    "100000000": 1,
+    "1000000000": 1
+   }
+  },
+  {
+   "pos": 0.62,
+   "budget": "padding, all 147 ADDIS detections",
+   "flows": 4998,
+   "pool": "attacker-origin",
+   "window_s": 7200,
+   "window_is_own_span": false,
+   "iid_expected_bytes": 32545866.854576014,
+   "typical_bytes": 3518592.0,
+   "chosen_min_bytes": 199920.0,
+   "chosen_sum_bytes": 685415.0,
+   "packets": {
+    "0.1": 14994.0,
+    "0.5": 24990.0,
+    "0.9": 194922.0
+   },
+   "packets_mean": 118026.30172019447,
+   "payload_bytes": {
+    "0.1": 959616.0,
+    "0.5": 2538984.0,
+    "0.9": 36885240.0
+   },
+   "payload_bytes_mean": 27824814.785768233,
+   "wire_bytes": {
+    "0.1": 1634346.0,
+    "0.5": 3518592.0,
+    "0.9": 45985098.60000006
+   },
+   "wire_bytes_mean": 32545866.854576014,
+   "bits_per_s": 3909.5466666666666,
+   "hosts": {
+    "1000000": 1,
+    "10000000": 1,
+    "100000000": 1,
+    "1000000000": 1
+   }
+  },
+  {
+   "pos": 0.62,
+   "budget": "padding, all 147 ADDIS detections",
+   "flows": 4998,
+   "pool": "black-box (most common benign service)",
+   "window_s": 7200,
+   "window_is_own_span": false,
+   "iid_expected_bytes": 2252168.979991284,
+   "typical_bytes": 1959216.0,
+   "chosen_min_bytes": 299880.0,
+   "chosen_sum_bytes": 698997.0,
+   "packets": {
+    "0.1": 14994.0,
+    "0.5": 19992.0,
+    "0.9": 19992.0
+   },
+   "packets_mean": 19198.239201784796,
+   "payload_bytes": {
+    "0.1": 754698.0,
+    "0.5": 1179528.0,
+    "0.9": 2259096.0
+   },
+   "payload_bytes_mean": 1484239.411919892,
+   "wire_bytes": {
+    "0.1": 1339464.0,
+    "0.5": 1959216.0,
+    "0.9": 3308676.0
+   },
+   "wire_bytes_mean": 2252168.979991284,
+   "bits_per_s": 2176.9066666666668,
+   "hosts": {
+    "1000000": 1,
+    "10000000": 1,
+    "100000000": 1,
+    "1000000000": 1
+   }
+  },
+  {
+   "pos": 0.62,
+   "budget": "padding, all 147 ADDIS detections",
+   "flows": 4998,
+   "pool": "black-box [service chosen on the TRAINING window]",
+   "window_s": 7200,
+   "window_is_own_span": false,
+   "iid_expected_bytes": 2252168.979991284,
+   "typical_bytes": 1959216.0,
+   "chosen_min_bytes": 299880.0,
+   "chosen_sum_bytes": 698997.0,
+   "packets": {
+    "0.1": 14994.0,
+    "0.5": 19992.0,
+    "0.9": 19992.0
+   },
+   "packets_mean": 19198.239201784796,
+   "payload_bytes": {
+    "0.1": 754698.0,
+    "0.5": 1179528.0,
+    "0.9": 2259096.0
+   },
+   "payload_bytes_mean": 1484239.411919892,
+   "wire_bytes": {
+    "0.1": 1339464.0,
+    "0.5": 1959216.0,
+    "0.9": 3308676.0
+   },
+   "wire_bytes_mean": 2252168.979991284,
+   "bits_per_s": 2176.9066666666668,
+   "hosts": {
+    "1000000": 1,
+    "10000000": 1,
+    "100000000": 1,
+    "1000000000": 1
+   }
+  },
+  {
+   "pos": 0.62,
+   "budget": "padding at ADDIS's own level, one episode",
+   "flows": 34465311,
+   "pool": "generic benign",
+   "window_s": 7200,
+   "window_is_own_span": false,
+   "iid_expected_bytes": 383947338283.5821,
+   "typical_bytes": 14751153108.0,
+   "chosen_min_bytes": 1378612440.0,
+   "chosen_sum_bytes": null,
+   "packets": {
+    "0.1": 34465311.0,
+    "0.5": 137861244.0,
+    "0.9": 1206285885.0
+   },
+   "packets_mean": 1167570208.7286155,
+   "payload_bytes": {
+    "0.1": 4066906698.0,
+    "0.5": 8857584927.0,
+    "0.9": 184975324137.0
+   },
+   "payload_bytes_mean": 337244529934.4375,
+   "wire_bytes": {
+    "0.1": 6582874401.0,
+    "0.5": 14751153108.0,
+    "0.9": 236466498771.0
+   },
+   "wire_bytes_mean": 383947338283.5821,
+   "bits_per_s": 16390170.12,
+   "hosts": {
+    "1000000": 17,
+    "10000000": 2,
+    "100000000": 1,
+    "1000000000": 1
+   }
+  },
+  {
+   "pos": 0.62,
+   "budget": "padding at ADDIS's own level, one episode",
+   "flows": 34465311,
+   "pool": "attacker-origin",
+   "window_s": 7200,
+   "window_is_own_span": false,
+   "iid_expected_bytes": 224430456764.2165,
+   "typical_bytes": 24263578944.0,
+   "chosen_min_bytes": 1378612440.0,
+   "chosen_sum_bytes": null,
+   "packets": {
+    "0.1": 103395933.0,
+    "0.5": 172326555.0,
+    "0.9": 1344147129.0
+   },
+   "packets_mean": 813888194.2709758,
+   "payload_bytes": {
+    "0.1": 6617339712.0,
+    "0.5": 17508377988.0,
+    "0.9": 254353995180.0
+   },
+   "payload_bytes_mean": 191874928993.37747,
+   "wire_bytes": {
+    "0.1": 11270156697.0,
+    "0.5": 24263578944.0,
+    "0.9": 317104986917.7004
+   },
+   "wire_bytes_mean": 224430456764.2165,
+   "bits_per_s": 26959532.16,
+   "hosts": {
+    "1000000": 27,
+    "10000000": 3,
+    "100000000": 1,
+    "1000000000": 1
+   }
+  },
+  {
+   "pos": 0.62,
+   "budget": "padding at ADDIS's own level, one episode",
+   "flows": 34465311,
+   "pool": "black-box (most common benign service)",
+   "window_s": 7200,
+   "window_is_own_span": false,
+   "iid_expected_bytes": 15530553085.224567,
+   "typical_bytes": 13510401912.0,
+   "chosen_min_bytes": 2067918660.0,
+   "chosen_sum_bytes": null,
+   "packets": {
+    "0.1": 103395933.0,
+    "0.5": 137861244.0,
+    "0.9": 137861244.0
+   },
+   "packets_mean": 132387611.99317823,
+   "payload_bytes": {
+    "0.1": 5204261961.0,
+    "0.5": 8133813396.0,
+    "0.9": 15578320572.0
+   },
+   "payload_bytes_mean": 10235048605.497437,
+   "wire_bytes": {
+    "0.1": 9236703348.0,
+    "0.5": 13510401912.0,
+    "0.9": 22816035882.0
+   },
+   "wire_bytes_mean": 15530553085.224567,
+   "bits_per_s": 15011557.68,
+   "hosts": {
+    "1000000": 16,
+    "10000000": 2,
+    "100000000": 1,
+    "1000000000": 1
+   }
+  },
+  {
+   "pos": 0.62,
+   "budget": "padding at ADDIS's own level, one episode",
+   "flows": 34465311,
+   "pool": "black-box [service chosen on the TRAINING window]",
+   "window_s": 7200,
+   "window_is_own_span": false,
+   "iid_expected_bytes": 15530553085.224567,
+   "typical_bytes": 13510401912.0,
+   "chosen_min_bytes": 2067918660.0,
+   "chosen_sum_bytes": null,
+   "packets": {
+    "0.1": 103395933.0,
+    "0.5": 137861244.0,
+    "0.9": 137861244.0
+   },
+   "packets_mean": 132387611.99317823,
+   "payload_bytes": {
+    "0.1": 5204261961.0,
+    "0.5": 8133813396.0,
+    "0.9": 15578320572.0
+   },
+   "payload_bytes_mean": 10235048605.497437,
+   "wire_bytes": {
+    "0.1": 9236703348.0,
+    "0.5": 13510401912.0,
+    "0.9": 22816035882.0
+   },
+   "wire_bytes_mean": 15530553085.224567,
+   "bits_per_s": 15011557.68,
+   "hosts": {
+    "1000000": 16,
+    "10000000": 2,
+    "100000000": 1,
+    "1000000000": 1
+   }
+  },
+  {
+   "pos": 0.62,
+   "budget": "ADDIS spending-state attack",
+   "flows": 92015637,
+   "pool": "generic benign",
+   "window_s": 26501.934367,
+   "window_is_own_span": true,
+   "iid_expected_bytes": 1025064271337.0059,
+   "typical_bytes": 39382692636.0,
+   "chosen_min_bytes": 3680625480.0,
+   "chosen_sum_bytes": null,
+   "packets": {
+    "0.1": 92015637.0,
+    "0.5": 368062548.0,
+    "0.9": 3220547295.0
+   },
+   "packets_mean": 3117184014.3379674,
+   "payload_bytes": {
+    "0.1": 10857845166.0,
+    "0.5": 23648018709.0,
+    "0.9": 493847923779.0
+   },
+   "payload_bytes_mean": 900376910763.4872,
+   "wire_bytes": {
+    "0.1": 17574986667.0,
+    "0.5": 39382692636.0,
+    "0.9": 631319285457.0
+   },
+   "wire_bytes_mean": 1025064271337.0059,
+   "bits_per_s": 11888246.975674052,
+   "hosts": {
+    "1000000": 12,
+    "10000000": 2,
+    "100000000": 1,
+    "1000000000": 1
+   }
+  },
+  {
+   "pos": 0.62,
+   "budget": "ADDIS spending-state attack",
+   "flows": 92015637,
+   "pool": "attacker-origin",
+   "window_s": 26501.934367,
+   "window_is_own_span": true,
+   "iid_expected_bytes": 599185408231.4922,
+   "typical_bytes": 64779008448.0,
+   "chosen_min_bytes": 3680625480.0,
+   "chosen_sum_bytes": null,
+   "packets": {
+    "0.1": 276046911.0,
+    "0.5": 460078185.0,
+    "0.9": 3588609843.0
+   },
+   "packets_mean": 2172922236.001979,
+   "payload_bytes": {
+    "0.1": 17667002304.0,
+    "0.5": 46743943596.0,
+    "0.9": 679075401060.0
+   },
+   "payload_bytes_mean": 512268518791.4131,
+   "wire_bytes": {
+    "0.1": 30089113299.0,
+    "0.5": 64779008448.0,
+    "0.9": 846608271345.9011
+   },
+   "wire_bytes_mean": 599185408231.4922,
+   "bits_per_s": 19554499.698304985,
+   "hosts": {
+    "1000000": 20,
+    "10000000": 2,
+    "100000000": 1,
+    "1000000000": 1
+   }
+  },
+  {
+   "pos": 0.62,
+   "budget": "ADDIS spending-state attack",
+   "flows": 92015637,
+   "pool": "black-box (most common benign service)",
+   "window_s": 26501.934367,
+   "window_is_own_span": true,
+   "iid_expected_bytes": 41463538080.33979,
+   "typical_bytes": 36070129704.0,
+   "chosen_min_bytes": 5520938220.0,
+   "chosen_sum_bytes": null,
+   "packets": {
+    "0.1": 276046911.0,
+    "0.5": 368062548.0,
+    "0.9": 368062548.0
+   },
+   "packets_mean": 353449021.49471784,
+   "payload_bytes": {
+    "0.1": 13894361187.0,
+    "0.5": 21715690332.0,
+    "0.9": 41591067924.0
+   },
+   "payload_bytes_mean": 27325577220.551075,
+   "wire_bytes": {
+    "0.1": 24660190716.0,
+    "0.5": 36070129704.0,
+    "0.9": 60914351694.0
+   },
+   "wire_bytes_mean": 41463538080.33979,
+   "bits_per_s": 10888300.968374366,
+   "hosts": {
+    "1000000": 11,
+    "10000000": 2,
+    "100000000": 1,
+    "1000000000": 1
+   }
+  },
+  {
+   "pos": 0.62,
+   "budget": "ADDIS spending-state attack",
+   "flows": 92015637,
+   "pool": "black-box [service chosen on the TRAINING window]",
+   "window_s": 26501.934367,
+   "window_is_own_span": true,
+   "iid_expected_bytes": 41463538080.33979,
+   "typical_bytes": 36070129704.0,
+   "chosen_min_bytes": 5520938220.0,
+   "chosen_sum_bytes": null,
+   "packets": {
+    "0.1": 276046911.0,
+    "0.5": 368062548.0,
+    "0.9": 368062548.0
+   },
+   "packets_mean": 353449021.49471784,
+   "payload_bytes": {
+    "0.1": 13894361187.0,
+    "0.5": 21715690332.0,
+    "0.9": 41591067924.0
+   },
+   "payload_bytes_mean": 27325577220.551075,
+   "wire_bytes": {
+    "0.1": 24660190716.0,
+    "0.5": 36070129704.0,
+    "0.9": 60914351694.0
+   },
+   "wire_bytes_mean": 41463538080.33979,
+   "bits_per_s": 10888300.968374366,
+   "hosts": {
+    "1000000": 11,
+    "10000000": 2,
+    "100000000": 1,
+    "1000000000": 1
+   }
+  },
+  {
+   "pos": 0.85,
+   "budget": "padding, one episode (median)",
+   "flows": 34,
+   "pool": "generic benign",
+   "window_s": 7200,
+   "window_is_own_span": false,
+   "iid_expected_bytes": 202463.8851446432,
+   "typical_bytes": 14144.0,
+   "chosen_min_bytes": 1360.0,
+   "chosen_sum_bytes": 1360.0,
+   "packets": {
+    "0.1": 34.0,
+    "0.5": 136.0,
+    "0.9": 1054.0
+   },
+   "packets_mean": 902.5478122585771,
+   "payload_bytes": {
+    "0.1": 3944.0,
+    "0.5": 8704.0,
+    "0.9": 141304.0
+   },
+   "payload_bytes_mean": 166361.97265430013,
+   "wire_bytes": {
+    "0.1": 6528.0,
+    "0.5": 14144.0,
+    "0.9": 194174.0
+   },
+   "wire_bytes_mean": 202463.8851446432,
+   "bits_per_s": 15.715555555555556,
+   "hosts": {
+    "1000000": 1,
+    "10000000": 1,
+    "100000000": 1,
+    "1000000000": 1
+   }
+  },
+  {
+   "pos": 0.85,
+   "budget": "padding, one episode (median)",
+   "flows": 34,
+   "pool": "attacker-origin",
+   "window_s": 7200,
+   "window_is_own_span": false,
+   "iid_expected_bytes": 210868.28553963907,
+   "typical_bytes": 25976.0,
+   "chosen_min_bytes": 1360.0,
+   "chosen_sum_bytes": 1360.0,
+   "packets": {
+    "0.1": 102.0,
+    "0.5": 204.0,
+    "0.9": 1258.0
+   },
+   "packets_mean": 856.9535905068169,
+   "payload_bytes": {
+    "0.1": 6528.0,
+    "0.5": 17816.0,
+    "0.9": 228208.0
+   },
+   "payload_bytes_mean": 176590.1419193664,
+   "wire_bytes": {
+    "0.1": 11050.0,
+    "0.5": 25976.0,
+    "0.9": 283492.0
+   },
+   "wire_bytes_mean": 210868.28553963907,
+   "bits_per_s": 28.862222222222222,
+   "hosts": {
+    "1000000": 1,
+    "10000000": 1,
+    "100000000": 1,
+    "1000000000": 1
+   }
+  },
+  {
+   "pos": 0.85,
+   "budget": "padding, one episode (median)",
+   "flows": 34,
+   "pool": "black-box (most common benign service)",
+   "window_s": 7200,
+   "window_is_own_span": false,
+   "iid_expected_bytes": 14894.006223818073,
+   "typical_bytes": 13328.0,
+   "chosen_min_bytes": 2210.0,
+   "chosen_sum_bytes": 2297.0,
+   "packets": {
+    "0.1": 102.0,
+    "0.5": 136.0,
+    "0.9": 136.0
+   },
+   "packets_mean": 130.926829101479,
+   "payload_bytes": {
+    "0.1": 5134.0,
+    "0.5": 7888.0,
+    "0.9": 14756.0
+   },
+   "payload_bytes_mean": 9656.933059758914,
+   "wire_bytes": {
+    "0.1": 9112.0,
+    "0.5": 13328.0,
+    "0.9": 20808.0
+   },
+   "wire_bytes_mean": 14894.006223818073,
+   "bits_per_s": 14.80888888888889,
+   "hosts": {
+    "1000000": 1,
+    "10000000": 1,
+    "100000000": 1,
+    "1000000000": 1
+   }
+  },
+  {
+   "pos": 0.85,
+   "budget": "padding, one episode (median)",
+   "flows": 34,
+   "pool": "black-box [service chosen on the TRAINING window]",
+   "window_s": 7200,
+   "window_is_own_span": false,
+   "iid_expected_bytes": 14894.006223818073,
+   "typical_bytes": 13328.0,
+   "chosen_min_bytes": 2210.0,
+   "chosen_sum_bytes": 2297.0,
+   "packets": {
+    "0.1": 102.0,
+    "0.5": 136.0,
+    "0.9": 136.0
+   },
+   "packets_mean": 130.926829101479,
+   "payload_bytes": {
+    "0.1": 5134.0,
+    "0.5": 7888.0,
+    "0.9": 14756.0
+   },
+   "payload_bytes_mean": 9656.933059758914,
+   "wire_bytes": {
+    "0.1": 9112.0,
+    "0.5": 13328.0,
+    "0.9": 20808.0
+   },
+   "wire_bytes_mean": 14894.006223818073,
+   "bits_per_s": 14.80888888888889,
+   "hosts": {
+    "1000000": 1,
+    "10000000": 1,
+    "100000000": 1,
+    "1000000000": 1
+   }
+  },
+  {
+   "pos": 0.85,
+   "budget": "padding, one episode (p90)",
+   "flows": 227,
+   "pool": "generic benign",
+   "window_s": 7200,
+   "window_is_own_span": false,
+   "iid_expected_bytes": 1351744.174348059,
+   "typical_bytes": 94432.0,
+   "chosen_min_bytes": 9080.0,
+   "chosen_sum_bytes": 10281.0,
+   "packets": {
+    "0.1": 227.0,
+    "0.5": 908.0,
+    "0.9": 7037.0
+   },
+   "packets_mean": 6025.8339230205,
+   "payload_bytes": {
+    "0.1": 26332.0,
+    "0.5": 58112.0,
+    "0.9": 943412.0
+   },
+   "payload_bytes_mean": 1110710.8174272391,
+   "wire_bytes": {
+    "0.1": 43584.0,
+    "0.5": 94432.0,
+    "0.9": 1296397.0
+   },
+   "wire_bytes_mean": 1351744.174348059,
+   "bits_per_s": 104.92444444444445,
+   "hosts": {
+    "1000000": 1,
+    "10000000": 1,
+    "100000000": 1,
+    "1000000000": 1
+   }
+  },
+  {
+   "pos": 0.85,
+   "budget": "padding, one episode (p90)",
+   "flows": 227,
+   "pool": "attacker-origin",
+   "window_s": 7200,
+   "window_is_own_span": false,
+   "iid_expected_bytes": 1407855.906397002,
+   "typical_bytes": 173428.0,
+   "chosen_min_bytes": 9080.0,
+   "chosen_sum_bytes": 14210.0,
+   "packets": {
+    "0.1": 681.0,
+    "0.5": 1362.0,
+    "0.9": 8399.0
+   },
+   "packets_mean": 5721.425442501396,
+   "payload_bytes": {
+    "0.1": 43584.0,
+    "0.5": 118948.0,
+    "0.9": 1523624.0
+   },
+   "payload_bytes_mean": 1178998.8886969462,
+   "wire_bytes": {
+    "0.1": 73775.0,
+    "0.5": 173428.0,
+    "0.9": 1892726.0
+   },
+   "wire_bytes_mean": 1407855.906397002,
+   "bits_per_s": 192.6977777777778,
+   "hosts": {
+    "1000000": 1,
+    "10000000": 1,
+    "100000000": 1,
+    "1000000000": 1
+   }
+  },
+  {
+   "pos": 0.85,
+   "budget": "padding, one episode (p90)",
+   "flows": 227,
+   "pool": "black-box (most common benign service)",
+   "window_s": 7200,
+   "window_is_own_span": false,
+   "iid_expected_bytes": 99439.39449431478,
+   "typical_bytes": 88984.0,
+   "chosen_min_bytes": 14755.0,
+   "chosen_sum_bytes": 16376.0,
+   "packets": {
+    "0.1": 681.0,
+    "0.5": 908.0,
+    "0.9": 908.0
+   },
+   "packets_mean": 874.1291237069335,
+   "payload_bytes": {
+    "0.1": 34277.0,
+    "0.5": 52664.0,
+    "0.9": 98518.0
+   },
+   "payload_bytes_mean": 64474.22954603745,
+   "wire_bytes": {
+    "0.1": 60836.0,
+    "0.5": 88984.0,
+    "0.9": 138924.0
+   },
+   "wire_bytes_mean": 99439.39449431478,
+   "bits_per_s": 98.8711111111111,
+   "hosts": {
+    "1000000": 1,
+    "10000000": 1,
+    "100000000": 1,
+    "1000000000": 1
+   }
+  },
+  {
+   "pos": 0.85,
+   "budget": "padding, one episode (p90)",
+   "flows": 227,
+   "pool": "black-box [service chosen on the TRAINING window]",
+   "window_s": 7200,
+   "window_is_own_span": false,
+   "iid_expected_bytes": 99439.39449431478,
+   "typical_bytes": 88984.0,
+   "chosen_min_bytes": 14755.0,
+   "chosen_sum_bytes": 16376.0,
+   "packets": {
+    "0.1": 681.0,
+    "0.5": 908.0,
+    "0.9": 908.0
+   },
+   "packets_mean": 874.1291237069335,
+   "payload_bytes": {
+    "0.1": 34277.0,
+    "0.5": 52664.0,
+    "0.9": 98518.0
+   },
+   "payload_bytes_mean": 64474.22954603745,
+   "wire_bytes": {
+    "0.1": 60836.0,
+    "0.5": 88984.0,
+    "0.9": 138924.0
+   },
+   "wire_bytes_mean": 99439.39449431478,
+   "bits_per_s": 98.8711111111111,
+   "hosts": {
+    "1000000": 1,
+    "10000000": 1,
+    "100000000": 1,
+    "1000000000": 1
+   }
+  },
+  {
+   "pos": 0.85,
+   "budget": "padding, all 147 ADDIS detections",
+   "flows": 4998,
+   "pool": "generic benign",
+   "window_s": 7200,
+   "window_is_own_span": false,
+   "iid_expected_bytes": 29762191.11626255,
+   "typical_bytes": 2079168.0,
+   "chosen_min_bytes": 199920.0,
+   "chosen_sum_bytes": 383644.0,
+   "packets": {
+    "0.1": 4998.0,
+    "0.5": 19992.0,
+    "0.9": 154938.0
+   },
+   "packets_mean": 132674.52840201085,
+   "payload_bytes": {
+    "0.1": 579768.0,
+    "0.5": 1279488.0,
+    "0.9": 20771688.0
+   },
+   "payload_bytes_mean": 24455209.98018212,
+   "wire_bytes": {
+    "0.1": 959616.0,
+    "0.5": 2079168.0,
+    "0.9": 28543578.0
+   },
+   "wire_bytes_mean": 29762191.11626255,
+   "bits_per_s": 2310.1866666666665,
+   "hosts": {
+    "1000000": 1,
+    "10000000": 1,
+    "100000000": 1,
+    "1000000000": 1
+   }
+  },
+  {
+   "pos": 0.85,
+   "budget": "padding, all 147 ADDIS detections",
+   "flows": 4998,
+   "pool": "attacker-origin",
+   "window_s": 7200,
+   "window_is_own_span": false,
+   "iid_expected_bytes": 30997637.974326946,
+   "typical_bytes": 3818472.0,
+   "chosen_min_bytes": 199920.0,
+   "chosen_sum_bytes": 620073.0,
+   "packets": {
+    "0.1": 14994.0,
+    "0.5": 29988.0,
+    "0.9": 184926.0
+   },
+   "packets_mean": 125972.17780450209,
+   "payload_bytes": {
+    "0.1": 959616.0,
+    "0.5": 2618952.0,
+    "0.9": 33546576.0
+   },
+   "payload_bytes_mean": 25958750.86214686,
+   "wire_bytes": {
+    "0.1": 1624350.0,
+    "0.5": 3818472.0,
+    "0.9": 41673324.0
+   },
+   "wire_bytes_mean": 30997637.974326946,
+   "bits_per_s": 4242.746666666667,
+   "hosts": {
+    "1000000": 1,
+    "10000000": 1,
+    "100000000": 1,
+    "1000000000": 1
+   }
+  },
+  {
+   "pos": 0.85,
+   "budget": "padding, all 147 ADDIS detections",
+   "flows": 4998,
+   "pool": "black-box (most common benign service)",
+   "window_s": 7200,
+   "window_is_own_span": false,
+   "iid_expected_bytes": 2189418.9149012566,
+   "typical_bytes": 1959216.0,
+   "chosen_min_bytes": 324870.0,
+   "chosen_sum_bytes": 602367.0,
+   "packets": {
+    "0.1": 14994.0,
+    "0.5": 19992.0,
+    "0.9": 19992.0
+   },
+   "packets_mean": 19246.243877917415,
+   "payload_bytes": {
+    "0.1": 754698.0,
+    "0.5": 1159536.0,
+    "0.9": 2169132.0
+   },
+   "payload_bytes_mean": 1419569.1597845603,
+   "wire_bytes": {
+    "0.1": 1339464.0,
+    "0.5": 1959216.0,
+    "0.9": 3058776.0
+   },
+   "wire_bytes_mean": 2189418.9149012566,
+   "bits_per_s": 2176.9066666666668,
+   "hosts": {
+    "1000000": 1,
+    "10000000": 1,
+    "100000000": 1,
+    "1000000000": 1
+   }
+  },
+  {
+   "pos": 0.85,
+   "budget": "padding, all 147 ADDIS detections",
+   "flows": 4998,
+   "pool": "black-box [service chosen on the TRAINING window]",
+   "window_s": 7200,
+   "window_is_own_span": false,
+   "iid_expected_bytes": 2189418.9149012566,
+   "typical_bytes": 1959216.0,
+   "chosen_min_bytes": 324870.0,
+   "chosen_sum_bytes": 602367.0,
+   "packets": {
+    "0.1": 14994.0,
+    "0.5": 19992.0,
+    "0.9": 19992.0
+   },
+   "packets_mean": 19246.243877917415,
+   "payload_bytes": {
+    "0.1": 754698.0,
+    "0.5": 1159536.0,
+    "0.9": 2169132.0
+   },
+   "payload_bytes_mean": 1419569.1597845603,
+   "wire_bytes": {
+    "0.1": 1339464.0,
+    "0.5": 1959216.0,
+    "0.9": 3058776.0
+   },
+   "wire_bytes_mean": 2189418.9149012566,
+   "bits_per_s": 2176.9066666666668,
+   "hosts": {
+    "1000000": 1,
+    "10000000": 1,
+    "100000000": 1,
+    "1000000000": 1
+   }
+  },
+  {
+   "pos": 0.85,
+   "budget": "padding at ADDIS's own level, one episode",
+   "flows": 34465311,
+   "pool": "generic benign",
+   "window_s": 7200,
+   "window_is_own_span": false,
+   "iid_expected_bytes": 205234728464.07083,
+   "typical_bytes": 14337569376.0,
+   "chosen_min_bytes": 1378612440.0,
+   "chosen_sum_bytes": null,
+   "packets": {
+    "0.1": 34465311.0,
+    "0.5": 137861244.0,
+    "0.9": 1068424641.0
+   },
+   "packets_mean": 914899736.5253375,
+   "payload_bytes": {
+    "0.1": 3997976076.0,
+    "0.5": 8823119616.0,
+    "0.9": 143237832516.0
+   },
+   "payload_bytes_mean": 168638739003.05734,
+   "wire_bytes": {
+    "0.1": 6617339712.0,
+    "0.5": 14337569376.0,
+    "0.9": 196831391121.0
+   },
+   "wire_bytes_mean": 205234728464.07083,
+   "bits_per_s": 15930632.64,
+   "hosts": {
+    "1000000": 16,
+    "10000000": 2,
+    "100000000": 1,
+    "1000000000": 1
+   }
+  },
+  {
+   "pos": 0.85,
+   "budget": "padding at ADDIS's own level, one episode",
+   "flows": 34465311,
+   "pool": "attacker-origin",
+   "window_s": 7200,
+   "window_is_own_span": false,
+   "iid_expected_bytes": 213754148269.4254,
+   "typical_bytes": 26331497604.0,
+   "chosen_min_bytes": 1378612440.0,
+   "chosen_sum_bytes": null,
+   "packets": {
+    "0.1": 103395933.0,
+    "0.5": 206791866.0,
+    "0.9": 1275216507.0
+   },
+   "packets_mean": 868681529.6877675,
+   "payload_bytes": {
+    "0.1": 6617339712.0,
+    "0.5": 18059822964.0,
+    "0.9": 231331167432.0
+   },
+   "payload_bytes_mean": 179006887081.9147,
+   "wire_bytes": {
+    "0.1": 11201226075.0,
+    "0.5": 26331497604.0,
+    "0.9": 287371763118.0
+   },
+   "wire_bytes_mean": 213754148269.4254,
+   "bits_per_s": 29257219.56,
+   "hosts": {
+    "1000000": 30,
+    "10000000": 3,
+    "100000000": 1,
+    "1000000000": 1
+   }
+  },
+  {
+   "pos": 0.85,
+   "budget": "padding at ADDIS's own level, one episode",
+   "flows": 34465311,
+   "pool": "black-box (most common benign service)",
+   "window_s": 7200,
+   "window_is_own_span": false,
+   "iid_expected_bytes": 15097839898.230162,
+   "typical_bytes": 13510401912.0,
+   "chosen_min_bytes": 2240245215.0,
+   "chosen_sum_bytes": null,
+   "packets": {
+    "0.1": 103395933.0,
+    "0.5": 137861244.0,
+    "0.9": 137861244.0
+   },
+   "packets_mean": 132718643.62430367,
+   "payload_bytes": {
+    "0.1": 5204261961.0,
+    "0.5": 7995952152.0,
+    "0.9": 14957944974.0
+   },
+   "payload_bytes_mean": 9789094153.258015,
+   "wire_bytes": {
+    "0.1": 9236703348.0,
+    "0.5": 13510401912.0,
+    "0.9": 21092770332.0
+   },
+   "wire_bytes_mean": 15097839898.230162,
+   "bits_per_s": 15011557.68,
+   "hosts": {
+    "1000000": 16,
+    "10000000": 2,
+    "100000000": 1,
+    "1000000000": 1
+   }
+  },
+  {
+   "pos": 0.85,
+   "budget": "padding at ADDIS's own level, one episode",
+   "flows": 34465311,
+   "pool": "black-box [service chosen on the TRAINING window]",
+   "window_s": 7200,
+   "window_is_own_span": false,
+   "iid_expected_bytes": 15097839898.230162,
+   "typical_bytes": 13510401912.0,
+   "chosen_min_bytes": 2240245215.0,
+   "chosen_sum_bytes": null,
+   "packets": {
+    "0.1": 103395933.0,
+    "0.5": 137861244.0,
+    "0.9": 137861244.0
+   },
+   "packets_mean": 132718643.62430367,
+   "payload_bytes": {
+    "0.1": 5204261961.0,
+    "0.5": 7995952152.0,
+    "0.9": 14957944974.0
+   },
+   "payload_bytes_mean": 9789094153.258015,
+   "wire_bytes": {
+    "0.1": 9236703348.0,
+    "0.5": 13510401912.0,
+    "0.9": 21092770332.0
+   },
+   "wire_bytes_mean": 15097839898.230162,
+   "bits_per_s": 15011557.68,
+   "hosts": {
+    "1000000": 16,
+    "10000000": 2,
+    "100000000": 1,
+    "1000000000": 1
+   }
+  },
+  {
+   "pos": 0.85,
+   "budget": "ADDIS spending-state attack",
+   "flows": 92015637,
+   "pool": "generic benign",
+   "window_s": 8651.447272,
+   "window_is_own_span": true,
+   "iid_expected_bytes": 547936569443.5053,
+   "typical_bytes": 38278504992.0,
+   "chosen_min_bytes": 3680625480.0,
+   "chosen_sum_bytes": null,
+   "packets": {
+    "0.1": 92015637.0,
+    "0.5": 368062548.0,
+    "0.9": 2852484747.0
+   },
+   "packets_mean": 2442603290.2332172,
+   "payload_bytes": {
+    "0.1": 10673813892.0,
+    "0.5": 23556003072.0,
+    "0.9": 382416987372.0
+   },
+   "payload_bytes_mean": 450232437834.17664,
+   "wire_bytes": {
+    "0.1": 17667002304.0,
+    "0.5": 38278504992.0,
+    "0.9": 525501302907.0
+   },
+   "wire_bytes_mean": 547936569443.5053,
+   "bits_per_s": 35396163.243934065,
+   "hosts": {
+    "1000000": 36,
+    "10000000": 4,
+    "100000000": 1,
+    "1000000000": 1
+   }
+  },
+  {
+   "pos": 0.85,
+   "budget": "ADDIS spending-state attack",
+   "flows": 92015637,
+   "pool": "attacker-origin",
+   "window_s": 8651.447272,
+   "window_is_own_span": true,
+   "iid_expected_bytes": 570681753441.9935,
+   "typical_bytes": 70299946668.0,
+   "chosen_min_bytes": 3680625480.0,
+   "chosen_sum_bytes": null,
+   "packets": {
+    "0.1": 276046911.0,
+    "0.5": 552093822.0,
+    "0.9": 3404578569.0
+   },
+   "packets_mean": 2319209720.8800564,
+   "payload_bytes": {
+    "0.1": 17667002304.0,
+    "0.5": 48216193788.0,
+    "0.9": 617608955544.0
+   },
+   "payload_bytes_mean": 477913364606.79126,
+   "wire_bytes": {
+    "0.1": 29905082025.0,
+    "0.5": 70299946668.0,
+    "0.9": 767226381306.0
+   },
+   "wire_bytes_mean": 570681753441.9935,
+   "bits_per_s": 65006415.18837891,
+   "hosts": {
+    "1000000": 66,
+    "10000000": 7,
+    "100000000": 1,
+    "1000000000": 1
+   }
+  },
+  {
+   "pos": 0.85,
+   "budget": "ADDIS spending-state attack",
+   "flows": 92015637,
+   "pool": "black-box (most common benign service)",
+   "window_s": 8651.447272,
+   "window_is_own_span": true,
+   "iid_expected_bytes": 40308278534.31131,
+   "typical_bytes": 36070129704.0,
+   "chosen_min_bytes": 5981016405.0,
+   "chosen_sum_bytes": null,
+   "packets": {
+    "0.1": 276046911.0,
+    "0.5": 368062548.0,
+    "0.9": 368062548.0
+   },
+   "packets_mean": 354332811.1812567,
+   "payload_bytes": {
+    "0.1": 13894361187.0,
+    "0.5": 21347627784.0,
+    "0.9": 39934786458.0
+   },
+   "payload_bytes_mean": 26134966087.061043,
+   "wire_bytes": {
+    "0.1": 24660190716.0,
+    "0.5": 36070129704.0,
+    "0.9": 56313569844.0
+   },
+   "wire_bytes_mean": 40308278534.31131,
+   "bits_per_s": 33354076.902937867,
+   "hosts": {
+    "1000000": 34,
+    "10000000": 4,
+    "100000000": 1,
+    "1000000000": 1
+   }
+  },
+  {
+   "pos": 0.85,
+   "budget": "ADDIS spending-state attack",
+   "flows": 92015637,
+   "pool": "black-box [service chosen on the TRAINING window]",
+   "window_s": 8651.447272,
+   "window_is_own_span": true,
+   "iid_expected_bytes": 40308278534.31131,
+   "typical_bytes": 36070129704.0,
+   "chosen_min_bytes": 5981016405.0,
+   "chosen_sum_bytes": null,
+   "packets": {
+    "0.1": 276046911.0,
+    "0.5": 368062548.0,
+    "0.9": 368062548.0
+   },
+   "packets_mean": 354332811.1812567,
+   "payload_bytes": {
+    "0.1": 13894361187.0,
+    "0.5": 21347627784.0,
+    "0.9": 39934786458.0
+   },
+   "payload_bytes_mean": 26134966087.061043,
+   "wire_bytes": {
+    "0.1": 24660190716.0,
+    "0.5": 36070129704.0,
+    "0.9": 56313569844.0
+   },
+   "wire_bytes_mean": 40308278534.31131,
+   "bits_per_s": 33354076.902937867,
+   "hosts": {
+    "1000000": 34,
+    "10000000": 4,
+    "100000000": 1,
+    "1000000000": 1
+   }
+  }
+ ],
+ "assertions_failed": []
+}

@@ -1,0 +1,49 @@
+\begin{table}[t]
+\centering
+\caption{Padding suppression cost priced against the running controller level $1/\alphat$
+(real) vs the static $T/w_0$ threshold. Part (a) gives \emph{both} within-bucket orders at both
+detector seeds: the \textbf{canonical} metadata-hash order the paper reports, and the first-flow
+arrival order retained as an optimistic upper bound over the orders we audit (\cref{apptab:ordering}).
+Detections and the level an alert fires at both move with the order; $T$, $\nCal$, AUROC and the
+margin do not. Part (b)'s pool comparison is on the first-flow detected set, the larger of the two;
+\cref{tab:pools} gives the same comparison under \emph{both} orders.
+Four pools coincide; service-matched is dearer. Medians are rounded to the nearest integer; ``--''
+marks a window/seed/order with no detections.}
+\label{apptab:padpools}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{rr rrr rrr}
+\toprule
+\multicolumn{8}{c}{(a) per window $\times$ seed $\times$ order (e-LOND poly, two-hour grouping)} \\
+\midrule
+& & \multicolumn{3}{c}{\textbf{canonical key-hash}} & \multicolumn{3}{c}{first-flow (upper bd.)} \\
+\cmidrule(lr){3-5}\cmidrule(lr){6-8}
+pos & seed & det. & pad (real) & pad (static) & det. & pad (real) & pad (static) \\
+\midrule
+0.55 & 0 & 3 & 24 & 3 & 18 & 118 & 4 \\
+0.55 & 1 & 2 & 27 & 2 & 18 & 101 & 3 \\
+0.62 & 0 & 11 & 6 & 4 & 13 & 72 & 4 \\
+0.62 & 1 & 8 & 5 & 2 & 12 & 69 & 0 \\
+0.70 & 0 & 0 & -- & -- & 30 & 1,851 & 62 \\
+0.70 & 1 & 0 & -- & -- & 0 & -- & -- \\
+0.77 & 0 & 0 & -- & -- & 31 & 1,165 & 85 \\
+0.77 & 1 & 0 & -- & -- & 31 & 1,289 & 90 \\
+0.85 & 0 & 34 & 116 & 34 & 72 & 5,202 & 33 \\
+0.85 & 1 & 32 & 109 & 34 & 71 & 6,802 & 33 \\
+\bottomrule
+\end{tabular}}
+
+\vspace{4pt}
+\begin{tabular}{lrrr}
+\toprule
+\multicolumn{4}{c}{(b) five padding pools, seed 0 (median suppression cost $r$)} \\
+\midrule
+padding pool & real (0.62) & real (0.85) & static (0.85) \\
+\midrule
+generic benign & 72 & 5,212 & 33 \\
+attacker-origin & 72 & 5,247 & 33 \\
+protocol-matched & 72 & 5,232 & 33 \\
+service-matched & 99 & 10,299 & 35 \\
+black-box & 72 & 5,202 & 33 \\
+\bottomrule
+\end{tabular}
+\end{table}

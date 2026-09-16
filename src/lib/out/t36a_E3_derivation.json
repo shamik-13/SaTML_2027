@@ -1,0 +1,196 @@
+{
+ "M": 2448994.0,
+ "D1a": "F = sum w_i e_i is valid under ARBITRARY dependence iff sum w <= 1",
+ "D1b": "padding-invariant because absolute positions 1..m are untouched",
+ "D1c": "last-event-only is NOT padding-invariant: one appended zero kills it",
+ "D2a": "reject <=> sum_{i in S} w_i >= beta, beta = 1/(alpha_t*M)",
+ "D2b": "P = #{i : w_i >= beta} <= 1/beta = alpha_t*M",
+ "D3a": "L*(w,beta) = min{L : sum_{i>L} w_i < beta}",
+ "D3b": "L* is FINITE for every summable w -- no scheme escapes",
+ "D3c": "same tail-sum argument as section 4.13 Prop 2, on the position axis",
+ "D3d_first_only": 1,
+ "D3e": "uniform-m0: L* = max(0, floor(m0*(1-beta)) + 1) for beta > 0",
+ "D3f": "exp-decay: L* = max(0, floor(log(beta)/log(rho)) + 1) for beta > 0",
+ "D4a": "L* >= P for non-increasing w (NOT <=: the tail beyond P still carries mass the attacker must clear)",
+ "D4c": "the triangle: padding-invariance + power + ordering-resistance cannot all hold",
+ "triangle": [
+  {
+   "alpha_t": 0.01,
+   "scheme": "first-only{}",
+   "P": 1,
+   "L": 1,
+   "w1": 1.0
+  },
+  {
+   "alpha_t": 0.01,
+   "scheme": "uniform-m0{'m0': 10}",
+   "P": 10,
+   "L": 10,
+   "w1": 0.1
+  },
+  {
+   "alpha_t": 0.01,
+   "scheme": "uniform-m0{'m0': 1000}",
+   "P": 1000,
+   "L": 1000,
+   "w1": 0.001
+  },
+  {
+   "alpha_t": 0.01,
+   "scheme": "exp-decay{'rho': 0.99}",
+   "P": 548,
+   "L": 1006,
+   "w1": 0.010000000000000009
+  },
+  {
+   "alpha_t": 0.01,
+   "scheme": "two-block{'a': 0.5, 'K': 1000}",
+   "P": 1000,
+   "L": 1000,
+   "w1": 0.5
+  },
+  {
+   "alpha_t": 0.001,
+   "scheme": "first-only{}",
+   "P": 1,
+   "L": 1,
+   "w1": 1.0
+  },
+  {
+   "alpha_t": 0.001,
+   "scheme": "uniform-m0{'m0': 10}",
+   "P": 10,
+   "L": 10,
+   "w1": 0.1
+  },
+  {
+   "alpha_t": 0.001,
+   "scheme": "uniform-m0{'m0': 1000}",
+   "P": 1000,
+   "L": 1000,
+   "w1": 0.001
+  },
+  {
+   "alpha_t": 0.001,
+   "scheme": "exp-decay{'rho': 0.99}",
+   "P": 319,
+   "L": 777,
+   "w1": 0.010000000000000009
+  },
+  {
+   "alpha_t": 0.001,
+   "scheme": "two-block{'a': 0.5, 'K': 1000}",
+   "P": 1000,
+   "L": 1000,
+   "w1": 0.5
+  },
+  {
+   "alpha_t": 0.0001,
+   "scheme": "first-only{}",
+   "P": 1,
+   "L": 1,
+   "w1": 1.0
+  },
+  {
+   "alpha_t": 0.0001,
+   "scheme": "uniform-m0{'m0': 10}",
+   "P": 10,
+   "L": 10,
+   "w1": 0.1
+  },
+  {
+   "alpha_t": 0.0001,
+   "scheme": "uniform-m0{'m0': 1000}",
+   "P": 0,
+   "L": 996,
+   "w1": 0.001
+  },
+  {
+   "alpha_t": 0.0001,
+   "scheme": "exp-decay{'rho': 0.99}",
+   "P": 90,
+   "L": 548,
+   "w1": 0.010000000000000009
+  },
+  {
+   "alpha_t": 0.0001,
+   "scheme": "two-block{'a': 0.5, 'K': 1000}",
+   "P": 1,
+   "L": 992,
+   "w1": 0.5
+  },
+  {
+   "alpha_t": 1e-05,
+   "scheme": "first-only{}",
+   "P": 1,
+   "L": 1,
+   "w1": 1.0
+  },
+  {
+   "alpha_t": 1e-05,
+   "scheme": "uniform-m0{'m0': 10}",
+   "P": 10,
+   "L": 10,
+   "w1": 0.1
+  },
+  {
+   "alpha_t": 1e-05,
+   "scheme": "uniform-m0{'m0': 1000}",
+   "P": 0,
+   "L": 960,
+   "w1": 0.001
+  },
+  {
+   "alpha_t": 1e-05,
+   "scheme": "exp-decay{'rho': 0.99}",
+   "P": 0,
+   "L": 319,
+   "w1": 0.010000000000000009
+  },
+  {
+   "alpha_t": 1e-05,
+   "scheme": "two-block{'a': 0.5, 'K': 1000}",
+   "P": 1,
+   "L": 919,
+   "w1": 0.5
+  },
+  {
+   "alpha_t": 1e-06,
+   "scheme": "first-only{}",
+   "P": 1,
+   "L": 1,
+   "w1": 1.0
+  },
+  {
+   "alpha_t": 1e-06,
+   "scheme": "uniform-m0{'m0': 10}",
+   "P": 0,
+   "L": 6,
+   "w1": 0.1
+  },
+  {
+   "alpha_t": 1e-06,
+   "scheme": "uniform-m0{'m0': 1000}",
+   "P": 0,
+   "L": 592,
+   "w1": 0.001
+  },
+  {
+   "alpha_t": 1e-06,
+   "scheme": "exp-decay{'rho': 0.99}",
+   "P": 0,
+   "L": 90,
+   "w1": 0.010000000000000009
+  },
+  {
+   "alpha_t": 1e-06,
+   "scheme": "two-block{'a': 0.5, 'K': 1000}",
+   "P": 1,
+   "L": 185,
+   "w1": 0.5
+  }
+ ],
+ "n_passed": 115,
+ "n_failed": 0,
+ "failed": []
+}

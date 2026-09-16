@@ -1,0 +1,43 @@
+\begin{table}[t]
+\centering
+\caption{The padding-transfer boundary re-measured on a \emph{benign-inclusive} testbed
+(AIT-LDSv2.0, \textbf{8} organisations,
+\textbf{45{,}001} attack flows), where victims serve
+heavy real benign traffic while attacked, so the padding question is answered on \emph{real}
+ordinary-to-victim flows --- \textbf{no graft}. Leave-one-organisation-out (train 7, test 1; a
+``deploy on a new network'' test), in-organisation benign conformal calibration, flow features
+selected per fold from the training orgs with all identity and \emph{absolute-time} fields excluded.
+``benign$\to$victim'' is the fire rate of real benign flows to an attacked host (the pad analogue),
+host\,/\,flow-only. Host conditioning adds little and inconsistently (median host$-$flow delta
+$-0.0000$; host higher on $1/8$ orgs, max $8.9\%$),
+with \texttt{shaw} the one organisation where it is materially higher.
+\textbf{That per-organisation exception is real but does not survive as a defence.} A raised
+ordinary-to-victim fire rate is measured here \emph{in each flow's own context}; the pads an attacker
+actually sends carry the \emph{attacked} pair's context, and replaying the whole Surface~A chain under
+that context suppresses every detected Shaw episode (\cref{apptab:aitsupp}). So the honest reading is
+that host conditioning is usually negligible here and can look decisive on an individual organisation,
+but replaying the chain end-to-end at all eight organisations it does not stop the attack on most
+episodes once the pad's own context is modelled, and where it does the binding constraint is the
+number of pads required (\cref{apptab:aitsupp}). This also settles the LSPR23 side: the $0.43$ grafted firing at the
+stress window comes from a non-black-box pad pool that is mostly the attacker's own flood
+(\cref{apptab:r7host}). AIT has no high-volume flood, which remains open. The flow-only folds are audited under \textbf{both} within-bucket orders in
+\cref{apptab:aitorder}: the canonical order detects fewer episodes and its alerts are cheaper to
+suppress, as on LSPR23. Rows sequenced by \textbf{first-flow} arrival are conditional on the detected
+set that order produces on this testbed.}
+\label{apptab:r7ait}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{lccc}
+\toprule
+organisation & AUROC h/f & atk.\ recall & benign$\to$victim \% (h/f) \\
+\midrule
+\texttt{fox} & 0.995/0.996 & 0.93 & 0.00/0.01 \\
+\texttt{harrison} & 0.975/0.973 & 0.86 & 0.01/0.01 \\
+\texttt{russellmit} & 0.988/1.000 & 0.47 & 0.00/0.02 \\
+\texttt{santos} & 0.948/0.980 & 0.36 & 0.00/0.01 \\
+\texttt{shaw} & 0.955/0.932 & 0.47 & 8.92/0.05 \\
+\texttt{wardbeck} & 0.969/0.907 & 0.39 & 0.14/0.01 \\
+\texttt{wheeler} & 0.999/0.998 & 0.97 & 0.01/0.01 \\
+\texttt{wilson} & 0.974/0.984 & 0.85 & 0.07/0.00 \\
+\bottomrule
+\end{tabular}}
+\end{table}

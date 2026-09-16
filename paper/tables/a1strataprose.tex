@@ -1,0 +1,31 @@
+\emph{Stratified design.} \Cref{assump:groupval} constrains benign flows of \emph{true-null} groups
+conditionally on that group's metadata, whereas the marginal diagnostic (\cref{apptab:tail}) reads the
+marginal rate at the shipped depth $k{=}1$, where the four non-stress windows fire $0$--$3$ benign
+flows. \Cref{apptab:a1strata} stratifies those flows on the observable components of $\mathcal{M}_j$
+--- episode \textbf{arity} (the quantity padding manipulates), \textbf{service}
+$(\text{proto},\text{port})$, the two-hour \textbf{bucket} that fixes a group's position, and
+high-support destination \textbf{host}, all fixed by an outcome-blind support rule --- and reads them
+at $k\in\{1,10,100,1000\}$. Both sources of uncertainty are resampled jointly, and both are clustered:
+a window's whole diagnostic depends on the calibration set only through its $k$-th largest score, which
+every stratum shares, so the calibration tail is resampled over calibration \emph{host pairs}; the test
+side is a Poisson-multiplier bootstrap over deployment host pairs. Multiplicity is corrected with
+Benjamini--Yekutieli, valid under the arbitrary dependence this design has, over \emph{every} cell: a
+cell firing fewer than ten times carries no test, but still enters the family at $p=1$, since dropping
+it would shrink the denominator using the same tail count that drives significance. A \emph{contrast}
+is a stratum departing from its \emph{own} window's marginal on the same replicates --- the quantity
+that speaks to the conditional statement, since the shared calibration draw largely cancels in a ratio
+of two rates read at one threshold.
+
+\emph{Reading, in both directions.} 428 of the 536 cells carry no test at all
+(419 of them fire fewer than ten times), which is itself the point: at the depth the pipeline
+uses, the data mostly cannot speak. Of the 40 cells that do reject, \textbf{none at $k{=}1$ rejects at the primary or secondary window} --- all 5 $k{=}1$ rejections sit at 0.85, already an unambiguous violation,
+which is an \emph{inconclusive non-rejection} and not evidence for \cref{assump:groupval}: at
+$k{=}1$ most cells are simply uninformative. Deeper in the tail the conditional statement is
+another matter: 32 stratum contrasts survive correction, at windows 0.55, 0.62, 0.70, 0.77, 0.85. The largest lower bound is m=21-100 at 0.77, $k{=}1000$ (9.3$\times$ $[6.5,13.7]$); the largest point estimate is proto 6/port 6444 at 0.62, $k{=}10$ (14.4$\times$). The \emph{arity} family --- the component of $\mathcal{M}_j$ the padding attack moves --- carries 3 of them, the strongest being m=21-100 at window 0.77, $k{=}1000$, firing 9.3$\times$ $[6.5,13.7]$ its own window's rate. One dependence remains unresampled: host-pair clustering does not
+absorb a shock shared across many pairs at once, and a window's calibration tail concentrates in its
+two to four buckets, so these counts may be optimistic --- dropping the one stratum family aligned
+with that confounder leaves 25 contrasts at windows 0.55, 0.62, 0.70, 0.77, 0.85. A departure at
+$k{=}1000$ is nonetheless compatible with a valid rank-1 rate --- the excess may sit entirely in
+ranks $2..1000$ --- so this tests a \emph{necessary implication} where it is estimable, not the
+assumption itself. Every guarantee-bearing conclusion in this paper is therefore stated \emph{under}
+\cref{assump:groupval}, and this diagnostic is not offered as support for it.

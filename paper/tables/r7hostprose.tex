@@ -1,0 +1,20 @@
+\emph{Host-conditioned detector on LSPR23.} The detector of \cref{apptab:r7host} reads the 33 flow
+features plus 6 strictly causal ($\mathrm{ts}<\mathrm{ts}(\text{flow})$) host-context features ---
+per-host prior counts, distinct-peer counts and failed-connection fractions --- and no endpoint ground
+truth (\texttt{label\_src} and \texttt{label\_dst} both have attack rate $1.0$ and are excluded). It has
+higher AUROC than the flow-only detector at both windows, yet lower tail reach and fewer e-LOND
+detections ($2$ against $18$ at the primary window): higher ranking quality buying fewer, not more,
+operational alerts, the detector-quality-versus-feasibility gap of \cref{sec:feasnotdet}. To test the
+padding boundary we graft each attacked pair's real causal context (strongest feature src-distinct-dst,
+$\rho=+0.34$; padding one victim cannot raise it) onto ordinary black-box pads ---
+the most common $(\text{proto},\text{port})$ on the training prefix, which precedes both calibration
+and deployment, so the pool is chosen on network-observable frequency alone with no labels and no
+detector output --- and replay the append causally. The pads fire zero across the scored accumulation
+range at both windows --- up to 100{,}000 appended flows per episode, 4{,}000{,}000 pad scorings at the
+primary window --- and the suppression cost is the identical flow-level closed form (0.55 $r^{\star}_t=108$ host vs 118 flow; 0.85 $r^{\star}_t=11{,}484$ host vs 5{,}202 flow),
+so within that range the transfer holds at both; costs above the cap are closed-form values, not
+replayed. A non-black-box pool rule does fire: selecting the modal service among detector-non-firing
+flows picks proto 6/port 80 at $0.85$, a pool that is only $12\%$ benign and fires $0.42$. Grafting the attacker's own flood onto attack context and
+observing the detector fire is not evidence of a defence, so that rule is reported only as a
+sensitivity. What LSPR23 cannot settle is the benign-inclusive question: its attacked pairs are $100\%$
+malicious, so no real ordinary-to-victim traffic exists there, which is what the AIT testbed supplies.

@@ -1,0 +1,23 @@
+\begin{table}[t]
+\centering
+\caption{Host-conditioned detector and the padding-transfer boundary on LSPR23 (src--dst two-hour
+unit, e-LOND $\gamma\propto j^{-1.6}$, seed 0; \textbf{first-flow} within-bucket order on both legs,
+the optimistic upper bound over the orders we audit, not the canonical order \cref{tab:main} reports).
+``h/f'': host-conditioned / flow-only detector. Design and reading: \cref{app:ait}.}
+\label{apptab:r7host}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{lcccrrrc}
+\toprule
+window & AUROC h/f & tail reach h/f & det.\ h/f & real benign fires & graft fire & median cost h/f & transfer \\
+\midrule
+primary (0.55) & 0.954/0.916 & 0.009/0.033 & 2/18 & $0/2{,}287{,}988$ & $0.000$ & 108/118 & holds \\
+stress-test (0.85) & 1.000/0.999 & 0.295/0.610 & 37/72 & $3/1{,}638{,}722$ & $0.000$ & 11{,}484/5{,}202 & holds \\
+\bottomrule
+\end{tabular}}
+\par\vspace{3pt}
+{\footnotesize\raggedright \emph{Notes.} ``AUROC'': area under the ROC curve on the window's flows;
+``tail reach'': the fraction of attack flows scoring above every benign calibration score; ``det.'': e-LOND detections; ``real benign fires'': host-detector firings among
+the window's benign flows; ``graft fire'': the grafted-pad firing rate on detected episodes across
+accumulation; ``median cost h/f'': the median suppression cost over detected episodes under the causally
+recomputed host context / the flow-level closed form $r^{\star}_t$; ``transfer'': whether the flow-level closed form still prices the suppression. All counts here use the \textbf{first-flow} within-bucket order, the optimistic upper bound over the orders we audit, not the canonical metadata-hash order \cref{tab:main} reports (\cref{apptab:ordering}); the order shifts detections and the level an alert fires at, and shifts nothing else.\par}
+\end{table}

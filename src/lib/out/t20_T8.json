@@ -1,0 +1,207 @@
+{
+ "config": {
+  "primary_pos": 0.55,
+  "stress_pos": 0.85,
+  "seed": 0,
+  "k": 1,
+  "w0": 0.025,
+  "alpha": 0.05,
+  "q": 0.05,
+  "bucket_h": 2
+ },
+ "per_pos": {
+  "0.55": {
+   "methods": [
+    {
+     "method": "online FDR (e-LOND, mean rule)",
+     "alerts": 18,
+     "fdp": 0.0,
+     "recall": 0.06545454545454546,
+     "note": "self-selected budget",
+     "frontier_recall_at_budget": 0.06545454545454546,
+     "gap": 0.0
+    },
+    {
+     "method": "online FDR (policy D, slot)",
+     "alerts": 91.0262380926046,
+     "fdp": 0.00012206492703573378,
+     "recall": 0.3309640981145218,
+     "note": "randomised rule; alerts and FDP are E[R] and E[V]/E[R], not E[V/R]",
+     "frontier_recall_at_budget": 0.33100450215492583,
+     "gap": 4.040404040400736e-05
+    },
+    {
+     "method": "feedback controller (L=0)",
+     "alerts": 119,
+     "fdp": 0.07563025210084033,
+     "recall": 0.4,
+     "note": "",
+     "frontier_recall_at_budget": 0.39636363636363636,
+     "gap": -0.0036363636363636598
+    },
+    {
+     "method": "feedback controller (L=20 alerts)",
+     "alerts": 135,
+     "fdp": 0.18518518518518517,
+     "recall": 0.4,
+     "note": "",
+     "frontier_recall_at_budget": 0.4036363636363636,
+     "gap": 0.0036363636363636043
+    },
+    {
+     "method": "feedback controller (L=50 alerts)",
+     "alerts": 150,
+     "fdp": 0.26666666666666666,
+     "recall": 0.4,
+     "note": "",
+     "frontier_recall_at_budget": 0.44,
+     "gap": 0.03999999999999998
+    },
+    {
+     "method": "fixed threshold (no feedback)",
+     "alerts": 1047,
+     "fdp": 0.8357211079274116,
+     "recall": 0.6254545454545455,
+     "note": "",
+     "frontier_recall_at_budget": 0.6254545454545455,
+     "gap": 0.0
+    }
+   ],
+   "frontier": [
+    {
+     "q": 0.0,
+     "recall": 0.3781818181818182,
+     "fdp": 0.0,
+     "alerts": 104
+    },
+    {
+     "q": 0.01,
+     "recall": 0.39636363636363636,
+     "fdp": 0.00909090909090909,
+     "alerts": 110
+    },
+    {
+     "q": 0.05,
+     "recall": 0.39636363636363636,
+     "fdp": 0.00909090909090909,
+     "alerts": 110
+    },
+    {
+     "q": 0.1,
+     "recall": 0.39636363636363636,
+     "fdp": 0.00909090909090909,
+     "alerts": 110
+    },
+    {
+     "q": 0.2,
+     "recall": 0.44,
+     "fdp": 0.16551724137931034,
+     "alerts": 145
+    }
+   ],
+   "T": 57368,
+   "NM": 275,
+   "NC": 2448993,
+   "thr": 2294720.0,
+   "auroc": 0.9164855995932232,
+   "pos": 0.55
+  },
+  "0.85": {
+   "methods": [
+    {
+     "method": "online FDR (e-LOND, mean rule)",
+     "alerts": 72,
+     "fdp": 0.0,
+     "recall": 0.2823529411764706,
+     "note": "self-selected budget",
+     "frontier_recall_at_budget": 0.2823529411764706,
+     "gap": 0.0
+    },
+    {
+     "method": "online FDR (policy D, slot)",
+     "alerts": 126.55809397928697,
+     "fdp": 0.00119890129516169,
+     "recall": 0.49571122869216466,
+     "note": "randomised rule; alerts and FDP are E[R] and E[V]/E[R], not E[V/R]",
+     "frontier_recall_at_budget": 0.4923846822717136,
+     "gap": -0.0033265464204510486
+    },
+    {
+     "method": "feedback controller (L=0)",
+     "alerts": 161,
+     "fdp": 0.06832298136645963,
+     "recall": 0.5882352941176471,
+     "note": "",
+     "frontier_recall_at_budget": 0.5882352941176471,
+     "gap": 0.0
+    },
+    {
+     "method": "feedback controller (L=20 alerts)",
+     "alerts": 160,
+     "fdp": 0.08125,
+     "recall": 0.5764705882352941,
+     "note": "",
+     "frontier_recall_at_budget": 0.5882352941176471,
+     "gap": 0.01176470588235301
+    },
+    {
+     "method": "feedback controller (L=50 alerts)",
+     "alerts": 171,
+     "fdp": 0.14035087719298245,
+     "recall": 0.5764705882352941,
+     "note": "",
+     "frontier_recall_at_budget": 0.615686274509804,
+     "gap": 0.03921568627450989
+    },
+    {
+     "method": "fixed threshold (no feedback)",
+     "alerts": 875,
+     "fdp": 0.7634285714285715,
+     "recall": 0.8117647058823529,
+     "note": "",
+     "frontier_recall_at_budget": 0.8117647058823529,
+     "gap": 0.0
+    }
+   ],
+   "frontier": [
+    {
+     "q": 0.0,
+     "recall": 0.4588235294117647,
+     "fdp": 0.0,
+     "alerts": 117
+    },
+    {
+     "q": 0.01,
+     "recall": 0.5647058823529412,
+     "fdp": 0.006896551724137931,
+     "alerts": 145
+    },
+    {
+     "q": 0.05,
+     "recall": 0.5843137254901961,
+     "fdp": 0.04487179487179487,
+     "alerts": 156
+    },
+    {
+     "q": 0.1,
+     "recall": 0.6431372549019608,
+     "fdp": 0.0989010989010989,
+     "alerts": 182
+    },
+    {
+     "q": 0.2,
+     "recall": 0.6823529411764706,
+     "fdp": 0.18309859154929578,
+     "alerts": 213
+    }
+   ],
+   "T": 31568,
+   "NM": 255,
+   "NC": 1813113,
+   "thr": 1262720.0,
+   "auroc": 0.9992205202384584,
+   "pos": 0.85
+  }
+ },
+ "note": "0.55 = primary / guarantee window (evidence a valid e-value); 0.85 = stress-test window (evidence not a valid e-value, sec:tail); FDP at 0.85 is a measurement against labels, not a guarantee"
+}

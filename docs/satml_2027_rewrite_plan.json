@@ -1,0 +1,848 @@
+{
+    "document": {
+        "source_file": "SatML_2027 (11)(1).pdf",
+        "source_length_pages": 36,
+        "target_venue": "IEEE SaTML 2027",
+        "target_category": "Research paper",
+        "target_body_pages": 12,
+        "recommended_title": "When Online Guarantees Go Silent: Feasibility and Evasion in ML Intrusion Detection",
+        "alternative_title": "Validity Is Not Viability: Feasibility and Attackability of Online Error Control for ML Intrusion Detection"
+    },
+    "submission_constraints": {
+        "checked_on": "2026-09-02",
+        "body_limit_pages": 12,
+        "references_unlimited": true,
+        "appendices_unlimited": true,
+        "reviewers_required_to_read_appendix": false,
+        "excluded_from_page_limit": [
+            "Open Science",
+            "LLM Usage Considerations",
+            "Ethical Considerations"
+        ],
+        "format": "IEEEtran conference, 10pt, unchanged geometry",
+        "editorial_implication": "Every central theorem statement, proof idea, primary empirical result, and essential limitation must remain in the body. Appendices should verify and broaden the story, not carry it."
+    },
+    "central_thesis": "A statistical error-control layer can be formally valid yet operationally empty at security-scale horizons; the aggregation used to recover feasibility then becomes an adversarial attack surface.",
+    "paper_identity": {
+        "what_it_is": "A compositional security analysis of a statistical trust layer for ML intrusion detection.",
+        "what_it_is_not": [
+            "A new intrusion detector",
+            "A new conformal method",
+            "A new online FDR controller",
+            "A broad benchmark of every online testing method",
+            "A general claim that online FDR is unusable",
+            "A general claim that every host-aware detector is padding-vulnerable"
+        ],
+        "two_principal_contributions": [
+            "C1: finite discovery horizon and exact calibration-horizon boundary",
+            "C2: aggregation and adaptive state as attack surfaces"
+        ],
+        "bridge_not_third_contribution": "Grouping reduces the hypothesis horizon and buys feasibility exactly, but loses semantic resolution and creates the composition attacked by C2."
+    },
+    "strongest_contributions": [
+        {
+            "rank": 1,
+            "name": "Finite discovery horizon and exact feasibility boundary",
+            "role": "Primary theoretical anchor",
+            "one_sentence_pitch": "For two controller families containing LOND, e-LOND, e-LORD, and LORD++, bounded conformal evidence and uninterrupted summable spending produce a finite, absorbing rejection horizon.",
+            "must_keep_in_body": [
+                "Bounded evidence ceiling M=(|C|+1)/k",
+                "Multiplicative-family condition gamma_t t^d -> 0",
+                "Lag-sum tail argument",
+                "Absorbing-state conclusion",
+                "Horizon-uniform bound |C| >= kT/c0 - 1",
+                "20 calibration units per hypothesis for e-LOND at k=1 and alpha=0.05",
+                "Security-scale calibration numbers",
+                "Escape taxonomy"
+            ],
+            "decisive_evidence": [
+                "Approximately 3.3e8 calibration flows required for LOND/e-LOND at flow-scale LSPR23 horizon",
+                "Approximately 6.5e8 for LORD++",
+                "Approximately 3.2e13 under gamma_j proportional to j^-1.6",
+                "Only 1.8e6 to 2.4e6 calibration flows available",
+                "Only the first 748 to 902 grouped hypotheses are cold-start feasible under the horizon-free sequence"
+            ],
+            "novelty_positioning": "Prior work observed conformal resolution loss or alpha-death. The manuscript adds structural conditions, a finite absorbing horizon, an exact count-ratio boundary, and a classification of escape mechanisms and their costs.",
+            "independent_of_assumption_1": true
+        },
+        {
+            "rank": 2,
+            "name": "Symmetric e-merging is inherently vulnerable to zero-evidence padding",
+            "role": "Primary security/theory anchor",
+            "one_sentence_pitch": "No symmetric e-merging family that can cross a rejection threshold above one can be invariant to appending zero-evidence members.",
+            "must_keep_in_body": [
+                "Padding-robustness definition with attainment",
+                "Theorem 10 class-wide impossibility",
+                "Quantitative bound r > sum(x_i)/tau - m",
+                "Short essential-domination proof idea",
+                "Exact arithmetic-mean threshold r*",
+                "Black-box construction versus oracle-minimal sizing distinction",
+                "Primary and replication costs",
+                "Controlled replay",
+                "Second-dataset and host-conditioned transfer"
+            ],
+            "decisive_evidence": [
+                "Primary canonical detections cost 23, 24, and 33 added flows",
+                "Replication canonical median cost is 6 flows over 11 detections",
+                "Controlled replay suppresses 3/3 and 34/34 canonical targets at the predicted threshold",
+                "AIT flow-only chain suppresses 84/85 true detections across eight organizations",
+                "AIT host-conditioned end-to-end replay suppresses 9/9 evaluated detections"
+            ],
+            "critical_scope": [
+                "Constructing plausible padding is black-box; exact minimum sizing is an oracle lower bound",
+                "Transfer covers the implemented six host-context features and accumulation model, not all host-aware detectors",
+                "The theorem applies to symmetric e-merging families that attain the threshold"
+            ],
+            "independent_of_assumption_1": true
+        },
+        {
+            "rank": 3,
+            "name": "Granularity-feasibility-resolution bridge",
+            "role": "Narrative bridge",
+            "one_sentence_pitch": "Coarsening the hypothesis reduces T and buys feasibility in exact lockstep, while each alert represents more fine-grained attack activity.",
+            "must_keep_in_body": [
+                "Exact linear dependence on grouped-hypothesis count",
+                "Fixed five-minute atomic reference",
+                "Alert blur as the preferred cost metric",
+                "Causal handoff from C1 to C2"
+            ],
+            "decisive_evidence": [
+                "Primary-window blur rises from 1.0 at five minutes to 16.1 at two hours and 38.5 at one day",
+                "Stress-window blur rises from 1.0 to 20.4",
+                "Source-host grouping is feasible at every tested bucket, showing that the barrier can be bought off"
+            ],
+            "do_not_use_as_headline_metric": [
+                "Moving-denominator episode recall",
+                "Malicious-flow coverage dominated by a few high-mass episodes"
+            ]
+        },
+        {
+            "rank": 4,
+            "name": "Evidence-conditioned controller state can be attacker-controlled",
+            "role": "Supporting structural contribution",
+            "one_sentence_pitch": "ADDIS escapes absorption by conditioning its spending index on observed evidence, and attacker-generated selected non-candidates can advance that index until all later targets are silent.",
+            "must_keep_in_body": [
+                "Closed-form precursor budget",
+                "Real stress-window mechanism demonstration clearly marked invalid for guarantees",
+                "Guarantee-valid synthetic experiment",
+                "Operational cost",
+                "Explicit exclusion of online e-BH"
+            ],
+            "decisive_evidence": [
+                "Real stress window has sharp transition at B*=203 precursors",
+                "Each precursor requires 453279 flows in that configuration",
+                "Total real-stream budget is 92015637 flows, 36.1 GB, and 33.4 Mbit/s",
+                "Synthetic valid streams have median B*=140, range 140 to 255, and all 120 targets are silenced",
+                "Synthetic mixed-stream mean FDP is 0.047 at q=0.05"
+            ],
+            "critical_scope": [
+                "The real-stream evidence is invalid and supports mechanism/cost only",
+                "The attack is conspicuous, not low footprint",
+                "The attack does not cover online e-BH's history-wide fixed point"
+            ]
+        },
+        {
+            "rank": 5,
+            "name": "Group-validity premise and cost of direct group calibration",
+            "role": "Credibility and dependency result, not headline contribution",
+            "one_sentence_pitch": "The grouped e-value guarantee needs a local metadata-conditional premise; calibrating groups directly removes that premise but collapses the evidence ceiling and stops primary/replication alerting.",
+            "must_keep_in_body": [
+                "Compact Assumption 1",
+                "Lemma 1 statement",
+                "One dependency paragraph",
+                "Known-invalid stress window",
+                "Direct group calibration cost"
+            ],
+            "decisive_evidence": [
+                "Position 0.85 benign firing rate is 50.9 times nominal and gives E[e] approximately 51",
+                "Other windows have only 0 to 3 benign firings and cannot validate the premise",
+                "Direct group calibration reduces calibration units to 37k to 57k, makes margin about -0.97, and yields zero primary/replication detections"
+            ]
+        }
+    ],
+    "story_arc": [
+        {
+            "step": 1,
+            "heading": "A guarantee is only useful if any evidence can cross its threshold",
+            "logic": "Finite calibration creates a hard evidence ceiling; online spending creates a shrinking threshold."
+        },
+        {
+            "step": 2,
+            "heading": "The collision creates a finite discovery horizon",
+            "logic": "For the covered families, a rejection-free run eventually enters an absorbing infeasible state."
+        },
+        {
+            "step": 3,
+            "heading": "The defender must reduce the number of hypotheses or change the temporal guarantee",
+            "logic": "Grouping, restart, smoothing, or deferred decisions remove or relax different premises and have distinct prices."
+        },
+        {
+            "step": 4,
+            "heading": "Grouping is the direct operational repair",
+            "logic": "Reducing T lowers the calibration requirement exactly but coarsens the semantic unit."
+        },
+        {
+            "step": 5,
+            "heading": "The repair becomes the attack surface",
+            "logic": "Attacker-controlled group membership permits zero-evidence padding; symmetric valid aggregation cannot make that impossible."
+        },
+        {
+            "step": 6,
+            "heading": "Adaptive escape mechanisms can expose state as well",
+            "logic": "When evidence determines the spending index, attacker-generated evidence can control future levels."
+        },
+        {
+            "step": 7,
+            "heading": "Therefore evaluate the composed trust layer",
+            "logic": "Validity, feasibility, semantic granularity, and adversarial robustness are separate system properties."
+        }
+    ],
+    "page_budget": [
+        {
+            "section": "1. Introduction",
+            "target_pages": 1.25
+        },
+        {
+            "section": "2. Trust-layer model and evaluation protocol",
+            "target_pages": 1.5
+        },
+        {
+            "section": "3. When valid controllers go silent",
+            "target_pages": 2.25
+        },
+        {
+            "section": "4. Aggregation buys feasibility at a resolution cost",
+            "target_pages": 1.0
+        },
+        {
+            "section": "5. Aggregation is a padding attack surface",
+            "target_pages": 2.25
+        },
+        {
+            "section": "6. Adaptive state is a second surface",
+            "target_pages": 0.7
+        },
+        {
+            "section": "7. Implications, validity, and limitations",
+            "target_pages": 1.1
+        },
+        {
+            "section": "8. Related work",
+            "target_pages": 0.75
+        },
+        {
+            "section": "9. Conclusion",
+            "target_pages": 0.2
+        },
+        {
+            "section": "Figures, tables, and layout reserve",
+            "target_pages": 1.0
+        }
+    ],
+    "main_body_sections": [
+        {
+            "id": 1,
+            "title": "Introduction",
+            "purpose": "Introduce the composed trust layer, state the bounded-evidence collision, and give two contributions plus one bridge.",
+            "retain": [
+                "SOC alert-queue motivation",
+                "Detector -> evidence -> grouping -> controller -> alert pipeline",
+                "Validity is not feasibility",
+                "C1, bridge, C2",
+                "One compact dataset/scope paragraph"
+            ],
+            "remove_or_move": [
+                "Long theorem conditions inside contribution bullets",
+                "Detailed procedure-by-procedure caveats",
+                "Multiple versions of the same novelty comparison"
+            ],
+            "todo_markers": [
+                "#TODO_FIGURE_PIPELINE"
+            ],
+            "current_sources": [
+                "Current Sections I, II-A, X"
+            ]
+        },
+        {
+            "id": 2,
+            "title": "Statistical trust layer and evaluation model",
+            "purpose": "Put all assumptions and protocol choices in one place so result sections do not repeat them.",
+            "retain": [
+                "Two-point conformal e-value and ceiling",
+                "Mean group evidence",
+                "Compact Assumption 1 and Lemma 1",
+                "Controller decision rule",
+                "Threat model",
+                "Canonical own-key order",
+                "LSPR23 and AIT protocol",
+                "Primary/replication/stress roles"
+            ],
+            "remove_or_move": [
+                "Full sigma-field proof",
+                "Every controller formula",
+                "Feature and preprocessing details",
+                "Repeated order and validity disclaimers"
+            ],
+            "todo_markers": [
+                "#TODO_TABLE_EXPERIMENT_SCOPE"
+            ],
+            "current_sources": [
+                "Current Sections II, III, VII",
+                "Current Appendices B and C"
+            ]
+        },
+        {
+            "id": 3,
+            "title": "When can an online guarantee produce any alert?",
+            "purpose": "Make C1 the first major result and distinguish structural feasibility from observed detection.",
+            "retain": [
+                "Three feasibility definitions",
+                "Combined finite-horizon theorem",
+                "Short proof sketches",
+                "Exact uniform-horizon corollary",
+                "Security-scale numbers",
+                "Feasibility-not-detection examples",
+                "Two escape mechanisms",
+                "One restart comparison",
+                "One sentence on recent closure/donation procedures"
+            ],
+            "remove_or_move": [
+                "Long per-procedure derivations",
+                "Full smoothing and restart matrices",
+                "Full low-prevalence matrix",
+                "Detailed e-TOAD interpretation dispute"
+            ],
+            "todo_markers": [
+                "#TODO_FIGURE_FEASIBILITY",
+                "#TODO_TABLE_PROCEDURE_TAXONOMY"
+            ],
+            "current_sources": [
+                "Current Section IV",
+                "Current Tables III, XI, XII, XIII, XXXII"
+            ]
+        },
+        {
+            "id": 4,
+            "title": "Aggregation buys feasibility by spending resolution",
+            "purpose": "Provide the causal bridge from C1 to C2.",
+            "retain": [
+                "Linear exchange rate",
+                "Five grouping families summarized in one sentence",
+                "Fixed atomic reference",
+                "Alert blur numbers",
+                "One sentence on external task-record limits"
+            ],
+            "remove_or_move": [
+                "Full grouping grid",
+                "Flow-coverage curves",
+                "Detailed red-team matching and null tests",
+                "Configuration-selection regret"
+            ],
+            "todo_markers": [
+                "#TODO_FIGURE_GRANULARITY"
+            ],
+            "current_sources": [
+                "Current Section V",
+                "Current Tables VI, VIII, IX, XXXI"
+            ]
+        },
+        {
+            "id": 5,
+            "title": "Aggregation is a padding attack surface",
+            "purpose": "Make the class-wide impossibility and low-footprint attack the security centerpiece.",
+            "retain": [
+                "Padding definition",
+                "Theorem 10",
+                "Proof idea and tightness",
+                "Exact mean cost",
+                "Black-box construction versus oracle sizing",
+                "Primary/replication costs",
+                "Controlled replay",
+                "Host-conditioned and AIT transfer",
+                "Short treatment of cap, weighting, and group-MAX alternatives"
+            ],
+            "remove_or_move": [
+                "All pool-by-window matrices",
+                "Every static threshold variant",
+                "Detailed keyed-hash insertion calculations",
+                "Full cap and weight sweeps"
+            ],
+            "todo_markers": [
+                "#TODO_TABLE_CORE_EMPIRICS"
+            ],
+            "current_sources": [
+                "Current Section VI-A through VI-E",
+                "Current Tables XIV through XVII and XXI through XXIV"
+            ]
+        },
+        {
+            "id": 6,
+            "title": "Evidence-conditioned state is a second attack surface",
+            "purpose": "Present ADDIS as a narrow structural example rather than a co-equal practical attack story.",
+            "retain": [
+                "Closed-form B*",
+                "Real stress-window threshold clearly marked mechanism-only",
+                "Synthetic guarantee-valid attack",
+                "Operational volume",
+                "No claim about online e-BH"
+            ],
+            "remove_or_move": [
+                "Long coincidence analysis",
+                "All grey-box sensitivity rows",
+                "Detailed break-even table"
+            ],
+            "todo_markers": [
+                "#TODO_FIGURE_ATTACKS"
+            ],
+            "current_sources": [
+                "Current Section VI-F and VI-G",
+                "Current Tables XVIII through XX"
+            ]
+        },
+        {
+            "id": 7,
+            "title": "Implications, validity, and limitations",
+            "purpose": "Centralize what depends on Assumption 1, translate the results into design rules, and state scope once.",
+            "retain": [
+                "Sizing-before-controller rule",
+                "Choose unit before procedure",
+                "Restart guarantee scope",
+                "Adaptive modules are threat surfaces",
+                "Three-way claim dependency map",
+                "Single-dataset and episode-semantic limits",
+                "Oracle lower-bound limitation",
+                "Host-context and state-attack scope"
+            ],
+            "remove_or_move": [
+                "Full diagnostics",
+                "Alert audit details",
+                "Contamination sweep",
+                "Long four-item lists of non-claims"
+            ],
+            "todo_markers": [],
+            "current_sources": [
+                "Current Sections IX and X",
+                "Current Tables XXVIII through XXXVI"
+            ]
+        },
+        {
+            "id": 8,
+            "title": "Related work",
+            "purpose": "Position only against the nearest work and make the novelty delta explicit.",
+            "retain": [
+                "Online FDR and alpha-death",
+                "Conformal resolution work",
+                "Trustworthy IDS pipelines",
+                "E-merging and adversarial testing",
+                "One short batching/feedback paragraph"
+            ],
+            "remove_or_move": [
+                "Catalog-style descriptions of every cited procedure"
+            ],
+            "todo_markers": [],
+            "current_sources": [
+                "Current Section XI"
+            ]
+        },
+        {
+            "id": 9,
+            "title": "Conclusion",
+            "purpose": "Restate the system-level lesson in one paragraph.",
+            "retain": [
+                "Finite horizon",
+                "Granularity bridge",
+                "Padding impossibility",
+                "Composed-system evaluation"
+            ],
+            "remove_or_move": [
+                "New numerical details or qualifications"
+            ],
+            "todo_markers": [],
+            "current_sources": [
+                "Current Section XII"
+            ]
+        }
+    ],
+    "claim_dependency_map": [
+        {
+            "claim": "Finite discovery horizon",
+            "needs_assumption_1": false,
+            "needs_valid_e_values": false,
+            "needs_dataset_labels": false,
+            "depends_on": [
+                "Finite evidence ceiling",
+                "Uninterrupted controller",
+                "Theorem 1 controller-family conditions"
+            ]
+        },
+        {
+            "claim": "Calibration-horizon exchange rate",
+            "needs_assumption_1": false,
+            "needs_valid_e_values": false,
+            "needs_dataset_labels": false,
+            "depends_on": [
+                "Cold-start coefficient",
+                "Horizon-uniform max-min allocation"
+            ]
+        },
+        {
+            "claim": "Granularity buys feasibility",
+            "needs_assumption_1": false,
+            "needs_valid_e_values": false,
+            "needs_dataset_labels": false,
+            "depends_on": [
+                "Grouped hypothesis count T"
+            ]
+        },
+        {
+            "claim": "Alert blur increases with coarsening",
+            "needs_assumption_1": false,
+            "needs_valid_e_values": false,
+            "needs_dataset_labels": true,
+            "depends_on": [
+                "Five-minute labelled malicious episode proxy"
+            ]
+        },
+        {
+            "claim": "No attaining symmetric e-merging family is padding-robust",
+            "needs_assumption_1": false,
+            "needs_valid_e_values": false,
+            "needs_dataset_labels": false,
+            "depends_on": [
+                "Symmetric e-merging admissibility theory",
+                "Threshold tau > 1"
+            ]
+        },
+        {
+            "claim": "Measured e-LOND FDR guarantee on non-stress windows",
+            "needs_assumption_1": true,
+            "needs_valid_e_values": true,
+            "needs_dataset_labels": true,
+            "depends_on": [
+                "Lemma 1",
+                "Correct labels for realized FDP"
+            ]
+        },
+        {
+            "claim": "Real-stream ADDIS state mechanism",
+            "needs_assumption_1": false,
+            "needs_valid_e_values": false,
+            "needs_dataset_labels": true,
+            "depends_on": [
+                "Known-invalid stress window",
+                "Mechanism and cost interpretation only"
+            ]
+        },
+        {
+            "claim": "ADDIS can be silenced while its guarantee holds",
+            "needs_assumption_1": false,
+            "needs_valid_e_values": true,
+            "needs_dataset_labels": false,
+            "depends_on": [
+                "Synthetic conservative nulls",
+                "Alternative precursors"
+            ]
+        }
+    ],
+    "asset_plan": [
+        {
+            "current_asset": "Figure 1",
+            "decision": "Keep and redraw",
+            "new_marker": "#TODO_FIGURE_PIPELINE",
+            "main_message": "Bounded evidence leads to a finite horizon; grouping repairs feasibility and exposes Surface A; evidence-conditioned state exposes Surface B."
+        },
+        {
+            "current_asset": "Figure 2",
+            "decision": "Keep",
+            "new_marker": "#TODO_FIGURE_FEASIBILITY",
+            "main_message": "Required calibration grows linearly with horizon and exceeds the available corpus at flow granularity."
+        },
+        {
+            "current_asset": "Tables III and XIII",
+            "decision": "Merge and compress",
+            "new_marker": "#TODO_TABLE_PROCEDURE_TAXONOMY",
+            "main_message": "Classify procedures by spending index, absorption, escape mechanism, and price."
+        },
+        {
+            "current_asset": "Figure 3",
+            "decision": "Keep only top and middle panels",
+            "new_marker": "#TODO_FIGURE_GRANULARITY",
+            "main_message": "Coarsening crosses the feasibility boundary while alert blur rises."
+        },
+        {
+            "current_asset": "Tables I, XIV, XXI, XXII, XXIV",
+            "decision": "Create one compact synthesis table",
+            "new_marker": "#TODO_TABLE_CORE_EMPIRICS",
+            "main_message": "Primary, replication, replay, and transfer evidence for the padding claim."
+        },
+        {
+            "current_asset": "Figure 4",
+            "decision": "Keep padding panel and synthetic-valid panel; demote or grey the invalid-real panel",
+            "new_marker": "#TODO_FIGURE_ATTACKS",
+            "main_message": "Padding is low footprint; state manipulation is structurally effective but conspicuous."
+        }
+    ],
+    "table_triage": {
+        "main_body": [
+            "New experiment-scope/dependency table, optional",
+            "Compressed procedure taxonomy from current Tables III and XIII",
+            "New core empirical table from current Tables I, XIV, XXI, XXII, and XXIV"
+        ],
+        "appendix": [
+            "Current Tables IV through XIII",
+            "Current Tables XV through XX",
+            "Current Tables XXV through XXXVI",
+            "Full versions of current Tables XIV and XXI through XXIV"
+        ],
+        "online_supplement_candidates": [
+            "Matched operating-point frontier",
+            "Analyst-feedback controller sweep",
+            "Complete negative-results catalog",
+            "Large caption-level implementation audits"
+        ]
+    },
+    "experiment_triage": {
+        "main_body_decisive": [
+            "Flow-scale calibration requirement",
+            "Short feasible prefix under horizon-free spending",
+            "Primary and replication alert blur",
+            "Primary and replication padding costs",
+            "Controlled black-box replay",
+            "AIT transfer",
+            "Guarantee-valid synthetic ADDIS state attack"
+        ],
+        "appendix_robustness": [
+            "Five positions by two seeds",
+            "All controllers and two spending sequences",
+            "Full grouping grid",
+            "Order ensemble and keyed hashes",
+            "Smoothing and restart grids",
+            "Closure, donation, and decision deadlines",
+            "All padding pools and thresholds",
+            "Caps and asymmetric weights",
+            "Group calibration and MAX",
+            "Insertion attack",
+            "Low-prevalence sensitivity",
+            "Validity diagnostics and label audit"
+        ],
+        "secondary_or_removable": [
+            "Operational matched-frontier benchmark",
+            "P, PI, and AQT analyst-feedback experiments",
+            "Detailed configuration-transfer regret",
+            "Repeated failed-mitigation prose"
+        ]
+    },
+    "reviewer_risks": [
+        {
+            "risk": "Novelty objection: finite conformal resolution and alpha-death are already known",
+            "severity": "high",
+            "response_in_rewrite": "State the novelty delta in the introduction and related work: absorbing structural horizon, exact exchange rate, procedure-family conditions, and escape classification/cost."
+        },
+        {
+            "risk": "Reviewers may think the empirical FDR guarantee was validated on LSPR23",
+            "severity": "high",
+            "response_in_rewrite": "Use one scope/dependency table and state that Assumption 1 is not established; four windows are merely not refuted and 0.85 is invalid."
+        },
+        {
+            "risk": "The paper appears to be a collection of unrelated experiments",
+            "severity": "high",
+            "response_in_rewrite": "Enforce one causal chain: bounded evidence -> finite horizon -> grouping -> resolution cost -> padding -> adaptive state."
+        },
+        {
+            "risk": "ADDIS state attack is over-sold despite invalid real evidence and high cost",
+            "severity": "high",
+            "response_in_rewrite": "Make it a short supporting result, foreground the synthetic-valid mechanism, call the real cost conspicuous, and exclude online e-BH."
+        },
+        {
+            "risk": "Padding is called black-box although exact costs use live state",
+            "severity": "high",
+            "response_in_rewrite": "Separate black-box construction from oracle-minimum sizing in the threat model, theorem discussion, table footnote, and limitations."
+        },
+        {
+            "risk": "Dual reporting under canonical and first-flow orders overwhelms the story",
+            "severity": "medium",
+            "response_in_rewrite": "Use canonical order in the main body. Keep first-flow only as an appendix robustness/optimistic-detection bound."
+        },
+        {
+            "risk": "The transfer result is interpreted as a universal failure of host-aware detection",
+            "severity": "medium",
+            "response_in_rewrite": "State exact tested features, causal replay, organizations, and uncovered regimes."
+        },
+        {
+            "risk": "Critical results live only in unlimited appendices",
+            "severity": "high",
+            "response_in_rewrite": "Keep all central theorem statements, proof ideas, primary/replication evidence, and limitation scopes in the 12-page body."
+        }
+    ],
+    "terminology_rules": {
+        "preferred_terms": [
+            "statistical trust layer",
+            "finite discovery horizon",
+            "evidence-feasible",
+            "cold-start feasible",
+            "absorbing infeasible state",
+            "calibration-horizon exchange rate",
+            "alert blur",
+            "Surface A: within-hypothesis padding",
+            "Surface B: controller-state manipulation",
+            "canonical own-key order",
+            "stress window"
+        ],
+        "avoid_or_define_carefully": [
+            "alpha-death as a synonym for the theorem",
+            "valid window",
+            "confirmed validity",
+            "black-box cost",
+            "incident or campaign when the unit is an episode",
+            "robust ordering for a public hash",
+            "practical state attack"
+        ],
+        "mandatory_distinctions": [
+            "Validity versus feasibility",
+            "Feasibility versus detection power",
+            "Episode recall versus fixed atomic coverage",
+            "Atomic coverage versus alert blur",
+            "Black-box pad construction versus oracle sizing",
+            "Low-footprint Surface A versus conspicuous Surface B",
+            "Canonicalization versus security defense"
+        ]
+    },
+    "overleaf_todo_markers": [
+        {
+            "marker": "#TODO_FIGURE_PIPELINE",
+            "source": "Current Figure 1",
+            "action": "Redraw around the causal chain and two attack surfaces."
+        },
+        {
+            "marker": "#TODO_TABLE_EXPERIMENT_SCOPE",
+            "source": "Current Sections II-C, VII-A, IX-A",
+            "action": "Optional six-row table showing which claims depend on Assumption 1 and which windows are used."
+        },
+        {
+            "marker": "#TODO_FIGURE_FEASIBILITY",
+            "source": "Current Figure 2",
+            "action": "Keep calibration-horizon lines and available-corpus band."
+        },
+        {
+            "marker": "#TODO_TABLE_PROCEDURE_TAXONOMY",
+            "source": "Current Tables III and XIII",
+            "action": "Merge to mechanism/escape/price table."
+        },
+        {
+            "marker": "#TODO_FIGURE_GRANULARITY",
+            "source": "Current Figure 3",
+            "action": "Keep feasibility and alert-blur panels only."
+        },
+        {
+            "marker": "#TODO_TABLE_CORE_EMPIRICS",
+            "source": "Current Tables I, XIV, XXI, XXII, and XXIV",
+            "action": "Create a compact primary/replication/replay/transfer table."
+        },
+        {
+            "marker": "#TODO_FIGURE_ATTACKS",
+            "source": "Current Figure 4",
+            "action": "Keep padding and synthetic-valid panels; demote or visually mark invalid-real panel."
+        }
+    ],
+    "appendix_reorganization": [
+        {
+            "appendix": "A",
+            "title": "Proofs and exact scope",
+            "contents": [
+                "Lemma 1",
+                "Finite-horizon theorem",
+                "Uniform-spending optimality",
+                "Closure and donation bounds",
+                "Symmetric padding impossibility",
+                "Position-weight reach/front-load bounds",
+                "ADDIS state budget",
+                "Restart FDR composition"
+            ]
+        },
+        {
+            "appendix": "B",
+            "title": "Procedures and reproducibility",
+            "contents": [
+                "Exact procedure formulas",
+                "Parameters",
+                "Unit-test identities",
+                "Features and preprocessing",
+                "Artifact instructions"
+            ]
+        },
+        {
+            "appendix": "C",
+            "title": "Full feasibility evidence",
+            "contents": [
+                "Five windows by two seeds",
+                "All procedures and spending sequences",
+                "Low-prevalence sweep",
+                "Smoothing",
+                "Restart",
+                "Closure/donation/deadlines"
+            ]
+        },
+        {
+            "appendix": "D",
+            "title": "Granularity and ordering",
+            "contents": [
+                "Full grouping grid",
+                "Fixed atomic and flow coverage",
+                "External red-team denominator",
+                "Order ensemble",
+                "Public and keyed hashes",
+                "Configuration transfer"
+            ]
+        },
+        {
+            "appendix": "E",
+            "title": "Attack measurements and mitigations",
+            "contents": [
+                "Padding pools",
+                "Per-window costs",
+                "Controlled replay",
+                "Caps and asymmetric weights",
+                "Host-conditioned detector",
+                "AIT organization matrices",
+                "Insertion and group-MAX",
+                "ADDIS real and synthetic attacks",
+                "Operational units"
+            ]
+        },
+        {
+            "appendix": "F",
+            "title": "Validity and data quality",
+            "contents": [
+                "Marginal diagnostic",
+                "Metadata-stratified diagnostic",
+                "Direct group calibration",
+                "Contamination",
+                "Alert audit",
+                "Bates conditional adjustment"
+            ]
+        },
+        {
+            "appendix": "G",
+            "title": "Secondary operational baselines",
+            "contents": [
+                "Matched operating-point frontier",
+                "Analyst-feedback delay",
+                "Remaining negative results"
+            ]
+        }
+    ],
+    "final_compression_checks": [
+        "The abstract contains one C1 result, the bridge, one Surface A result, and one short Surface B sentence.",
+        "The introduction names exactly two principal contributions and one bridge.",
+        "Primary and replication evidence dominate the empirical narrative.",
+        "The invalid stress result is visually and verbally marked as mechanism/cost only.",
+        "Canonical order is the only main-body ordering; first-flow matrices are appendix material.",
+        "No main caption repeats the threat model, order convention, and validity caveat.",
+        "Every central theorem has its condition, conclusion, and proof idea in the body.",
+        "Every guarantee-bearing empirical claim is conditional on Assumption 1.",
+        "The paper never treats failure to reject a validity diagnostic as positive evidence.",
+        "The state attack is described as conspicuous, not low cost.",
+        "The padding construction is black-box and the exact minimum is oracle-sized.",
+        "The final paragraph returns to composed-system evaluation rather than experiment count."
+    ]
+}

@@ -1,0 +1,11 @@
+{
+ "D1a": "a random secondary key permutes only within equal-first_ts blocks",
+ "D2a": "n_tied = episodes in blocks of size >= 2 is an exact, detector-free bound on the movable population; zero exposure makes E9 a one-line note",
+ "D3a": "equal in-block rejection counts leave LOND's suffix bit-identical, so a tie-break propagates only by changing that count",
+ "D4a": "smallest-p-first is NOT block-optimal -- REFUTED by brute force over all B! orders (127 of 600 blocks beaten, worst shortfall 3).  The optimum spends the early high-gamma steps on MARGINAL episodes.  Extremes must be enumerated where B! is tractable and labelled as samples otherwise",
+ "D5a": "first-detection rank moves by at most B-1 when the in-block count is fixed",
+ "D6": "report exposure first, then the deterministic value's percentile in the randomised distribution, not just the sd",
+ "n_passed": 17,
+ "n_failed": 0,
+ "failed": []
+}

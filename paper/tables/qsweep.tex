@@ -1,0 +1,19 @@
+\begin{table}[t]
+\centering
+\caption{Error target $q$ vs the spending sequence (median episode recall). Feasibility
+scales linearly in $q$: the measured $(\text{margin}+1)/\text{base}$ ratio tracks the
+prediction $q/0.05$. All counts here use the \textbf{first-flow} within-bucket order, the optimistic upper bound over the orders we audit, not the canonical metadata-hash order \cref{tab:main} reports (\cref{apptab:ordering}); the order shifts detections and the level an alert fires at, and shifts nothing else. The \emph{uniform} column are the horizon-uniform $\gamma$, an \oracle{} that must know $T$ in advance (\cref{tab:terms}).}
+\label{apptab:qsweep}
+\begin{tabular}{rrrrr}
+\toprule
+ & \multicolumn{2}{c}{median recall} & \multicolumn{2}{c}{$(\text{margin}+1)$ ratio} \\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}
+$q$ & poly & uniform & measured & predicted \\
+\midrule
+0.01 & 0.049 & 0.000 & 0.20 & 0.20 \\
+0.05 & 0.085 & 0.273 & 1.00 & 1.00 \\
+0.10 & 0.100 & 0.274 & 2.00 & 2.00 \\
+0.20 & 0.137 & 0.274 & 4.00 & 4.00 \\
+\bottomrule
+\end{tabular}
+\end{table}

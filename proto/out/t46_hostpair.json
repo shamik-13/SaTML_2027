@@ -1,0 +1,154 @@
+{
+ "config": {
+  "pos": [
+   0.55,
+   0.62,
+   0.7,
+   0.77,
+   0.85
+  ],
+  "seeds": [
+   0,
+   1
+  ],
+  "k": 1,
+  "w0": 0.025,
+  "bucket_s": 7200
+ },
+ "feature_set": {
+  "n_features": 33,
+  "names": [
+   "Protocol",
+   "Flow Duration",
+   "Flow Bytes/s",
+   "Flow Packets/s",
+   "Tot Fwd Pkts",
+   "Tot Bwd Pkts",
+   "Total Length of Fwd Packet",
+   "Total Length of Bwd Packet",
+   "Fwd Packet Length Min",
+   "Fwd Packet Length Max",
+   "Fwd Packet Length Mean",
+   "Fwd Packet Length Std",
+   "Bwd Packet Length Min",
+   "Bwd Packet Length Max",
+   "Bwd Packet Length Mean",
+   "Bwd Packet Length Std",
+   "Flow IAT Mean",
+   "Flow IAT Min",
+   "Flow IAT Max",
+   "Flow IAT Stddev",
+   "Fwd IAT Min",
+   "Fwd IAT Max",
+   "Fwd IAT Mean",
+   "Fwd IAT Std",
+   "Fwd IAT Tot",
+   "Bwd IAT Min",
+   "Bwd IAT Max",
+   "Bwd IAT Mean",
+   "Bwd IAT Std",
+   "Bwd IAT Tot",
+   "Fwd PSH flags",
+   "Bwd PSH flags",
+   "Fwd URG flags"
+  ],
+  "identity_features": [],
+  "score_invariant_to_host_pair": true
+ },
+ "rows": [
+  {
+   "pos": 0.55,
+   "seed": 0,
+   "n_detected": 82,
+   "n_pairs_all_malicious": 82,
+   "benign_on_pair_median": 0.0,
+   "benign_on_pair_max": 0,
+   "n_with_35_available": 0
+  },
+  {
+   "pos": 0.55,
+   "seed": 1,
+   "n_detected": 72,
+   "n_pairs_all_malicious": 72,
+   "benign_on_pair_median": 0.0,
+   "benign_on_pair_max": 0,
+   "n_with_35_available": 0
+  },
+  {
+   "pos": 0.62,
+   "seed": 0,
+   "n_detected": 93,
+   "n_pairs_all_malicious": 93,
+   "benign_on_pair_median": 0.0,
+   "benign_on_pair_max": 0,
+   "n_with_35_available": 0
+  },
+  {
+   "pos": 0.62,
+   "seed": 1,
+   "n_detected": 33,
+   "n_pairs_all_malicious": 33,
+   "benign_on_pair_median": 0.0,
+   "benign_on_pair_max": 0,
+   "n_with_35_available": 0
+  },
+  {
+   "pos": 0.7,
+   "seed": 0,
+   "n_detected": 64,
+   "n_pairs_all_malicious": 64,
+   "benign_on_pair_median": 0.0,
+   "benign_on_pair_max": 0,
+   "n_with_35_available": 0
+  },
+  {
+   "pos": 0.7,
+   "seed": 1,
+   "n_detected": 0
+  },
+  {
+   "pos": 0.77,
+   "seed": 0,
+   "n_detected": 50,
+   "n_pairs_all_malicious": 50,
+   "benign_on_pair_median": 0.0,
+   "benign_on_pair_max": 0,
+   "n_with_35_available": 0
+  },
+  {
+   "pos": 0.77,
+   "seed": 1,
+   "n_detected": 54,
+   "n_pairs_all_malicious": 54,
+   "benign_on_pair_median": 0.0,
+   "benign_on_pair_max": 0,
+   "n_with_35_available": 0
+  },
+  {
+   "pos": 0.85,
+   "seed": 0,
+   "n_detected": 116,
+   "n_pairs_all_malicious": 116,
+   "benign_on_pair_median": 0.0,
+   "benign_on_pair_max": 0,
+   "n_with_35_available": 0
+  },
+  {
+   "pos": 0.85,
+   "seed": 1,
+   "n_detected": 110,
+   "n_pairs_all_malicious": 110,
+   "benign_on_pair_median": 0.0,
+   "benign_on_pair_max": 0,
+   "n_with_35_available": 0
+  }
+ ],
+ "summary": {
+  "n_cells": 9,
+  "n_detected": 674,
+  "n_pairs_all_malicious": 674,
+  "n_with_pool_available": 0,
+  "empirical_route_closed": true
+ },
+ "assertions_failed": []
+}

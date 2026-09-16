@@ -1,0 +1,67 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Data. ~25 GB, none of it ours to commit.
+#
+# Rules here are deliberately PRECISE rather than broad: the reproduction package
+# keeps results and small inputs under paths that look like data, and a sweeping
+# rule would silently gut it. See the "keep" section below for what must survive.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# 15 GB working tree: the raw LSPR23 CSV (10.6 GB), AIT zips, flow caches.
+# LSPR23 is CC-BY-4.0 and could legally be redistributed; it is excluded for size.
+# src/data/README.md tells a reviewer how to obtain it.
+proto/data/
+
+# 10 GB local cache: derived LSPR23 CSVs, .npy caches, extracted AIT netflows, and
+# out_shipped_snapshot/. Rebuildable from proto/data/lspr23/ls23pr_v1.csv via the awk
+# recipes in src/data/README.md. See .localdata/README.md.
+.localdata/
+
+# 261 MB of AIT netflow zips, downloaded per src/data/README.md.
+src/data/ait/
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Environments and caches
+# ─────────────────────────────────────────────────────────────────────────────
+.venv/
+proto/.venv/
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+
+# ─────────────────────────────────────────────────────────────────────────────
+# LaTeX build products. The .pdf and the generated tables/figures are NOT ignored:
+# the paper should build, and be readable, straight from a clone.
+# .bbl is kept deliberately -- IEEE and arXiv submission want it.
+# ─────────────────────────────────────────────────────────────────────────────
+*.aux
+*.log
+*.out
+*.blg
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.toc
+*.lof
+*.lot
+
+# Editor / OS noise
+.DS_Store
+
+# Redundant once this is under version control -- git is the backup.
+# Remove this line if you would rather keep the file tracked.
+*.backup.tex
+
+# ─────────────────────────────────────────────────────────────────────────────
+# EXPLICITLY KEPT -- these live under data-looking paths and the artifact needs them.
+# Listed as negations so the intent is on the record even where no rule threatens them.
+# ─────────────────────────────────────────────────────────────────────────────
+!src/lib/out/                 # 73 shipped results: the whole MODE="paper" path
+!src/lib/out/*.json
+!src/lib/data/                # 9.2 MB red-team narratives; ships because it is small
+!src/data/README.md           # how to obtain the data that is not here
+!src/requirements.txt         # pinned environment
+!paper/tables/                # generated, but the paper must build without running python
+!paper/figures/
+
+.attic/
+.localdata/

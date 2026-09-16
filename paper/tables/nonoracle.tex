@@ -1,0 +1,59 @@
+\begin{table}[t]
+\centering
+\caption{Surface~A priced \textbf{without oracle state}: a re-analysis of the same per-episode
+$(m,S,\alphat)$ the oracle costs come from, with no re-simulation --- the closed form \eqref{eq:rstar} is re-derived from the stored fields on all 127
+episodes as a read-back check. \emph{Multiplier}: append $(c-1)m$ flows, that is, multiply your own
+episode by $c$. It defeats the alert iff $c\ge1+r^{\star}_t/m_t$ and needs \textbf{no} estimate of $S_t$,
+$\alphat$ or $\nCal$ --- only $m$, which on LSPR23 is the attacker's own flow count, since every host
+pair carrying attack traffic is 100\% malicious. ``padded arity'' is $cm$, and the column beside it answers
+the deployment-side question --- would a volume monitor see the pad --- as the fraction of
+\emph{deployment} episodes larger than the padded one, bracketed by the two stored group-size quantiles
+that straddle it. Those quantiles are \emph{not} shown and are \emph{not} benign deployment values:
+they are quantiles of source--destination group size over the \emph{calibration} slice, unfiltered by
+label, which is why the deployment exceedance and not the quantile is what the claim rests on. Rows are given under \textbf{both}
+within-bucket orders --- the \textbf{canonical} metadata hash the paper reports and \textbf{first-flow}
+arrival, retained as the optimistic upper bound. \emph{Absolute}: append a
+pre-committed flat $N$ flows, which needs nothing at all; $N$ is reported at the fraction of that
+cell's alerts it suppresses. The multiplier arm covers the two windows for which per-episode arities
+are stored; the secondary window appears in the absolute arm only. Both strategies are upper bounds
+on the oracle cost, and both are optimistic on a benign-inclusive stream, where $m$ also contains
+benign flows the attacker cannot see.}
+\label{apptab:nonoracle}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{llrrrrrrrr}
+\toprule
+\multicolumn{10}{l}{\emph{multiplier --- needs the attacker's own arity $m$ and nothing else}} \\
+order & pos & alerts & med.\ $c$ & max $c$ & $c$ used & med.\ added & vs oracle & padded arity & \% deployment larger \\
+\midrule
+canonical & 0.55 & 3 & 1.57 & 2.74 & 3 & 80 & 3.5$\times$ & 120 & 0.9--9.9\% \\
+canonical & 0.85 & 34 & 2.76 & 6.17 & 10 & 792 & 5.1$\times$ & 880 & 0.1--1.1\% \\
+first-flow & 0.55 & 18 & 3.54 & 7.44 & 10 & 414 & 3.6$\times$ & 460 & 0.1--0.9\% \\
+first-flow & 0.85 & 72 & 73.19 & 4302.15 & \emph{none $\le$ 100} & --- & --- & --- & --- \\
+\bottomrule
+\end{tabular}}
+
+\vspace{3pt}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{llrrrrr}
+\toprule
+\multicolumn{7}{l}{\emph{absolute --- a flat pad: executing it needs no state, but the $N$ below is read off the realised $r^{\star}_t$ distribution}} \\
+order & pos & seed & alerts & $N$ for 50\% & $N$ for 90\% & $N$ for all \\
+\midrule
+canonical & 0.55 & 0 & 3 & 24 & 33 & 33 \\
+canonical & 0.55 & 1 & 2 & 30 & 30 & 30 \\
+canonical & 0.62 & 0 & 11 & 6 & 17 & 859 \\
+canonical & 0.62 & 1 & 8 & 6 & 659 & 659 \\
+canonical & 0.85 & 0 & 34 & 118 & 9{,}395 & 58{,}616 \\
+canonical & 0.85 & 1 & 32 & 111 & 9{,}426 & 58{,}620 \\
+first-flow & 0.55 & 0 & 18 & 125 & 645 & 837 \\
+first-flow & 0.55 & 1 & 18 & 108 & 645 & 829 \\
+first-flow & 0.62 & 0 & 13 & 72 & 127 & 134 \\
+first-flow & 0.62 & 1 & 12 & 70 & 93 & 98 \\
+first-flow & 0.77 & 0 & 31 & 1{,}165 & 3{,}736 & 7{,}886 \\
+first-flow & 0.77 & 1 & 31 & 1{,}289 & 4{,}258 & 7{,}886 \\
+first-flow & 0.70 & 0 & 30 & 1{,}877 & 4{,}145 & 5{,}445 \\
+first-flow & 0.85 & 0 & 72 & 6{,}714 & 69{,}195{,}773 & 145{,}525{,}527 \\
+first-flow & 0.85 & 1 & 71 & 6{,}802 & 69{,}086{,}348 & 145{,}096{,}310 \\
+\bottomrule
+\end{tabular}}
+\end{table}

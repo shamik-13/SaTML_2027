@@ -1,0 +1,16 @@
+\emph{Testing the premise of \cref{cor:dilution} rather than a proxy.} The corollary needs one thing of
+the rest of the stream: no non-attacker hypothesis carries evidence at or above the cold-start
+threshold $T/\alpha$. A baseline non-attacker alert does not by itself show that this fails, because
+under either spending rule an alert can fire only after earlier rejections have raised the level.
+\Cref{apptab:cor2diag} therefore measures the premise directly on the 10 streams the joint
+attack ran on, rebuilt with the same chain and asserted to reproduce every stored baseline. The
+cold-start premise fails on 3 of them (\texttt{russellmitchell} at 1.50 with 1 episode at or above it; \texttt{shaw} at 2.29 with 2 episodes at or above it; \texttt{shaw} (host) at 2.29 with 4 episodes at or above it); on the others
+the largest non-attacker evidence is below $T/\alpha$, and in 5 streams no
+non-attacker episode carries any evidence at all. Of the 16 baseline non-attacker
+alerts over both spending rules, 9 clear the $R=0$ level at their own position and
+7 fire only at a raised level. An attacker episode attains the ceiling in every cell but \texttt{shaw}, \texttt{shaw} (host), where the largest attacker evidence gives $c_{\mathrm{crit}}=1.53<\rho=2.29$ in each, so the stream-specific integer $\lfloor c_{\mathrm{crit}}\rfloor+1$ can be smaller than $c_{\mathrm{int}}$ there.
+The other three conditions the corollary rests on are read from the joint run itself: own episodes
+without a usable prior pool are never padded and account for most of what survives; admitted pads
+from the prior pool are not zero-evidence, and where they fire the multiplier's dilution is partly
+undone; and the residual counts are the observed outcome. The corollary is stated for horizon-uniform
+spending, so its multiplier under horizon-free spending is a heuristic transfer, reported as such.

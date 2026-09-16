@@ -1,0 +1,41 @@
+\begin{table}[t]
+\centering
+\caption{e-LOND true detections under \textbf{pre-committed, evidence-independent} within-bucket orders,
+all five windows, detector seed 0. All orders emit hypotheses at
+bucket close and differ only in how groups closing in the same bucket are sequenced. The count is
+\textbf{materially order-sensitive}, and first-flow arrival is the \emph{largest} over every order and
+seed we audit --- which is why the paper reports the \textbf{key-hash} row, a deterministic hash of the
+group's \emph{own} $(\mathrm{SrcIP},\mathrm{DstIP},\text{bucket})$ key (collisions broken on the key),
+and carries first-flow only as a labelled upper bound. The mechanism is \cref{thm:family1}: before the
+first rejection only a prefix of 902 / 902 / 865 / 824 / 748 steps out of 57,368 / 49,267 / 37,231 / 31,672 / 31,568 can reject at all, so a
+detection needs a near-ceiling episode to land inside it. Under the canonical order at 0.70 and 0.77
+\emph{no} episode clears its own step anywhere in the stream, which is why those entries are $0$.
+The key-hash is a timing-independent canonicalization, not a security mechanism: a public hash of
+attacker-selectable fields can be ground, and the keyed row is the grinding-resistant variant, itself an
+unpredictable draw from the random ensemble below. Conditioned on there being detected episodes, the
+per-order median padding cost is 109.5 / 16 / 93 / 175 / 98 flows --- a survivorship-conditioned estimand.
+Because the key-hash reads no arrival time, it is also what makes the padding attack leave
+\cref{assump:groupval} intact for every other hypothesis: injecting one pad at the earliest instant of
+its own bucket moves 373 / 348 / 4 / 7 / 3 other hypotheses under first-flow arrival, against \textbf{0}
+under the key-hash at every window and seed. The canonical order is also the more
+\emph{seed}-stable of the two: across detector seeds its count moves by at most 3,
+against 30 for first-flow arrival. Feasibility (C1) is order-invariant. See
+\cref{sec:transfer}.}
+\label{apptab:ordering}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{lrrrrr}
+\toprule
+within-bucket order & 0.55 & 0.62 & 0.70 & 0.77 & 0.85 \\
+\midrule
+first-flow arrival \textbf{(upper bound)} & 18 & 13 & 30 & 31 & 72 \\
+group-id (packed key) & 0 & 3 & 0 & 0 & 24 \\
+last-flow arrival & 0 & 0 & 0 & 0 & 0 \\
+fixed random permutation (one instance) & 2 & 1 & 9 & 1 & 38 \\
+key-hash \textbf{(canonical, reported)} & 3 & 11 & 0 & 0 & 34 \\
+keyed key-hash (secret seed) & 0 & 6 & 3 & 3 & 24 \\
+\midrule
+\emph{median over 50 orders} & \emph{1} & \emph{6} & \emph{2.5} & \emph{1} & \emph{23.5} \\
+\emph{range over 50 orders} & \emph{0--10} & \emph{0--11} & \emph{0--12} & \emph{0--6} & \emph{0--44} \\
+\bottomrule
+\end{tabular}}
+\end{table}

@@ -1,0 +1,25 @@
+{
+ "D1a": "the duration unit is RECOVERED from Flow Bytes/s == total_bytes/(duration/S); the winner must beat the runner-up by >= 2 decades",
+ "D2a": "a budget is n * a POOL QUANTILE, not n * mean; report the interval",
+ "D3a": "Total Length of Fwd/Bwd Packet is PAYLOAD; header columns 42-43 are not cached, so report payload and payload + 40 B/packet and say which",
+ "D4a": "required rate = 8*bytes/window_s; hosts = ceil(rate / per-host rate)",
+ "D4b": "the window is the BUCKET for within-episode padding and the DEPLOYMENT WINDOW for the state attack -- a factor of 13.5 apart; state it with every rate",
+ "column_map": {
+  "duration": 1,
+  "bytes_per_s": 2,
+  "pkts_per_s": 3,
+  "fwd_pkts": 4,
+  "bwd_pkts": 5,
+  "fwd_bytes": 6,
+  "bwd_bytes": 7
+ },
+ "scales": [
+  "seconds",
+  "milliseconds",
+  "microseconds",
+  "nanoseconds"
+ ],
+ "n_passed": 25,
+ "n_failed": 0,
+ "failed": []
+}

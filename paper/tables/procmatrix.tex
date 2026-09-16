@@ -1,0 +1,26 @@
+\begin{table*}[t]
+\centering
+\caption{Procedure power over five positions $\times$ two seeds (min / median / max),
+two-hour grouping. All counts here use the \textbf{first-flow} within-bucket order, the optimistic upper bound over the orders we audit, not the canonical metadata-hash order \cref{tab:main} reports (\cref{apptab:ordering}); the order shifts detections and the level an alert fires at, and shifts nothing else. The \emph{uniform} rows are the horizon-uniform $\gamma$, an \oracle{} that must know $T$ in advance (\cref{tab:terms}).}
+\label{apptab:procmatrix}
+\begin{tabular}{llrrrrrr}
+\toprule
+ & & \multicolumn{3}{c}{rejections} & \multicolumn{3}{c}{recall} \\
+\cmidrule(lr){3-5}\cmidrule(lr){6-8}
+Procedure & $\gamma$ & min & med & max & min & med & max \\
+\midrule
+LOND & $\propto j^{-1.6}$ & 0 & 24 & 72 & 0.000 & 0.085 & 0.282 \\
+LOND & uniform & 0 & 100 & 151 & 0.000 & 0.273 & 0.576 \\
+e-LOND & $\propto j^{-1.6}$ & 0 & 24 & 72 & 0.000 & 0.085 & 0.282 \\
+e-LOND & uniform & 0 & 100 & 151 & 0.000 & 0.273 & 0.576 \\
+LORD++ & $\propto j^{-1.6}$ & 0 & 25 & 72 & 0.000 & 0.089 & 0.282 \\
+LORD++ & uniform & 0 & 100 & 151 & 0.000 & 0.268 & 0.576 \\
+SAFFRON & $\propto j^{-1.6}$ & 0 & 21.5 & 70 & 0.000 & 0.069 & 0.275 \\
+SAFFRON & uniform & 0 & 0 & 0 & 0.000 & 0.000 & 0.000 \\
+ADDIS & $\propto j^{-1.6}$ & 0 & 106.5 & 152 & 0.000 & 0.274 & 0.576 \\
+ADDIS & uniform & 0 & 0 & 0 & 0.000 & 0.000 & 0.000 \\
+online e-BH & $\propto j^{-1.6}$ & 0 & 31 & 72 & 0.000 & 0.094 & 0.282 \\
+online e-BH & uniform & 0 & 105 & 152 & 0.000 & 0.273 & 0.576 \\
+\bottomrule
+\end{tabular}
+\end{table*}

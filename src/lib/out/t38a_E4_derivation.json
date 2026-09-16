@@ -1,0 +1,23 @@
+{
+ "D1a": "fire(s) <=> s > c_(k): the whole rule is one order statistic",
+ "D2a": "additive |C| = N+a, M inflates by (1+eps) <= 1%; threshold monotone in a",
+ "D2b": "replacement keeps M exactly but the threshold is NOT monotone",
+ "D3a": "adversarial: j>=k gives an attacker-set threshold, j<k gives c0_(k-j); the tolerable count is k-1, and F14 forces k=1, so it is ZERO",
+ "D3a_corollary": "the adversarial arm is a STEP in eps, not a slope -- sweep j, not eps",
+ "D3b": "random: P(threshold moves) = 1-(1-q0)^(eps*N); scale eps* = 1/(N*q0), i.e. one injected flow that would itself have fired.  q0 is the POOL exceedance rate, NOT the deployment-window malicious firing rate -- the two differ under F9 drift",
+ "D4a": "p1 >= p0 <=> g/a >= p0",
+ "D4b": "conservative at s <=> Sv_M(s) >= Sv_B(s): the ROC above the diagonal; the converse holds, so the condition must be stated",
+ "D4c": "at k=1 the operating p0 = 1/M ~ 5.5e-7, so the margin is enormous",
+ "D4pa": "thresholded evidence has TWO channels: Ev ratio = (1+eps)*(m_eps/m_0)",
+ "D4pb": "low-score injection leaves m alone and inflates Ev by exactly 1+eps: ANTI-conservative, a genuine validity violation",
+ "D4pc": "E[e] <= 1+eps, so the FDR guarantee degrades from q to q*(1+eps) for LOND and LORD++, whose bound is a sum of offered levels.  MULTIPLICATIVE on top of the clean rule's own conservatism (section 4.31: up to 50.9x), and not claimed for online e-BH",
+ "D4pd": "power dies at a = 1 flow; validity degrades by 1+eps and needs a = N to double. The asymmetry is the answer to the reviewer",
+ "D4pe": "the replacement model closes the ceiling channel exactly",
+ "D5a": "the feasibility margin IMPROVES under contamination -- not a safety indicator",
+ "D6a": "firing sets are nested-decreasing in a WHEN the injected sets nest; the eps sweep must be prefixes of one pool, not independent redraws",
+ "D6b": "LOND rejections are nested too",
+ "eps_grid_note": "the workplan grid starts too high for the random arm; add 1e-7, 1e-6 and a per-flow sweep j = 1..10",
+ "n_passed": 32,
+ "n_failed": 0,
+ "failed": []
+}

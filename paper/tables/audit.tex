@@ -1,0 +1,38 @@
+\begin{table}[t]
+\centering
+\caption{Adjudicated alert audit against the red-team task record (position 0.85, the
+\textbf{known-invalid} stress window). \Cref{apptab:tail} is what establishes that invalidity, from
+the benign firing rate; this is a \emph{follow-up label-quality audit} at the same window, not a
+guarantee-bearing result and not the diagnostic that made the call. Panel (a):
+adjudicated verdict counts with their label split. Panel (b): false-discovery proportion by
+method under the label, the pre-registered audit lower bound, and the strict lower/upper bounds.
+All counts here use the \textbf{first-flow} within-bucket order, the optimistic upper bound over the orders we audit, not the canonical metadata-hash order \cref{tab:main} reports (\cref{apptab:ordering}); the order shifts detections and the level an alert fires at, and shifts nothing else.}
+\label{apptab:audit}
+\begin{tabular}{lrrr}
+\toprule
+\multicolumn{4}{c}{(a) adjudicated verdicts} \\
+\midrule
+verdict & $n$ & labelled mal.\ & labelled ben.\ \\
+\midrule
+clearly malicious & 49 & 46 & 3 \\
+probably malicious & 102 & 100 & 2 \\
+ambiguous & 0 & 0 & 0 \\
+probably benign & 1 & 1 & 0 \\
+clearly benign & 0 & 0 & 0 \\
+\bottomrule
+\end{tabular}
+
+\vspace{4pt}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{lrrrrr}
+\toprule
+\multicolumn{6}{c}{(b) false-discovery proportion} \\
+\midrule
+method & $R$ & $\FDP_{\text{label}}$ & $\FDP_{\text{audit}}^{\text{lo}}$ & $\FDP_{\text{strict}}^{\text{lo}}$ & $\FDP_{\text{strict}}^{\text{hi}}$ \\
+\midrule
+e-LOND/uniform & 151 & 0.026 & 0.007 & 0.000 & 0.026 \\
+ADDIS/poly & 152 & 0.033 & 0.007 & 0.000 & 0.026 \\
+union & 152 & 0.033 & 0.007 & 0.000 & 0.026 \\
+\bottomrule
+\end{tabular}}
+\end{table}

@@ -1,0 +1,686 @@
+{
+ "config": {
+  "positions": [
+   0.55,
+   0.85
+  ],
+  "orders": [
+   "first-flow",
+   "keyhash",
+   "keyed"
+  ],
+  "seed": 0,
+  "k": 1,
+  "w0": 0.025,
+  "alpha": 0.05,
+  "q": 0.05,
+  "bucket_s": 7200,
+  "note": "t20's method set, recomputed under every audited within-bucket order; the frontier is an ex-post oracle (thresholds use labels)"
+ },
+ "per_pos": {
+  "0.55": {
+   "pos": 0.55,
+   "auroc": 0.9164855995932232,
+   "NC": 2448993,
+   "CEIL": 2448994.0,
+   "frontier_order_invariant": true,
+   "per_order": {
+    "first-flow": {
+     "methods": [
+      {
+       "method": "online FDR (e-LOND, mean rule)",
+       "alerts": 18,
+       "fdp": 0.0,
+       "recall": 0.06545454545454546,
+       "note": "self-selected budget",
+       "frontier_recall_at_budget": 0.06545454545454546,
+       "gap": 0.0
+      },
+      {
+       "method": "online FDR (policy D, slot)",
+       "alerts": 91.0262380926046,
+       "fdp": 0.00012206492703573378,
+       "recall": 0.3309640981145218,
+       "note": "randomised rule; alerts and FDP are E[R] and E[V]/E[R], not E[V/R]",
+       "frontier_recall_at_budget": 0.33100450215492583,
+       "gap": 4.040404040400736e-05
+      },
+      {
+       "method": "feedback controller (L=0)",
+       "alerts": 119,
+       "fdp": 0.07563025210084033,
+       "recall": 0.4,
+       "note": "",
+       "frontier_recall_at_budget": 0.39636363636363636,
+       "gap": -0.0036363636363636598
+      },
+      {
+       "method": "feedback controller (L=20 alerts)",
+       "alerts": 135,
+       "fdp": 0.18518518518518517,
+       "recall": 0.4,
+       "note": "",
+       "frontier_recall_at_budget": 0.4036363636363636,
+       "gap": 0.0036363636363636043
+      },
+      {
+       "method": "feedback controller (L=50 alerts)",
+       "alerts": 150,
+       "fdp": 0.26666666666666666,
+       "recall": 0.4,
+       "note": "",
+       "frontier_recall_at_budget": 0.44,
+       "gap": 0.03999999999999998
+      },
+      {
+       "method": "fixed threshold (no feedback)",
+       "alerts": 1047,
+       "fdp": 0.8357211079274116,
+       "recall": 0.6254545454545455,
+       "note": "",
+       "frontier_recall_at_budget": 0.6254545454545455,
+       "gap": 0.0
+      }
+     ],
+     "frontier": [
+      {
+       "q": 0.0,
+       "recall": 0.3781818181818182,
+       "fdp": 0.0,
+       "alerts": 104
+      },
+      {
+       "q": 0.01,
+       "recall": 0.39636363636363636,
+       "fdp": 0.00909090909090909,
+       "alerts": 110
+      },
+      {
+       "q": 0.05,
+       "recall": 0.39636363636363636,
+       "fdp": 0.00909090909090909,
+       "alerts": 110
+      },
+      {
+       "q": 0.1,
+       "recall": 0.39636363636363636,
+       "fdp": 0.00909090909090909,
+       "alerts": 110
+      },
+      {
+       "q": 0.2,
+       "recall": 0.44,
+       "fdp": 0.16551724137931034,
+       "alerts": 145
+      }
+     ],
+     "T": 57368,
+     "NM": 275,
+     "elond_rej": 18,
+     "elond_tp": 18,
+     "elond_recall": 0.06545454545454546,
+     "t20_tiebreak_identical": false,
+     "n_episodes_sharing_a_first_timestamp": 326,
+     "zero_error_frontier": {
+      "q": 0.0,
+      "recall": 0.3781818181818182,
+      "fdp": 0.0,
+      "alerts": 104
+     },
+     "recall_ratio_vs_zero_error_frontier": 5.777777777777777
+    },
+    "keyhash": {
+     "methods": [
+      {
+       "method": "online FDR (e-LOND, mean rule)",
+       "alerts": 3,
+       "fdp": 0.0,
+       "recall": 0.01090909090909091,
+       "note": "self-selected budget",
+       "frontier_recall_at_budget": 0.01090909090909091,
+       "gap": 0.0
+      },
+      {
+       "method": "online FDR (policy D, slot)",
+       "alerts": 91.02623809260461,
+       "fdp": 0.00012206492703573376,
+       "recall": 0.3309640981145218,
+       "note": "randomised rule; alerts and FDP are E[R] and E[V]/E[R], not E[V/R]",
+       "frontier_recall_at_budget": 0.3310045021549259,
+       "gap": 4.040404040406287e-05
+      },
+      {
+       "method": "feedback controller (L=0)",
+       "alerts": 117,
+       "fdp": 0.06837606837606838,
+       "recall": 0.39636363636363636,
+       "note": "",
+       "frontier_recall_at_budget": 0.39636363636363636,
+       "gap": 0.0
+      },
+      {
+       "method": "feedback controller (L=20 alerts)",
+       "alerts": 137,
+       "fdp": 0.20437956204379562,
+       "recall": 0.39636363636363636,
+       "note": "",
+       "frontier_recall_at_budget": 0.4109090909090909,
+       "gap": 0.014545454545454528
+      },
+      {
+       "method": "feedback controller (L=50 alerts)",
+       "alerts": 163,
+       "fdp": 0.3312883435582822,
+       "recall": 0.39636363636363636,
+       "note": "",
+       "frontier_recall_at_budget": 0.44,
+       "gap": 0.04363636363636364
+      },
+      {
+       "method": "fixed threshold (no feedback)",
+       "alerts": 1047,
+       "fdp": 0.8357211079274116,
+       "recall": 0.6254545454545455,
+       "note": "",
+       "frontier_recall_at_budget": 0.6254545454545455,
+       "gap": 0.0
+      }
+     ],
+     "frontier": [
+      {
+       "q": 0.0,
+       "recall": 0.3781818181818182,
+       "fdp": 0.0,
+       "alerts": 104
+      },
+      {
+       "q": 0.01,
+       "recall": 0.39636363636363636,
+       "fdp": 0.00909090909090909,
+       "alerts": 110
+      },
+      {
+       "q": 0.05,
+       "recall": 0.39636363636363636,
+       "fdp": 0.00909090909090909,
+       "alerts": 110
+      },
+      {
+       "q": 0.1,
+       "recall": 0.39636363636363636,
+       "fdp": 0.00909090909090909,
+       "alerts": 110
+      },
+      {
+       "q": 0.2,
+       "recall": 0.44,
+       "fdp": 0.16551724137931034,
+       "alerts": 145
+      }
+     ],
+     "T": 57368,
+     "NM": 275,
+     "elond_rej": 3,
+     "elond_tp": 3,
+     "elond_recall": 0.01090909090909091,
+     "zero_error_frontier": {
+      "q": 0.0,
+      "recall": 0.3781818181818182,
+      "fdp": 0.0,
+      "alerts": 104
+     },
+     "recall_ratio_vs_zero_error_frontier": 34.666666666666664
+    },
+    "keyed": {
+     "methods": [
+      {
+       "method": "online FDR (e-LOND, mean rule)",
+       "alerts": 0,
+       "fdp": null,
+       "recall": 0.0,
+       "note": "self-selected budget",
+       "frontier_recall_at_budget": 0.0,
+       "gap": 0.0
+      },
+      {
+       "method": "online FDR (policy D, slot)",
+       "alerts": 91.0262380926046,
+       "fdp": 0.00012206492703573378,
+       "recall": 0.3309640981145218,
+       "note": "randomised rule; alerts and FDP are E[R] and E[V]/E[R], not E[V/R]",
+       "frontier_recall_at_budget": 0.33100450215492583,
+       "gap": 4.040404040400736e-05
+      },
+      {
+       "method": "feedback controller (L=0)",
+       "alerts": 120,
+       "fdp": 0.09166666666666666,
+       "recall": 0.39636363636363636,
+       "note": "",
+       "frontier_recall_at_budget": 0.39636363636363636,
+       "gap": 0.0
+      },
+      {
+       "method": "feedback controller (L=20 alerts)",
+       "alerts": 139,
+       "fdp": 0.2158273381294964,
+       "recall": 0.39636363636363636,
+       "note": "",
+       "frontier_recall_at_budget": 0.41818181818181815,
+       "gap": 0.021818181818181792
+      },
+      {
+       "method": "feedback controller (L=50 alerts)",
+       "alerts": 161,
+       "fdp": 0.32298136645962733,
+       "recall": 0.39636363636363636,
+       "note": "",
+       "frontier_recall_at_budget": 0.44,
+       "gap": 0.04363636363636364
+      },
+      {
+       "method": "fixed threshold (no feedback)",
+       "alerts": 1047,
+       "fdp": 0.8357211079274116,
+       "recall": 0.6254545454545455,
+       "note": "",
+       "frontier_recall_at_budget": 0.6254545454545455,
+       "gap": 0.0
+      }
+     ],
+     "frontier": [
+      {
+       "q": 0.0,
+       "recall": 0.3781818181818182,
+       "fdp": 0.0,
+       "alerts": 104
+      },
+      {
+       "q": 0.01,
+       "recall": 0.39636363636363636,
+       "fdp": 0.00909090909090909,
+       "alerts": 110
+      },
+      {
+       "q": 0.05,
+       "recall": 0.39636363636363636,
+       "fdp": 0.00909090909090909,
+       "alerts": 110
+      },
+      {
+       "q": 0.1,
+       "recall": 0.39636363636363636,
+       "fdp": 0.00909090909090909,
+       "alerts": 110
+      },
+      {
+       "q": 0.2,
+       "recall": 0.44,
+       "fdp": 0.16551724137931034,
+       "alerts": 145
+      }
+     ],
+     "T": 57368,
+     "NM": 275,
+     "elond_rej": 0,
+     "elond_tp": 0,
+     "elond_recall": 0.0,
+     "zero_error_frontier": {
+      "q": 0.0,
+      "recall": 0.3781818181818182,
+      "fdp": 0.0,
+      "alerts": 104
+     },
+     "recall_ratio_vs_zero_error_frontier": null
+    }
+   }
+  },
+  "0.85": {
+   "pos": 0.85,
+   "auroc": 0.9992205202384584,
+   "NC": 1813113,
+   "CEIL": 1813114.0,
+   "frontier_order_invariant": true,
+   "per_order": {
+    "first-flow": {
+     "methods": [
+      {
+       "method": "online FDR (e-LOND, mean rule)",
+       "alerts": 72,
+       "fdp": 0.0,
+       "recall": 0.2823529411764706,
+       "note": "self-selected budget",
+       "frontier_recall_at_budget": 0.2823529411764706,
+       "gap": 0.0
+      },
+      {
+       "method": "online FDR (policy D, slot)",
+       "alerts": 126.55809397928697,
+       "fdp": 0.00119890129516169,
+       "recall": 0.49571122869216466,
+       "note": "randomised rule; alerts and FDP are E[R] and E[V]/E[R], not E[V/R]",
+       "frontier_recall_at_budget": 0.4923846822717136,
+       "gap": -0.0033265464204510486
+      },
+      {
+       "method": "feedback controller (L=0)",
+       "alerts": 161,
+       "fdp": 0.06832298136645963,
+       "recall": 0.5882352941176471,
+       "note": "",
+       "frontier_recall_at_budget": 0.5882352941176471,
+       "gap": 0.0
+      },
+      {
+       "method": "feedback controller (L=20 alerts)",
+       "alerts": 160,
+       "fdp": 0.08125,
+       "recall": 0.5764705882352941,
+       "note": "",
+       "frontier_recall_at_budget": 0.5882352941176471,
+       "gap": 0.01176470588235301
+      },
+      {
+       "method": "feedback controller (L=50 alerts)",
+       "alerts": 171,
+       "fdp": 0.14035087719298245,
+       "recall": 0.5764705882352941,
+       "note": "",
+       "frontier_recall_at_budget": 0.615686274509804,
+       "gap": 0.03921568627450989
+      },
+      {
+       "method": "fixed threshold (no feedback)",
+       "alerts": 875,
+       "fdp": 0.7634285714285715,
+       "recall": 0.8117647058823529,
+       "note": "",
+       "frontier_recall_at_budget": 0.8117647058823529,
+       "gap": 0.0
+      }
+     ],
+     "frontier": [
+      {
+       "q": 0.0,
+       "recall": 0.4588235294117647,
+       "fdp": 0.0,
+       "alerts": 117
+      },
+      {
+       "q": 0.01,
+       "recall": 0.5647058823529412,
+       "fdp": 0.006896551724137931,
+       "alerts": 145
+      },
+      {
+       "q": 0.05,
+       "recall": 0.5843137254901961,
+       "fdp": 0.04487179487179487,
+       "alerts": 156
+      },
+      {
+       "q": 0.1,
+       "recall": 0.6431372549019608,
+       "fdp": 0.0989010989010989,
+       "alerts": 182
+      },
+      {
+       "q": 0.2,
+       "recall": 0.6823529411764706,
+       "fdp": 0.18309859154929578,
+       "alerts": 213
+      }
+     ],
+     "T": 31568,
+     "NM": 255,
+     "elond_rej": 72,
+     "elond_tp": 72,
+     "elond_recall": 0.2823529411764706,
+     "t20_tiebreak_identical": false,
+     "n_episodes_sharing_a_first_timestamp": 206,
+     "zero_error_frontier": {
+      "q": 0.0,
+      "recall": 0.4588235294117647,
+      "fdp": 0.0,
+      "alerts": 117
+     },
+     "recall_ratio_vs_zero_error_frontier": 1.625
+    },
+    "keyhash": {
+     "methods": [
+      {
+       "method": "online FDR (e-LOND, mean rule)",
+       "alerts": 34,
+       "fdp": 0.0,
+       "recall": 0.13333333333333333,
+       "note": "self-selected budget",
+       "frontier_recall_at_budget": 0.13333333333333333,
+       "gap": 0.0
+      },
+      {
+       "method": "online FDR (policy D, slot)",
+       "alerts": 126.55809397928695,
+       "fdp": 0.0011989012951616903,
+       "recall": 0.49571122869216466,
+       "note": "randomised rule; alerts and FDP are E[R] and E[V]/E[R], not E[V/R]",
+       "frontier_recall_at_budget": 0.49238468227171356,
+       "gap": -0.003326546420451104
+      },
+      {
+       "method": "feedback controller (L=0)",
+       "alerts": 160,
+       "fdp": 0.06875,
+       "recall": 0.5843137254901961,
+       "note": "",
+       "frontier_recall_at_budget": 0.5882352941176471,
+       "gap": 0.0039215686274509665
+      },
+      {
+       "method": "feedback controller (L=20 alerts)",
+       "alerts": 171,
+       "fdp": 0.11695906432748537,
+       "recall": 0.592156862745098,
+       "note": "",
+       "frontier_recall_at_budget": 0.615686274509804,
+       "gap": 0.02352941176470591
+      },
+      {
+       "method": "feedback controller (L=50 alerts)",
+       "alerts": 190,
+       "fdp": 0.18421052631578946,
+       "recall": 0.6078431372549019,
+       "note": "",
+       "frontier_recall_at_budget": 0.6549019607843137,
+       "gap": 0.04705882352941182
+      },
+      {
+       "method": "fixed threshold (no feedback)",
+       "alerts": 875,
+       "fdp": 0.7634285714285715,
+       "recall": 0.8117647058823529,
+       "note": "",
+       "frontier_recall_at_budget": 0.8117647058823529,
+       "gap": 0.0
+      }
+     ],
+     "frontier": [
+      {
+       "q": 0.0,
+       "recall": 0.4588235294117647,
+       "fdp": 0.0,
+       "alerts": 117
+      },
+      {
+       "q": 0.01,
+       "recall": 0.5647058823529412,
+       "fdp": 0.006896551724137931,
+       "alerts": 145
+      },
+      {
+       "q": 0.05,
+       "recall": 0.5843137254901961,
+       "fdp": 0.04487179487179487,
+       "alerts": 156
+      },
+      {
+       "q": 0.1,
+       "recall": 0.6431372549019608,
+       "fdp": 0.0989010989010989,
+       "alerts": 182
+      },
+      {
+       "q": 0.2,
+       "recall": 0.6823529411764706,
+       "fdp": 0.18309859154929578,
+       "alerts": 213
+      }
+     ],
+     "T": 31568,
+     "NM": 255,
+     "elond_rej": 34,
+     "elond_tp": 34,
+     "elond_recall": 0.13333333333333333,
+     "zero_error_frontier": {
+      "q": 0.0,
+      "recall": 0.4588235294117647,
+      "fdp": 0.0,
+      "alerts": 117
+     },
+     "recall_ratio_vs_zero_error_frontier": 3.441176470588235
+    },
+    "keyed": {
+     "methods": [
+      {
+       "method": "online FDR (e-LOND, mean rule)",
+       "alerts": 24,
+       "fdp": 0.0,
+       "recall": 0.09411764705882353,
+       "note": "self-selected budget",
+       "frontier_recall_at_budget": 0.09411764705882353,
+       "gap": 0.0
+      },
+      {
+       "method": "online FDR (policy D, slot)",
+       "alerts": 126.55809397928697,
+       "fdp": 0.0011989012951616903,
+       "recall": 0.49571122869216466,
+       "note": "randomised rule; alerts and FDP are E[R] and E[V]/E[R], not E[V/R]",
+       "frontier_recall_at_budget": 0.4923846822717136,
+       "gap": -0.0033265464204510486
+      },
+      {
+       "method": "feedback controller (L=0)",
+       "alerts": 159,
+       "fdp": 0.06918238993710692,
+       "recall": 0.5803921568627451,
+       "note": "",
+       "frontier_recall_at_budget": 0.5882352941176471,
+       "gap": 0.007843137254901933
+      },
+      {
+       "method": "feedback controller (L=20 alerts)",
+       "alerts": 169,
+       "fdp": 0.11834319526627218,
+       "recall": 0.5843137254901961,
+       "note": "",
+       "frontier_recall_at_budget": 0.6078431372549019,
+       "gap": 0.0235294117647058
+      },
+      {
+       "method": "feedback controller (L=50 alerts)",
+       "alerts": 194,
+       "fdp": 0.1958762886597938,
+       "recall": 0.611764705882353,
+       "note": "",
+       "frontier_recall_at_budget": 0.6588235294117647,
+       "gap": 0.04705882352941171
+      },
+      {
+       "method": "fixed threshold (no feedback)",
+       "alerts": 875,
+       "fdp": 0.7634285714285715,
+       "recall": 0.8117647058823529,
+       "note": "",
+       "frontier_recall_at_budget": 0.8117647058823529,
+       "gap": 0.0
+      }
+     ],
+     "frontier": [
+      {
+       "q": 0.0,
+       "recall": 0.4588235294117647,
+       "fdp": 0.0,
+       "alerts": 117
+      },
+      {
+       "q": 0.01,
+       "recall": 0.5647058823529412,
+       "fdp": 0.006896551724137931,
+       "alerts": 145
+      },
+      {
+       "q": 0.05,
+       "recall": 0.5843137254901961,
+       "fdp": 0.04487179487179487,
+       "alerts": 156
+      },
+      {
+       "q": 0.1,
+       "recall": 0.6431372549019608,
+       "fdp": 0.0989010989010989,
+       "alerts": 182
+      },
+      {
+       "q": 0.2,
+       "recall": 0.6823529411764706,
+       "fdp": 0.18309859154929578,
+       "alerts": 213
+      }
+     ],
+     "T": 31568,
+     "NM": 255,
+     "elond_rej": 24,
+     "elond_tp": 24,
+     "elond_recall": 0.09411764705882353,
+     "zero_error_frontier": {
+      "q": 0.0,
+      "recall": 0.4588235294117647,
+      "fdp": 0.0,
+      "alerts": 117
+     },
+     "recall_ratio_vs_zero_error_frontier": 4.875
+    }
+   }
+  }
+ },
+ "summary": {
+  "n_positions": 2,
+  "orders": [
+   "first-flow",
+   "keyhash",
+   "keyed"
+  ],
+  "frontier_order_invariant_everywhere": true,
+  "max_gap_any_order": 0.04705882352941182,
+  "elond_alerts_first_flow_055": 18,
+  "elond_alerts_canonical_055": 3,
+  "elond_recall_first_flow_055": 0.06545454545454546,
+  "elond_recall_canonical_055": 0.01090909090909091,
+  "elond_alerts_canonical_085": 34,
+  "elond_recall_canonical_085": 0.13333333333333333,
+  "regression_vs_t20": {
+   "0.55": {
+    "n_methods": 6,
+    "n_differing": 0,
+    "diffs": []
+   },
+   "0.85": {
+    "n_methods": 6,
+    "n_differing": 0,
+    "diffs": []
+   }
+  },
+  "recall_ratio_first_flow_055": 5.777777777777777,
+  "recall_ratio_canonical_055": 34.666666666666664
+ }
+}

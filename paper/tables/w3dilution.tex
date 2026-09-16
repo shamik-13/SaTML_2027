@@ -1,0 +1,26 @@
+\begin{table}[t]
+\centering
+\caption{Controlled padding-dilution replay on the shipped detector: real flows of the black-box pool
+appended to every detected episode under both within-bucket orders (\textbf{canonical} key-hash and
+\textbf{first-flow}); src--dst two-hour unit, e-LOND $\gamma\propto j^{-1.6}$, seed 0. Design and
+reading: \cref{app:pools}.}
+\label{apptab:w3dilution}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{llrrrrrr}
+\toprule
+window & within-bucket order & pool flows & pad fires & $95\%$ upper & detected & measured $=$ c.f.\ & median $r^{\star}_t$ \\
+\midrule
+primary (0.55) & first-flow \emph{(upper bd.)} & 845,691 & 0/20,000 & $1.5\times10^{-4}$ & 18 & 18/18 & 118 \\
+ & \textbf{key-hash (canonical)} & 845,691 & 0/20,000 & $1.5\times10^{-4}$ & 3 & 3/3 & 24 \\
+stress-test (0.85) & first-flow \emph{(upper bd.)} & 584,850 & 0/20,000 & $1.5\times10^{-4}$ & 72 & 72/72 & 5{,}202 \\
+ & \textbf{key-hash (canonical)} & 584,850 & 0/20,000 & $1.5\times10^{-4}$ & 34 & 34/34 & 116 \\
+\bottomrule
+\end{tabular}}
+\par\vspace{3pt}
+{\footnotesize\raggedright \emph{Notes.} ``pool flows'': the black-box pool's size in the window;
+``pad fires'': how many of $n$ sampled pad flows fire when run through the detector, with the exact
+one-sided $95\%$ Clopper--Pearson upper bound on the firing probability in the next column;
+``measured $=$ c.f.'': detected episodes whose padded group e-value $S_t/(m_t+r)$ crosses the firing
+threshold at exactly the predicted $r^{\star}_t=\lfloor S_t\alphat\rfloor-m_t+1$; ``median
+$r^{\star}_t$'': over the detected episodes of the row, priced at the running level.\par}
+\end{table}

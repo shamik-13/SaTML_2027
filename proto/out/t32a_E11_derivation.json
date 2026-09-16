@@ -1,0 +1,35 @@
+{
+ "lam": 0.25,
+ "tau": 0.5,
+ "D1a": "P(r) = min(1, (n+r)/(M*m)) is non-decreasing: padding cannot lower p",
+ "D2a": "N* = floor(alpha_t*M*m)+1 is the least size with P > alpha_t (ceil(x) is WRONG at integer x)",
+ "D2b": "r* = N* - n",
+ "D3a": "rejected => n <= floor(alpha_t*M*m) => r* >= 1; max(.,0) is an assertion",
+ "D4a": "alpha_t < p+ <= alpha_t + 1/(M*m) <= alpha_t + 1/M (one conformal floor)",
+ "D5a": "SAT => LAND whenever M*m >= 1/(tau-lam) = 4 (SUFFICIENT, not sharp; the only integer M*m that fails is 1)",
+ "D5b": "LAND & not SAT => lam - alpha_t < 1/(M*m): a floor-width boundary only",
+ "D5c": "#LAND >= #SAT always; the recorded 101 = 101 is forced, not accidental",
+ "fig4b": "x = alpha_t (log), y = p_after, shade (lam, tau], split by saturated",
+ "D7a": "PROVIDED no unsaturated episode lands (asserted, not assumed -- D5b permits one at small M*m), median(p+) = lam + a specific saturated order statistic; odd and even n handled separately",
+ "identities": [
+  "m_fire integral",
+  "Ev = M*m/nsz",
+  "p = min(1, nsz/(M*m))",
+  "p <= alpha_t",
+  "n_need = floor(alpha_t*M*m)+1",
+  "pad >= 1",
+  "alpha_t < p_after <= alpha_t + 1/(M*m)",
+  "lands = lam < p_after <= tau",
+  "saturated => lands",
+  "aggregates recomputed from the arrays"
+ ],
+ "recorded": {
+  "n_detected": 147,
+  "n_level_saturated": 101,
+  "n_minimal_pad_lands_in_window": 101,
+  "median_p_after_minimal_pad": 0.25000000190185273
+ },
+ "n_passed": 40,
+ "n_failed": 0,
+ "failed": []
+}

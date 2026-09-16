@@ -1,0 +1,143 @@
+{
+ "config": {
+  "alpha": 0.05,
+  "w0": 0.025,
+  "horizon": 10000000
+ },
+ "sharp_condition": [
+  {
+   "gamma": "gamma ~ j^-1.6",
+   "max_t_gamma": 0.4374901657744735,
+   "argmax": 1,
+   "limit_t_gamma": 2.7603763323326093e-05,
+   "d2_diverges": true
+  },
+  {
+   "gamma": "gamma ~ JM",
+   "max_t_gamma": 0.07639284081309781,
+   "argmax": 55,
+   "limit_t_gamma": 0.04105050920288316,
+   "d2_diverges": true
+  }
+ ],
+ "horizon_multiplicative": [
+  {
+   "gamma": "gamma ~ j^-1.6",
+   "NC": 10000,
+   "R0": 29,
+   "R10": 129,
+   "R1000": 2176,
+   "R_all": 7942
+  },
+  {
+   "gamma": "gamma ~ j^-1.6",
+   "NC": 1000000,
+   "R0": 515,
+   "R10": 2308,
+   "R1000": 38701,
+   "R_all": 10000000
+  },
+  {
+   "gamma": "gamma ~ JM",
+   "NC": 10000,
+   "R0": 38,
+   "R10": 402,
+   "R1000": 29399,
+   "R_all": 10000000
+  },
+  {
+   "gamma": "gamma ~ JM",
+   "NC": 1000000,
+   "R0": 3317,
+   "R10": 32135,
+   "R1000": 2254900,
+   "R_all": 10000000
+  }
+ ],
+ "absorbing_delta": [
+  {
+   "gamma": "gamma ~ j^-1.6",
+   "NC_1e4": 34567,
+   "NC_1e6": 6543160,
+   "NC_1e8": 9951885
+  },
+  {
+   "gamma": "gamma ~ JM",
+   "NC_1e4": 9680767,
+   "NC_1e6": 9996754,
+   "NC_1e8": 9999969
+  }
+ ],
+ "elond_max_evidence": [
+  {
+   "NC": 10000,
+   "pi": 0.0001,
+   "attacks": 50,
+   "rejected": 0,
+   "silent_frac": 0.999942,
+   "first_infeasible": 30,
+   "false_rej": 0
+  },
+  {
+   "NC": 10000,
+   "pi": 0.01,
+   "attacks": 5000,
+   "rejected": 0,
+   "silent_frac": 0.999942,
+   "first_infeasible": 30,
+   "false_rej": 0
+  },
+  {
+   "NC": 1000000,
+   "pi": 0.0001,
+   "attacks": 50,
+   "rejected": 0,
+   "silent_frac": 0.99897,
+   "first_infeasible": 516,
+   "false_rej": 0
+  },
+  {
+   "NC": 1000000,
+   "pi": 0.01,
+   "attacks": 5000,
+   "rejected": 112,
+   "silent_frac": 0.9802,
+   "first_infeasible": 9901,
+   "false_rej": 0
+  },
+  {
+   "NC": 100000000,
+   "pi": 0.0001,
+   "attacks": 50,
+   "rejected": 8,
+   "silent_frac": 0.927576,
+   "first_infeasible": 36213,
+   "false_rej": 0
+  },
+  {
+   "NC": 100000000,
+   "pi": 0.01,
+   "attacks": 5000,
+   "rejected": 5000,
+   "silent_frac": 0.0,
+   "first_infeasible": null,
+   "false_rej": 1
+  }
+ ],
+ "jm_normalisation": [
+  {
+   "H": 10000000,
+   "NC_1e4": 9680767,
+   "NC_1e6": 9996754
+  },
+  {
+   "H": 100000000,
+   "NC_1e4": 96007478,
+   "NC_1e6": 99959211
+  }
+ ],
+ "poly_normaliser": {
+  "zeta_1_6": 2.28576566568013,
+  "tail_beyond_1e7": 3.4450017768280015e-05
+ }
+}

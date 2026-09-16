@@ -1,0 +1,40 @@
+\begin{table}[t]
+\centering
+\caption{Grouping-independent resolution cost (src-dst family, e-LOND $\gamma\propto j^{-1.6}$,
+seed 0). The \emph{atomic evaluation reference} is the set of 5-minute src-dst \emph{malicious}
+episodes --- a fixed fine-grained denominator we choose, not externally validated incident truth, since
+LSPR23 carries no campaign identifier ---
+1899 at the primary window, 1973 at the
+stress-test window --- and its size is \textbf{fixed} across every alerting bucket. ``cov (fixed)''
+is the fraction of those atomic units covered by $\ge\!1$ issued alert; ``blur'' is the mean number
+of distinct atomic malicious units an issued alert lumps together (the resolution lost); ``recall
+(moving)'' is the ordinary episode recall, whose denominator changes with the bucket. As the unit
+coarsens the fixed coverage \emph{rises} while the blur climbs from $1$ to $\sim\!20$--$40$: that
+climb, not the moving recall, is the denominator-invariant resolution cost. $^{\dagger}$ marks a
+\emph{negative level-$w_0$ feasibility margin}; e-LOND can still fire there when that margin exceeds
+$-\tfrac12$ (its own $\alpha=2w_0$ cold-start coefficient), which is why some daggered rows carry
+non-zero coverage/recall --- a daggered row reads $0$ only when e-LOND is itself infeasible
+(cf.\ \cref{apptab:grouping,tab:main}). All counts here use the \textbf{first-flow} within-bucket order, the optimistic upper bound over the orders we audit, not the canonical metadata-hash order \cref{tab:main} reports (\cref{apptab:ordering}).}
+\label{apptab:w7coverage}
+\begin{tabular}{lrrrr}
+\toprule
+bucket & cov (fixed) & blur & recall (moving) & flow cov. \\
+\midrule
+\multicolumn{5}{l}{\emph{primary analysis window (0.55)}} \\
+5\,m$^{\dagger}$ & 0.020 & 1.0 & 0.020 & 0.001 \\
+30\,m$^{\dagger}$ & 0.065 & 3.6 & 0.077 & 0.004 \\
+1\,h$^{\dagger}$ & 0.068 & 7.2 & 0.058 & 0.004 \\
+2\,h & 0.152 & 16.1 & 0.065 & 0.007 \\
+6\,h & 0.240 & 25.3 & 0.103 & 0.011 \\
+1\,d & 0.385 & 38.5 & 0.123 & 0.021 \\
+\midrule
+\multicolumn{5}{l}{\emph{stress-test window (0.85)}} \\
+5\,m$^{\dagger}$ & 0.308 & 1.0 & 0.308 & 0.301 \\
+30\,m$^{\dagger}$ & 0.317 & 4.5 & 0.277 & 0.418 \\
+1\,h & 0.322 & 8.8 & 0.238 & 0.418 \\
+2\,h & 0.322 & 8.8 & 0.282 & 0.418 \\
+6\,h & 0.743 & 20.4 & 0.439 & 0.995 \\
+1\,d & 0.743 & 20.4 & 0.439 & 0.995 \\
+\bottomrule
+\end{tabular}
+\end{table}
