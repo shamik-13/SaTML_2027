@@ -1,25 +1,3 @@
-"""Attack-surface-A padding cost priced against the RUNNING controller level 1/alpha_t.
-
-The static price is against the horizon-uniform feasibility threshold tau = T/w0 -- the level a
-Family-II procedure offers at its first step (R = 0), i.e. an attacker who suppresses every alert
-from the start; it is reported here as med_pad_static.  The main price is each detected
-alert against the level e-LOND actually offers at that episode's step, alpha_t = alpha *
-gamma_t * (R_{t-1}+1), reconstructed from a real run_lond pass -- the same controller-aware
-pricing t32_B1 uses for ADDIS.  Feedback (suppressing one alert lowers later levels) is not
-charged, so the costs are a lower bound.
-
-Produces out/t28b_reallevel.json:
-  table1 : per (pos,seed) e-LOND detections and median black-box pad, real vs static  (Table I)
-           -- under the SHIPPED first-flow within-bucket order, kept byte-identical.
-  table1_by_order : the same quantities under each within-bucket order in ORDERS_RUN (review-7
-           item R3).  "keyhash" is the CANONICAL order -- a splitmix64 hash of the group's own
-           (SrcIP,DstIP,bucket) key -- which is evidence-independent AND not timing-influenceable,
-           so it is the order the paper should report as primary; first-flow is an optimistic
-           upper bound (t53 measures the whole ensemble).  Detections and the level each alert
-           fires at both move with the order; T, NC, AUROC and the margin do not.
-  pools  : per (pos,seed) five-pool median r_mean, real vs static, at 0.62 and 0.85     (tab:pools)
-  fig4a_pools : per-pool sorted real-level pad arrays at 0.85 seed 0                     (Fig 4A)
-"""
 import numpy as np, json, time
 from pathlib import Path
 from sklearn.metrics import roc_auc_score
@@ -30,8 +8,6 @@ A = 0.05; W0 = 0.025; K = 1; BUCKET = 2 * 3600
 POS_ALL = [0.55, 0.62, 0.70, 0.77, 0.85]
 POS_POOL = [0.62, 0.85]
 SEEDS = [0, 1]
-# Within-bucket orders to price (review-7 item R3).  "first-flow" is the shipped order and is
-# reported byte-identically in table1; "keyhash" is the canonical order the paper now leads with.
 ORDERS_RUN = ["first-flow", "keyhash", "keyed"]
 
 

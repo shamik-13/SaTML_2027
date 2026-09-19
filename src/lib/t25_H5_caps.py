@@ -134,12 +134,6 @@ def main():
         print(f"  {rec['cap']:>6} {f3(rec['det_raw']):>30} {f3(rec['det_trunc']):>24} "
               f"{f3(rec['floor_raw']):>12} {f3(rec['floor_trunc']):>13} "
               f"{f3(rec['frontload']):>11}")
-    print(f"\n  attack episodes per configuration: {f3(summ[0]['n_att'])}")
-    print("  'flows needed' = ceil(thr*n0/CEIL), the number of ceiling-reaching flows a group")
-    print("  must contain to fire.  It is exactly linear in n0, which is the section 4.11 floor")
-    print("  scaling; the measured floors track it.")
-    print("  'front-load' = median leading benign flows needed to suppress a detected episode")
-    print("  under the truncated rule -- the attack channel that truncation opens.")
 
     json.dump({"config": dict(POS=POS, SEEDS=SEEDS, CAPS=CAPS, bucket_s=BUCKET, k=K, w0=W0),
                "rows": rows, "summary": summ},

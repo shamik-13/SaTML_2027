@@ -1,11 +1,3 @@
-"""Write the paper's generated tables from the shipped result objects.
-
-Thin wrapper: the generator is lib/tables.py, so the LaTeX build (paper/make_appendix_tables.py, the
-same wrapper pointed at the paper's tables/ directory) and this package write identical files from
-one implementation.  Output directory: ./tables/ by default, or the path given as the first argument.
-
-    python make_tables.py [OUTDIR]
-"""
 import sys
 from pathlib import Path
 

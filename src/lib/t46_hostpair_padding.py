@@ -1,4 +1,3 @@
-"""Can the attacker actually put pad flows into the target's episode?"""
 
 
 def main():
@@ -117,21 +116,6 @@ def main():
                           n_with_pool_available=tot_avail,
                           empirical_route_closed=bool(tot_pure == tot_det))
 
-    print(f"""
-      THE EMPIRICAL ROUTE IS CLOSED.  Every detected episode's host pair carries only attack
-      traffic, in every window and at both seeds, so LSPR23 contains no example of ordinary
-      traffic on an attack pair and no host-pair-matched pool can be built from it.
-
-      THE STRUCTURAL ROUTE ANSWERS THE QUESTION.  The detector scores a flow from Protocol and
-      32 per-flow timing and volume statistics, with no endpoint identity among them, so the
-      score is invariant to the host pair and the black-box pool's e-value distribution
-      (P(fire) = 0 at all five windows, section 4.42) transfers to the attack pair by
-      construction.  The attacker needs only to make ordinary connections to the victim.
-
-      SCOPE, AND ITS LIMIT.  This is a property of FLOW-LEVEL feature sets.  A detector using
-      host reputation, per-host baselines, or any feature conditioned on endpoint identity would
-      break the argument, and for such a detector the question would have to be settled on a
-      testbed rather than on paper.  [{time.time()-t0:.0f}s]""")
 
     out["assertions_failed"] = FAIL
     json.dump(out, open(OUT / "t46_hostpair.json", "w"), indent=1)

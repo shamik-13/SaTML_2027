@@ -1,4 +1,4 @@
-"""E8 -- both attacks priced in operational units."""
+
 
 
 def main():
@@ -51,14 +51,6 @@ def main():
     HOST_RATES = (1e6, 1e7, 1e8, 1e9)
     QUANTS = (0.10, 0.50, 0.90)
 
-    # Every padding budget below must name (i) the PROCEDURE whose level it is priced against,
-    # (ii) whether that level is the RUNNING one or the STATIC cold-start one, (iii) which
-    # DETECTED SET it is summed over, and (iv) the WITHIN-BUCKET ORDER that detected set was
-    # produced under -- these were previously implicit and unreconstructable.
-    #
-    # Both running-level budgets are READ from t28b rather than written here, so a re-run of
-    # t28b cannot leave this stage pricing a stale flow count in silence.  The paper's headline
-    # is the CANONICAL arm; the first-flow arm is the optimistic upper bound.
     _T28B = Path(__file__).resolve().parent / "out" / "t28b_reallevel.json"
     if not _T28B.exists():
         raise SystemExit("t28b_reallevel.json is required: it carries the running-level "
@@ -70,11 +62,7 @@ def main():
                          "labels below name the order explicitly and must be updated with it")
 
     def _runlevel(order):
-        """Median running-level pad cost and detected-set size at 0.85 seed 0, one order.
 
-        The record carries its OWN `order` field; reading the dict key alone would let a record
-        filed under the wrong arm be labelled by that arm.  Check the record, not the shelf.
-        """
         c = _t28b_all["table1_by_order"][order]["0.85_0"]
         if c.get("order") != order:
             raise SystemExit(f"t28b record filed under table1_by_order[{order!r}] declares "
@@ -119,8 +107,7 @@ def main():
              source="section 4.33: B* = 203 precursors x 453,279 flows at |C|+1 = 1,813,114; "
                     "priced over this position's OWN deployment span"),
     ]
-    # The two running-level budgets are one per within-bucket order, inherited from t28b.  Declare
-    # that STRUCTURALLY: t61's registry must not have to read it out of a prose `source` field.
+
     for _b in BUDGETS:
         _b["order"] = (_CANON if _b["name"].endswith("canonical)") else
                        "first-flow" if "RUNNING level" in _b["name"] else None)
@@ -139,12 +126,7 @@ def main():
         return cond
 
 
-    print("=" * 118)
-    print("E8 -- BOTH ATTACKS IN OPERATIONAL UNITS")
-    print("=" * 118)
 
-    # t28b's DEFAULT table1 is the first-flow arm; assert that, so a change of default in t28b
-    # cannot silently swap which arm this stage calls "first-flow".
     note(abs(float(_t28b_all["table1"]["0.85_0"]["med_pad_real"]) - RUNLEVEL_085_FF) <= 0.5,
          f"t28b's default table1 at 0.85 seed 0 is {_t28b_all['table1']['0.85_0']['med_pad_real']}, "
          f"which is not its first-flow arm ({RUNLEVEL_085_FF}); the default arm changed")
@@ -303,36 +285,6 @@ def main():
     allep = next(r for r in gb if r["budget"].startswith("padding, all 147"))
     state = next(r for r in gb if r["budget"].startswith("ADDIS spending-state"))
     addis_pad = next(r for r in gb if r["budget"].startswith("padding at ADDIS's own level"))
-    print(f"""
-      At position 0.85, padding with the black-box pool (the most common benign service, chosen
-      with no detector access at all).  Costs are the TYPICAL model, n x the pool's median flow;
-      the iid-expectation and cheapest-choosable models are in the JSON:
-
-        suppress ONE alert          {one['flows']:>14,} flows  {one['wire_bytes']['0.5']:>18,.0f} wire bytes
-                                    {'':>14}  {one['bits_per_s']:>18,.0f} bit/s over the 2 h bucket
-                                    {'':>14}  {one['hosts']['10000000']:>18,} host(s) at 10 Mbit/s
-
-        suppress ALL 147 alerts     {allep['flows']:>14,} flows  {allep['wire_bytes']['0.5']:>18,.0f} wire bytes
-                                    {'':>14}  {allep['bits_per_s']:>18,.0f} bit/s over the 2 h bucket
-
-        ADDIS state attack          {state['flows']:>14,} flows  {state['wire_bytes']['0.5']:>18,.0f} wire bytes
-
-        padding at ADDIS's level    {addis_pad['flows']:>14,} flows  {addis_pad['wire_bytes']['0.5']:>18,.0f} wire bytes
-                                    {'':>14}  {addis_pad['bits_per_s']:>18,.0f} bit/s over the 2 h bucket
-                                    {'':>14}  {addis_pad['hosts']['10000000']:>18,} host(s) at 10 Mbit/s
-
-      The ratio between suppressing one alert against e-LOND and silencing ADDIS outright is
-      {state['wire_bytes']['0.5']/max(one['wire_bytes']['0.5'],1):,.0f}x in bytes.
-
-      BANDWIDTH IS NOT THE BARRIER.  The state attack's {state['wire_bytes']['0.5']/1e9:.1f} GB over the
-      {state['window_s']/3600:.1f} h deployment window is {state['bits_per_s']/1e6:.1f} Mbit/s -- {state['hosts']['10000000']:,} host(s) at 10 Mbit/s.
-      What makes it structural is VOLUME AGAINST THE MONITORED POPULATION: {state['flows']:,} flows
-      against a deployment window that carries {out['volume_ratio']['0.85']['n_window_flows']:,}, i.e.
-      {out['volume_ratio']['0.85']['ratios'][state['budget']]['vs_window']:,.1f}x the entire observed traffic and
-      {out['volume_ratio']['0.85']['ratios'][state['budget']]['vs_dataset']:,.1f}x the whole 161.5 h dataset.  An
-      attacker who can multiply a network's flow count by that factor is not hiding.  Padding one
-      alert, by contrast, is {one['flows']:,} flows -- {out['volume_ratio']['0.85']['ratios'][one['budget']]['vs_window']:.2e} of the window.
-    """)
 
     out["assertions_failed"] = FAIL
     json.dump(out, open(OUT / "t41_E8.json", "w"), indent=1, allow_nan=True)

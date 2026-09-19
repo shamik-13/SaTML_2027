@@ -1,37 +1,13 @@
-"""Every generated table in the submission, written from the cached results in ``out/``.
-
-This lives in the reproduction package, next to ``figures.py`` and for the same reason: the paper's
-LaTeX build and the shipped artifact must produce the SAME tables from the SAME code and the SAME
-result objects.  ``paper/make_appendix_tables.py`` and ``make_tables.py`` are thin wrappers over it.
-
-Every value printed here is read from the shipped result JSONs in ``out/`` (the directory this module
-sits next to); nothing is invented.  Each table is written to ``OUTDIR/<key>.tex`` as one
-self-contained LaTeX float (table or table*) using booktabs, matching the conventions of the paper's
-own tables (\\toprule/\\midrule/\\bottomrule, \\resizebox for wide floats, $...$ for math, \\% for
-percent, \\times for x, -- for en-dashes, and the macros \\nCal, \\alphat, \\FDP, \\oracle the paper
-defines).  A table's prose companion (``write_prose``) is written the same way.
-
-Numbers: rates/recall/FDP -> 3 decimals; ratios -> 2 decimals; integer counts kept exact with a
-thousands separator ({,} inside math, ',' in text).  Pad-cost medians are rounded half-up via
-int(x+0.5).
-
-    import tables; tables.OUTDIR = "somewhere"; tables.build_all()
-
-``OUTDIR`` defaults to ``../tables`` (i.e. ``src/tables/``); the paper build points it at
-``paper/tables``.
-"""
 import json
 import math
 import statistics
 from pathlib import Path
 
-# `assert` is stripped by `python -O`, and several checks below are asserts.  A verification script
-# that can be silently disabled by an interpreter flag is worse than no script, so refuse to run.
 if not __debug__:
     raise SystemExit(f"{__file__} must not run under `python -O`: assertions are its checks")
 
-RES = Path(__file__).resolve().parent / "out"            # the shipped result JSONs (src/lib/out)
-OUTDIR = Path(__file__).resolve().parents[1] / "tables"  # where the .tex files go; the paper build overrides
+RES = Path(__file__).resolve().parent / "out"            
+OUTDIR = Path(__file__).resolve().parents[1] / "tables" 
 _WRITTEN = []
 
 
@@ -122,8 +98,6 @@ def human_rate(bps):
     return f"{bps:.1f}\\,bit/s"
 
 
-# Every table sourced from an artefact with no order arm is FIRST-FLOW: h_stream's
-# default.  t61 holds the registry that forces each such caption to say so.
 FF_LABEL = (
     r"All counts here use the \textbf{first-flow} within-bucket order, the optimistic upper "
     r"bound over the orders we audit, not the canonical metadata-hash order \cref{tab:main} "
@@ -187,8 +161,6 @@ Position & Seed & AUROC & $T$ & $\lvert C\rvert$ & margin & rejections & recall 
 
 # =======================================================================================
 # 2. procmatrix  [table*]  src=t21c_H6_positions.json
-#    Per procedure x gamma: min/median/max of rejections and recall over the 10 configs.
-#    Median rejections may be non-integer (rendered with 1 decimal when so).
 # =======================================================================================
 def t_procmatrix():
     d = load("t21c_H6_positions")
@@ -224,8 +196,6 @@ Procedure & $\gamma$ & min & med & max & min & med & max \\
 
 # =======================================================================================
 # 3. grouping  [table]  src=t26_H4_5pos.json
-#    seed 0, pos 0.55; five families x three buckets (300s=5m, 7200s=2h, null=no-time).
-#    Negative margin == infeasible (the controller cannot run, so recall/coverage are 0).
 # =======================================================================================
 def t_grouping():
     d = load("t26_H4_5pos")

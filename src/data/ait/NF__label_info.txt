@@ -1,0 +1,72 @@
+Benign labels in TCP:
+browsing/update
+benign_share
+broken flow - benign
+mail
+monitoring
+HTTP(S) intra
+HTTP(S) DMZ
+HTTP
+HTTPS
+DNS
+SSH
+proxy
+update/command on unassigned port
+
+Malicious labels in TCP:
+service_scan
+online_cracking
+host_discover_dmz
+host_discover_local
+wpscan
+dirb_scan
+upload_rce_shell
+check_user_id
+check_netstat_t
+read_resolv
+check_network_config
+check_ps_a
+check_release
+read_group
+read_passwd
+check_date
+list_web_dir
+check_wp_config
+dump_wp_users
+read_profile
+dns_brute_force_start
+list_www
+check_who
+clear
+check_last
+check_id
+vpn_connect
+check_whoami
+check_uname_r
+check_meminfo
+check_uname_a
+check_df
+check_netstat_nat
+list_home
+check_netstat_l
+check_cpuinfo
+check_uptime
+check_pwd
+list_l
+
+Benign labels in UDP:
+mDNSv6
+mDNS
+bootp
+NTP
+systemd-resolver (local)
+benign DNS - attacker requesting updates
+benign DNS
+OpenVPN
+QUIC
+STUN VoIP
+NetBIOS
+GoogleDNS
+
+Malicious labels in UDP:
+data exfiltration

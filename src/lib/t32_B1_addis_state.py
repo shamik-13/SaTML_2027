@@ -1,6 +1,3 @@
-"""B1 -- the ADDIS spending-state manipulation attack."""
-
-
 def main():
     import numpy as np, json, time
     from fractions import Fraction
@@ -46,7 +43,6 @@ def main():
                            T=int(T), n_mal=int(ep["n_mal"]), NC=int(NC), CEIL=float(CEIL))
 
     print("\n" + "=" * 112)
-    print("B1a -- HOW FAR THE SPENDING INDEX MUST BE ADVANCED")
     print("=" * 112)
     Z = float(zeta(1.6, 1))
 
@@ -92,11 +88,6 @@ def main():
         rows.append(dict(R=R, bstar=bs, bstar_closed=cf, level_before=float(lv), floor=float(FLOOR)))
         print(f"  {R:>20} {bs:>14,} {cf:>18,} {lv:>15.4e} {FLOOR:>12.4e}")
     out["bstar"] = rows
-    print(f"\n  Closed form:  B* = smallest integer D with D + 1 > "
-          f"[ (tau-lam)*W*(|C|+1)/(k*zeta(1.6)) ]^(1/1.6),")
-    print(f"  with W = w0 before the first rejection and W = alpha*R after R of them.")
-    print(f"  B* grows only as |C|^(1/1.6) = |C|^0.625, so a larger calibration set -- the one")
-    print(f"  thing that buys feasibility -- also buys resistance to this attack, sub-linearly.")
 
     print("\n" + "=" * 112)
     print("B1b -- WHAT ONE PRECURSOR EPISODE COSTS")

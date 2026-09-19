@@ -1,34 +1,3 @@
-"""R1 -- do the newest strict power improvements over e-LOND escape the C1 feasibility horizon?
-
-Xu, Fischer & Ramdas, "Improving online FDR procedures via online analogs of e-closure and
-compound e-values", UAI 2026 (arXiv 2603.24792v3, 8 Jul 2026) give procedures that STRICTLY
-improve e-LOND and r-LOND while retaining SupFDR control under arbitrary dependence -- the
-same setting our guarantee-bearing claims use.  If they escaped the horizon of thm:family1 /
-thm:family2, C1 would be scoped to superseded procedures.  This stage classifies them.
-
-Four arms, all from that paper (implementations and their derivations in h6_procs.py):
-
-  donation e-LOND   their (26)-(28).  Wbar_t <= sum(gamma) <= 1, so on a rejection-free run
-                    the level is at most delta*gamma_t/(1-delta): thm:family1 with
-                    c = 1/(1-delta).  Predicted consequence: the horizon still binds and
-                    cor:budget's required |C| shrinks by a factor (1-alpha) only.
-  closed e-LOND     their (15)-(16) via the DP (19)-(22).  NOT covered by the letter of
-                    thm:family1 -- the S = {} candidate d*gamma_1*Rn does not decay -- so it
-                    needs the separate zero-evidence-subset argument, which this stage
-                    measures the slack of.
-  donation e-BH     their (102).  A strict improvement over online e-BH, which is C1's SECOND
-                    escape, so this arm asks whether the escaping class gets stronger.
-  e-TOAD            their (103)-(104), swept over DECISION DEADLINES.  Their App. D.2 states
-                    d_i = i is e-LOND and d_i = infinity is online e-BH, so the deadline
-                    interpolates between the bound end and the escaping end of our taxonomy.
-                    Operationally the deadline is the SOC's ALERTING-LATENCY budget, and
-                    d_i = bucket close is the BATCHED architecture (arbitrary-dependence
-                    valid, unlike BatchBH / BatchSt-BH, and order-free within the bucket).
-
-Writes out/t56_uai26.json.
-"""
-
-
 def main():
     import numpy as np, json, time
     from pathlib import Path
@@ -43,9 +12,7 @@ def main():
     SEEDS = [0, 1]
     K = 1; A = 0.05; W0 = 0.025; BUCKET = 2 * 3600
     GAMMAS = ["poly", "uniform"]
-    # R8/R5c: the deferral-converts-to-power claim sits next to a C1 headline, so it must be read
-    # under the order tab:main reports.  first-flow is kept as the optimistic upper bound and is
-    # byte-identical to the pre-round-8 run.
+
     ORDERS = ["first-flow", "keyhash"]
     DEADLINES = [("immediate", None), ("bucket", None), ("6h", 6 * 3600),
                  ("24h", 24 * 3600), ("arc", None)]
@@ -108,9 +75,6 @@ def main():
                     arms["online e-BH"] = dict(rej=r[0], tp=r[1], silent=r[2], first_silent=r[3],
                                                kstar_T=r[4], never_rejectable=r[6])
 
-                    # The source licenses two readings of (102) and they differ on real streams;
-                    # report both and default to the literal one (see run_donation_ebh).  `silent`
-                    # is None for this arm: the at-arrival test is not its feasibility condition.
                     for hist in ("snapshot", "union"):
                         dg = {}
                         r = run_donation_ebh(ctx, g1, diag=dg, history=hist)
@@ -144,22 +108,10 @@ def main():
                             median_hypotheses_waited=float(np.median(wait)),
                             max_hypotheses_waited=int(wait.max()), **dg)
 
-                    # ---- the classification, in cor:budget's own units ----
-                    # c_0 is the constant multiplying gamma_T in the level offered BEFORE the
-                    # first rejection.  e-LOND has c_0 = alpha; donation e-LOND's bounded boost
-                    # moves it to alpha/(1-alpha) and nothing else in this list moves it at all.
                     need_elond = K * T / A - 1.0
                     need_don = K * T / (A / (1.0 - A)) - 1.0
                     n_flow = int(i3 - i2)
-                    # NOTE ON NAMING.  `first_silent` is the FIRST index at which a rejection is
-                    # impossible, not the length of a feasible prefix: for the deferred procedures
-                    # silence is not contiguous (the active set grows and shrinks), so e-TOAD(bucket)
-                    # can have first_silent = 18,959 and only 835 silent steps in total.  We
-                    # therefore report the two separately and never call either a prefix.
-                    # Every silence figure carries the METHOD that produced it.  run_online_ebh
-                    # uses the necessary condition only (a lower bound); run_etoad and the explicit
-                    # -level runners are exact.  Quoting the two in one column without the label
-                    # would put 0.0% and 90.1% side by side for the SAME procedure.
+
                     exact_silence = {"e-LOND", "donation e-LOND", "closed e-LOND"} | {
                         f"e-TOAD({d[0]})" for d in DEADLINES}
                     base_fs = arms["e-LOND"]["first_silent"]
@@ -174,8 +126,7 @@ def main():
                                               silent_fraction=None, silence_method=meth,
                                               extra_true_detections=int(a["tp"] - arms["e-LOND"]["tp"]))
                             continue
-                        # first_silent is None when the arm never goes silent, so a shift computed
-                        # against T is CENSORED (a lower bound), not an exact displacement
+
                         cens = fsa is None
                         fsa = T if cens else fsa
                         gained[nm] = dict(first_silent_shift=int(fsa - base_fs),
@@ -184,7 +135,7 @@ def main():
                                           silence_method=meth,
                                           extra_true_detections=int(a["tp"] - arms["e-LOND"]["tp"]))
                     cls = dict(
-                        # cor:budget at the GROUPED granularity actually deployed here
+
                         required_C_elond=need_elond,
                         required_C_donation_elond=need_don,
                         donation_relaxation=need_don / need_elond,
@@ -192,11 +143,9 @@ def main():
                         required_over_available_elond=need_elond / NC,
                         required_over_available_donation=need_don / NC,
                         horizon_uniform_feasible=bool(need_elond <= NC),
-                        # and at FLOW granularity, the ungrouped stream the bridge starts from
                         T_flows=n_flow,
                         required_C_elond_flowgrain=K * n_flow / A - 1.0,
                         required_over_available_flowgrain=(K * n_flow / A - 1.0) / NC,
-                        # what the two improvements actually buy
                         realised_coldstart_boost=arms["donation e-LOND"]["max_boost_coldstart"],
                         realised_boost_any_R=arms["donation e-LOND"]["max_boost"],
                         boost_ceiling=arms["donation e-LOND"]["boost_ceiling"],
@@ -205,9 +154,6 @@ def main():
                         wealth_used_fraction=arms["donation e-LOND"]["max_wealth"],
                         closed_level_over_zero_bound=arms["closed e-LOND"]["worst_lvl_over_zero_bound"],
                         zero_evidence_fraction=arms["closed e-LOND"]["n_zero_evidence"] / T,
-                        # e-TOAD's silence is EXACT (it runs the step-up on the E_t = CEIL
-                        # counterfactual); run_online_ebh's is the necessary condition only, so it
-                        # is a LOWER bound.  Both are reported so the gap is visible.
                         ebh_silent_necessary_only=arms["online e-BH"]["silent"],
                         ebh_silent_exact=arms["e-TOAD(arc)"]["silent"],
                         donation_ebh_snapshot=arms["donation e-BH (snapshot)"]["tp"],
@@ -256,11 +202,6 @@ def main():
                           f"necessary condition, {cls['ebh_silent_exact']:,} exact")
 
     out["rows"] = rows
-
-    # ---- summary across the matrix -------------------------------------------------
-    # R8/R5c: `rows` now carries two orders.  Every pre-existing aggregate stays scoped to the
-    # FIRST-FLOW arm so it is byte-identical to the pre-round-8 artefact (t45 depends on that);
-    # the canonical arm is reported separately below.
     ff = lambda r: r["order"] == "first-flow"
     ca = lambda r: r["order"] == "keyhash"
 
@@ -327,9 +268,6 @@ def main():
             col(lambda r: r["classification"]["gained"]["e-TOAD(arc)"]["extra_true_detections"])),
         max_extra_detections_bucket=max(
             col(lambda r: r["classification"]["gained"]["e-TOAD(bucket)"]["extra_true_detections"])),
-        # ---- R8/R5c: the deferral-converts-to-power claim, under BOTH orders ----------------
-        # The paper said "converts to power at one window of the five" and then named two.  These
-        # are the (pos, seed) cells where the bucket deadline actually buys a true detection.
         deferral_converts_cells_first_flow=[list(c) for c in _converts(ff)],
         deferral_converts_cells_canonical=[list(c) for c in _converts(ca)],
         deferral_converts_windows_first_flow=sorted({c[0] for c in _converts(ff)}),

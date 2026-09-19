@@ -27,9 +27,6 @@ THEORY = [
     ("t42a_E9_derivation", {}, "tie-block algebra"),
 ]
 
-# Order matters only where a stage reads another's output:
-#   t25 and t26(five=True) -> t39      t41a -> t41      t49 -> t51 -> t54 -> t67 -> t76 -> t77
-#   t18 (theory) reads the shipped t17_T2.json; t50 reads t30; t64 reads t20; t60 and t41 read t28b
 EXPERIMENTS = [
     ("t17_T2_fullstream", {}, "full stream, five positions x two seeds"),
     ("t22_H1_H2_matrix", {}, "second detector and rank-k sweep"),

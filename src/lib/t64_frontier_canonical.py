@@ -1,35 +1,3 @@
-"""R8/R5 -- the operational evaluation under the CANONICAL order, which is what the headline uses.
-
-sec:transfer made the metadata-hash order primary: `tab:main`'s detection column is canonical, with
-first-flow arrival kept only as an optimistic upper bound over the orders we audit.  The operational
-evaluation never followed.  `apptab:frontier` and sec:operational still report
-
-    online FDR (mean rule)   18 alerts   FDP 0.000   recall 0.065
-
-which is the FIRST-FLOW number at 0.55, against a canonical headline of 3.  A referee reads the two
-numbers in the same paper and has a legitimate complaint.  This stage recomputes t20's matched
-operating points under all three orders so the operational section can share the headline ordering.
-
-TWO THINGS THIS MEASURES RATHER THAN ASSUMES.
-
-  (1) IS THE FRONTIER ORDER-INVARIANT?  It ought to be: it is an ex-post threshold family on the
-      episode max score, and a threshold does not care what order the episodes arrived in.  But
-      `h_stream.frontier` breaks ties in smax by `np.arange(T)`, i.e. by POSITION IN THE STREAM, so
-      two episodes with an identical max score are ranked by an order-dependent key.  If ties exist
-      the frontier can move.  We compute it under every order and check.
-
-  (2) DOES THE FIRST-FLOW ARM REPRODUCE t20?  t20 orders with `np.argsort(first_ts, kind=mergesort)`
-      -- stable in GID order -- while `h_stream.build_episodes` uses
-      `np.lexsort((first_pos, first_ts))`, which breaks first-timestamp ties by first appearance in
-      the stream.  Those are different conventions and up to 1.3% of episodes share a first
-      timestamp (sec:transfer), so they need not agree.  We assert nothing; we measure the gap and
-      report it, because a silent disagreement between two tie-break conventions is exactly the kind
-      of thing that has already cost this paper two wrong numbers.
-
-The method set is t20's, unchanged: e-LOND on the mean rule, the randomised slot rule, three
-feedback threshold controllers at disposition lags L in {0, 20, 50} alerts, and the no-feedback
-fixed threshold.  All of them consume the stream sequentially, so all of them move with the order.
-"""
 import numpy as np
 
 
@@ -85,8 +53,6 @@ def _methods_for_order(ep, smax_g, fire_ct_g, cal, NC, CEIL, thr, hs):
 
     def add(nm, fired, note=""):
         R = int(fired.sum()); V = int((fired & ~ismal).sum())
-        # fdp is UNDEFINED, not zero, when nothing fires -- the keyed order at 0.55 fires
-        # nothing at all, and writing 0.0 there would read as "perfect precision".
         out.append(dict(method=nm, alerts=R, fdp=(float(V / R) if R else None),
                         recall=float((fired & ismal).sum() / NM), note=note))
 
@@ -218,7 +184,6 @@ def main():
                                         "online FDR (e-LOND, mean rule)")["recall"],
         regression_vs_t20=reg,
     )
-    # the headline contrast: how far below the zero-error frontier the controller sits
     for pk in per_pos:
         for od in ORDERS:
             blk = per_pos[pk]["per_order"][od]

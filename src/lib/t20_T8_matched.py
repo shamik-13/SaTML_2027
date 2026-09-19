@@ -1,10 +1,3 @@
-"""T8 -- every method at matched operating points, plus the Pareto frontier they are all
-measured against.  One detector, one grouping, now at TWO window positions: 0.55 (the primary /
-guarantee window, evidence a valid e-value) and 0.85 (the stress-test window, evidence not a
-valid e-value; kept for continuity with the instrumented analyses).  The 0.85 block reproduces
-the original single-window run exactly and is asserted against it below."""
-
-
 def _run_position(POS, X, y, ts, src, dst, hs):
     import numpy as np, time
     from scipy.special import zeta
@@ -37,7 +30,6 @@ def _run_position(POS, X, y, ts, src, dst, hs):
     tp = np.cumsum(m); fp = np.cumsum(~m); kk = np.arange(1, T + 1); fdp = fp / kk; rec = tp / NM
 
     def frontier_at_budget(nb):
-        """fractional budget: Policy D's alert count is an expectation, so interpolate"""
         b = float(np.clip(nb, 0.0, T))
         if b <= 0: return 0.0, 0.0
         k = int(np.floor(b)); frac = b - k
@@ -121,11 +113,10 @@ def main():
     for POS in (0.55, 0.85):
         per_pos[f"{POS}"] = _run_position(POS, X, y, ts, src, dst, hs)
 
-    # Regression: the 0.85 block must reproduce the original single-window artifact.
     old = Path("out/t20_T8.json")
     if old.exists():
         prev = json.load(open(old))
-        if "methods" in prev:  # original single-window schema
+        if "methods" in prev:
             new85 = per_pos["0.85"]
             assert prev["T"] == new85["T"] and prev["NM"] == new85["NM"] \
                 and prev["NC"] == new85["NC"], "0.85 episode stream changed"

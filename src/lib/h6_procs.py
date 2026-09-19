@@ -1,4 +1,3 @@
-"""Online multiple-testing procedures for H6, isolated from any data loading so they can be"""
 import numpy as np
 from scipy.special import zeta
 
@@ -79,7 +78,6 @@ def run_lordpp(ctx, gam1, fired=None):
 
 
 def run_saffron(ctx, gam1, lam=0.5, fired=None):
-    """SAFFRON, arXiv 1802.09098 section 2.3."""
     rej = tp = silent = 0; first = None
     if fired is not None: fired[...] = False
     B = np.empty(ctx.T + 1, dtype=np.int64); nt = 0
@@ -110,7 +108,6 @@ def run_saffron(ctx, gam1, lam=0.5, fired=None):
 
 
 def run_addis(ctx, gam0, lam=0.25, tau_=0.5, fired=None, levels=None):
-    """ADDIS*, arXiv 1905.11465 Algorithm 1."""
     rej = tp = silent = 0; first = None
     if fired is not None: fired[...] = False
     B = np.empty(ctx.T + 1, dtype=np.int64); nt = 0
@@ -145,7 +142,6 @@ def run_addis(ctx, gam0, lam=0.25, tau_=0.5, fired=None, levels=None):
 
 
 def online_ebh_kstar(Ev, gam1, alpha, T):
-    """Return (k*_t trajectory of length T+1, m array)."""
     with np.errstate(divide='ignore'):
         denom = alpha * gam1[1:T + 1] * Ev
         m = np.where(denom > 0, 1.0 / np.where(denom > 0, denom, 1.0), np.inf)
@@ -164,7 +160,6 @@ def online_ebh_kstar(Ev, gam1, alpha, T):
 
 
 def run_online_ebh(ctx, gam1):
-    """online e-BH.  Returns (rej, tp, silent, first, k*_T, median lag, silent_arrival)."""
     T = ctx.T
     ks, m = online_ebh_kstar(ctx.Ev, gam1, ctx.A, T)
     kfin = int(ks[T])
@@ -186,7 +181,6 @@ def run_online_ebh(ctx, gam1):
 
 
 def _rai_omega(w1, phi, psi, nacc, nrej):
-    """eq (9): w_{t+1} = w1 [1 + sum_{j=1}^{t-R_t} phi^j - sum_{j=1}^{R_t} psi^j]."""
     a = phi * (1.0 - phi ** nacc) / (1.0 - phi) if nacc > 0 else 0.0
     if nrej > 0:
         one_minus_b = (1.0 - 2.0 * psi + psi ** (nrej + 1)) / (1.0 - psi)
@@ -201,7 +195,6 @@ def _rai_omega(w1, phi, psi, nacc, nrej):
 
 
 def run_egai(ctx, kind, w1, phi=0.5, psi=0.5, lam=0.1, d=0.99, omega_seq=None, fired=None):
-    """e-LORD / e-SAFFRON / mem-e-LORD from arXiv 2506.01452."""
     R = 0; Rd = 0.0; rej = tp = silent = 0; first = None
     if fired is not None: fired[...] = False
     budget = ctx.A * (1.0 - lam) if kind == "e-SAFFRON" else ctx.A
@@ -234,7 +227,6 @@ def run_egai(ctx, kind, w1, phi=0.5, psi=0.5, lam=0.1, d=0.99, omega_seq=None, f
 
 
 def egai_implied_gamma(ctx, w1, phi=0.5, psi=0.5, nsteps=None):
-    """The spending sequence e-LORD implies, gamma_t = w_t prod_{j<t}(1-w_j)"""
     n = nsteps or ctx.T
     g = np.empty(n); prod = 1.0; w = w1
     for t in range(1, n + 1):
@@ -245,7 +237,6 @@ def egai_implied_gamma(ctx, w1, phi=0.5, psi=0.5, nsteps=None):
 
 
 def _check_source_assumptions(ctx, gam1, name):
-    """The UAI 2026 results, and both propositions we derive from them, hold under the source's"""
     g = np.asarray(gam1)[1:ctx.T + 1]
     if not np.all(np.isfinite(g)) or np.any(g < 0.0):
         raise ValueError(f"{name}: gamma must be finite and nonnegative")
@@ -261,7 +252,6 @@ def _check_source_assumptions(ctx, gam1, name):
 
 
 def _donation_wealth_rejected(E, g, rej_idx, d, Rn):
-    """Their (26), the already-rejected half of Wbar_t:"""
     w = 0.0
     for i in rej_idx:
         w += g[i] * min(E[i - 1] - 1.0 / (d * g[i] * Rn), 1.0)
@@ -269,7 +259,6 @@ def _donation_wealth_rejected(E, g, rej_idx, d, Rn):
 
 
 def run_donation_elond(ctx, gam1, fired=None, diag=None):
-    """Donation e-LOND, their (26)-(28):"""
     _check_source_assumptions(ctx, gam1, "donation e-LOND")
     T = ctx.T; d = ctx.A; E = ctx.Ev; g = gam1
     rej = tp = silent = 0; first = None
@@ -318,7 +307,6 @@ def run_donation_elond(ctx, gam1, fired=None, diag=None):
 
 
 def _closed_extend(v, Ei, ci, g, d, Rn):
-    """One index of their dynamic program (21)-(22)."""
     L = len(v)
     prev = np.empty(L + 1); prev[:L] = v; prev[L] = -np.inf
     cand = np.empty(L + 1); cand[0] = -np.inf
@@ -327,7 +315,6 @@ def _closed_extend(v, Ei, ci, g, d, Rn):
 
 
 def _closed_build(E, g, rejmask, upto, d, Rn):
-    """v_t(upto, .) from scratch, O(upto^2).  Needed whenever |R| changes, because Rn"""
     v = np.zeros(1)
     for i in range(1, upto + 1):
         v = _closed_extend(v, E[i - 1], 1.0 if rejmask[i - 1] else 0.0, g, d, Rn)
@@ -335,7 +322,6 @@ def _closed_build(E, g, rejmask, upto, d, Rn):
 
 
 def run_closed_elond(ctx, gam1, fired=None, max_t=None, diag=None):
-    """Closed e-LOND (their e-LOND-bar), test level (15)-(16) via the DP (19)-(22):"""
     _check_source_assumptions(ctx, gam1, "closed e-LOND")
     T = ctx.T if max_t is None else min(ctx.T, int(max_t))
     d = ctx.A; E = ctx.Ev; g = gam1
@@ -379,7 +365,6 @@ def run_closed_elond(ctx, gam1, fired=None, max_t=None, diag=None):
 
 
 def make_deadlines(kind, T, bucket=None, ts=None, horizon_s=None):
-    """Deadline vector d_i >= i for e-TOAD, 1-indexed hypotheses, returned 0-indexed."""
     if kind == "immediate":
         return np.arange(1, T + 1, dtype=float)
     if kind == "arc":
@@ -404,7 +389,6 @@ def make_deadlines(kind, T, bucket=None, ts=None, horizon_s=None):
 
 
 def run_etoad(ctx, gam1, deadline, fired=None, diag=None):
-    """e-TOAD (Fisher 2022) as stated in their App. D.2, (103)-(104):"""
     _check_source_assumptions(ctx, gam1, "e-TOAD")
     T = ctx.T; d = ctx.A; E = ctx.Ev
     g = gam1[1:T + 1]
@@ -485,20 +469,17 @@ def run_etoad(ctx, gam1, deadline, fired=None, diag=None):
 
 
 def _donation_balance(us, gs, cap, tail, d, r, extra=0.0):
-    """The donation balance of their (102)/(106) at a candidate discovery count r:"""
     head = float(np.minimum(us[:r] - 1.0 / (d * r), gs[:r]).sum())
     return head + float(tail[r]) + extra
 
 
 def _donation_rmax(npos, d, n):
-    """A rigorous cap on the search over r.  For r > npos every added head term is"""
     if not d < 0.25:
         return n
     return int(min(n, 2 * max(npos, 1) + 2))
 
 
 def _donation_ebh_r(us, gs, tail, d, n, rmax):
-    """Their (102): the largest r <= min(n, rmax) whose donation balance is non-negative."""
     best = 0
     hi = int(min(n, rmax))
     for r in range(1, hi + 1):
@@ -508,7 +489,6 @@ def _donation_ebh_r(us, gs, tail, d, n, rmax):
 
 
 def run_donation_ebh(ctx, gam1, fired=None, diag=None, exact=False, history="snapshot"):
-    """Online donation e-BH, their (102) -- the strict improvement over online e-BH, which is"""
     _check_source_assumptions(ctx, gam1, "donation e-BH")
     if history not in ("snapshot", "union"):
         raise ValueError(f"history must be 'snapshot' or 'union', got {history!r}")

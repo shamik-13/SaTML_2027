@@ -591,12 +591,6 @@ def main(smoke=False):
                           f"lowpwr {v['n_lowpower_bad']:>3}/{v['n_lowpower']:<6} "
                           f"z={v['lowpower_pooled_z']:+.2f} chi={v['lowpower_chi_z']:+.2f} "
                           f"{'OK' if v['ok'] else 'MISMATCH'}")
-
-    print("\n  Jaccard is the MEAN OF PAIRWISE RATIOS over seed pairs, CONDITIONAL on at least")
-    print("  one of the pair alerting; pairs in which both alert sets are empty are excluded")
-    print("  rather than scored 1, and a '*' marks a row where some pairs were excluded (the")
-    print("  count is n_pairs_both_empty in the JSON).  The analytic reference [D5c] is a ratio")
-    print("  of expectations, reported separately as jaccard_ratio_of_exp; the two differ.")
     if lond_disagree:
         tot = sum(d["n"] for d in lond_disagree)
         print(f"\n  LOND p-form vs e-form disagreed on {tot} episode-decisions across "

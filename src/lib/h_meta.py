@@ -1,10 +1,8 @@
-"""Forensic metadata columns for LSPR23, aligned to the h_stream sorted arrays."""
 import numpy as np, pandas as pd, json, time, os
 from pathlib import Path
 
 import h_stream as hs
 
-# See the note in h_stream.py: LSPR_DIR / LSPR_META_CACHE relocate these off volatile /tmp.
 _D = os.environ.get("LSPR_DIR", "/tmp")
 META_CSV = os.environ.get("LSPR_META_CSV", f"{_D}/lspr_meta.csv")
 MCACHE = Path(os.environ.get("LSPR_META_CACHE", f"{_D}/lspr_meta_cache"))

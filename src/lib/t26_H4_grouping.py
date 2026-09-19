@@ -1,6 +1,3 @@
-"""H4 -- more grouping families."""
-
-
 def main(five=False):
     import numpy as np, json, time, sys
     from pathlib import Path
@@ -112,10 +109,6 @@ def main(five=False):
                   f"{rec['n_feasible']}/{rec['n_cfg']:<3} {rec['elond_recall']:>11.3f} "
                   f"{rec['addis_recall']:>10.3f} {rec['ebh_recall']:>9.3f}")
 
-    print("\n  'required |C|' is kT/w0 - 1, the section 4.13 corollary; 'feas' counts")
-    print("  configurations whose actual |C| clears it.  Every family becomes feasible once the")
-    print("  bucket is coarse enough, because T falls -- which is F3 restated: feasibility is a")
-    print("  statement about the horizon, not about the grouping.")
 
     print("\n  F4 -- FLOW-LEVEL vs EPISODE-LEVEL, same alerts (e-LOND, horizon-uniform gamma):")
     print(f"  {'family':>11} {'bucket':>16} {'episode recall':>15} {'malicious-flow coverage':>24} {'gap':>8}")
@@ -125,9 +118,7 @@ def main(five=False):
         gap = rec["flow_cov_elond"] - rec["elond_recall"]
         print(f"  {rec['family']:>11} {lab:>16} {rec['elond_recall']:>15.3f} "
               f"{rec['flow_cov_elond']:>24.3f} {gap:>+8.3f}")
-    print("\n  The same alert set scores far higher per flow than per episode: attack episodes are")
-    print("  small and numerous, so covering the large ones covers most flows while missing most")
-    print("  episodes.  That is F4, and it holds across every grouping family.")
+
     fc = med([r["tail_reach"] for r in rows])
 
     json.dump({"config": dict(POS=POS, SEEDS=SEEDS, BUCKETS=[b for b in BUCKETS],

@@ -1,40 +1,4 @@
-"""W3 -- a controlled padding-dilution demonstration on the ACTUAL trained detector.
 
-The paper's padding-cost model (sec:paddingcost) argues structurally that an attacker can send
-ordinary traffic to the victim that scores like ordinary traffic (fires ~0 of the time) and so
-dilutes the merged episode e-value.  This stage demonstrates that transfer directly: it takes each
-real detected malicious episode at the guarantee window, CONSTRUCTS a padded episode by appending
-r flows sampled from a real service's feature vectors -- the "black-box" pool, the most common
-(proto,dport) on the TRAINING PREFIX that precedes both calibration and deployment, chosen with no
-labels and no detector output -- runs the shipped HGB detector over the pad flows, and measures the
-group e-value E(G) = (1/(m+r)) sum e_i as r grows.
-
-Two things are demonstrated with the real detector rather than assumed:
-  (1) the empirical firing rate of the injected pad flows (ordinary victim-service traffic) is 0 --
-      0 of 20,000 at both windows, a one-sided 95% Clopper-Pearson upper bound of 1.5e-4, NOT a
-      demonstration that the probability is exactly zero (review 5, item 4); and
-  (2) the measured dilution curve E(G) vs r matches the closed form S/(m+r), and firing stops at
-      exactly the r the closed form predicts, r* = floor(S * alpha_t) - m + 1.
-
-REVIEW 6, ITEM R4 -- the attack is also priced under the CANONICAL WITHIN-BUCKET ORDER.
-The headline detected set above is emitted under the shipped FIRST-FLOW arrival order, which t53
-shows is the LARGEST over the evidence-independent orders audited (an optimistic upper bound) and
-which the paper itself recommends replacing: under first-flow a single pad placed early moves 373
-OTHER hypotheses' spending weights, so the per-hypothesis Assumption-1 argument is airtight only
-under a KEY-DETERMINED order.  It would therefore be fair to object that the attack is demonstrated
-only against an ordering we ourselves argue against.  We close that by re-running the whole chain
-under t53's canonical order -- a deterministic splitmix64 hash of the group's OWN (SrcIP,DstIP,
-bucket) key, collisions broken on the key -- and pricing suppression on ITS detected set with the
-SAME black-box pool.  The hash function is imported from t53 rather than re-implemented, so the two
-stages cannot drift.
-
-Produces out/t48_W3.json:
-  premise          : per-window empirical pad-flow firing rate (should be 0) and pool identity
-  episodes         : per detected episode -- m, S, alpha_t, measured r* vs closed-form r*
-                     (shipped first-flow within-bucket order)
-  episodes_keyhash : the same, on the detected set of the CANONICAL key-hash order (item R4)
-  curve            : one representative (median-cost) episode's E(G)-vs-r dilution curve for a figure
-"""
 import numpy as np, json, time
 from pathlib import Path
 from sklearn.metrics import roc_auc_score
@@ -45,21 +9,13 @@ from t53_ordering import key_hash, hashed_order      # the canonical within-buck
 
 A = 0.05; W0 = 0.025; K = 1; BUCKET = 2 * 3600
 POS = [0.55, 0.62, 0.85]                 # primary, secondary, stress-test window
-# 0.62 was absent until review 16.  Its eleven canonical alerts were reported as "not run"
-# in tab:main, which two mock reviewers read -- correctly -- as a conspicuous gap in the
-# paper's only end-to-end demonstration: the primary window supplies just three events.
-# Nothing else in this file changed; the window was simply never in the list.
+
 SEED = 0
 N_PAD_SAMPLE = 20000                     # pad flows drawn from the benign-service pool for the check
 
 
 def price_suppression(det, S, m, alpha_t, tau_t, mu, gid_of=None):
-    """Minimal pad count r* to push each detected episode's mean evidence below its firing threshold.
 
-    Closed form (mu = 0): r* = floor(S/tau) - m + 1.  Measured (mu = the pool's real mean e-value):
-    r must satisfy (S + r*mu)/(m + r) < tau, i.e. r > (S - tau*m)/(tau - mu).  The comparison is
-    algebraic rather than brute-forced because r* reaches 1e8 at the stress window.
-    """
     recs = []
     for j in det:
         # `j` indexes the STREAM (a position under whichever order is being priced); `gid_of` maps
@@ -118,14 +74,7 @@ def main():
         e_te, cal, NC, CEIL = hs.evalues(s_cal, y_cal, s_te, k=K)
         auroc = float(roc_auc_score(y_te, s_te)) if np.unique(y_te).size == 2 else None
 
-        # ---- black-box pad pool ------------------------------------------------------------
-        # THREAT-MODEL CLEAN SELECTION (review 5, item 3).  The pool used to be picked as the most
-        # common service among BENIGN-LABELLED flows, which quietly uses the ground-truth labels a
-        # black-box attacker does not have.  We now select on NETWORK-OBSERVABLE FREQUENCY ALONE, on
-        # the TRAINING PREFIX [0, i1) that precedes both calibration and deployment -- no labels, no
-        # detector output, no self-knowledge.  Pool MEMBERSHIP is likewise unfiltered by labels; the
-        # pool's attack fraction is then AUDITED (not used) so the paper can say it is benign rather
-        # than define it that way.  Three other rules are measured for comparison only.
+
         svc = pr_w.astype(np.int64) * 100000 + dp_w.astype(np.int64)
         svc_tr = (np.asarray(X[:i1, 0]).astype(np.int64) * 100000
                   + dport_all[:i1].astype(np.int64))
@@ -137,18 +86,9 @@ def main():
         att_src = np.unique(src_w[y_te == 1])                # hosts the ATTACKER itself runs
         own = np.isin(src_w, att_src)
         rules = {
-            # (A) history only: the most common service on the TRAINING PREFIX [0, i1), which
-            #     precedes both calibration and deployment.  No labels, no detector, no
-            #     self-knowledge -- the strictly weakest attacker.  This is the rule we USE.
             "training-prefix frequency": _modal(svc_tr),
-            # (B) the deployment window's own traffic, minus the flows the attacker generated.
-            #     The attacker knows its own hosts, but WE reconstruct them from y, so this variant
-            #     is a model of attacker self-knowledge, not a label-free rule.
             "window frequency, excl. own hosts [y-reconstructed]": _modal(svc[~own]),
-            # (C) raw window frequency -- label-free but NOT attacker-clean: at a heavy-attack
-            #     window the attacker's own flood is the mode, so this selects its own traffic.
             "window frequency, all flows": _modal(svc),
-            # (D) the previous, LABEL-USING choice, kept only for comparison.
             "window frequency, benign-labelled [oracle]": _modal(svc[ben]),
         }
         BB_RULE = "training-prefix frequency"
@@ -162,7 +102,7 @@ def main():
             print(f"      {nm:<44} proto {code//100000:>3}/port {code%100000:<6} "
                   f"pool {100*frac:7.4f}% attack-labelled"
                   + ("   <- USED" if nm == BB_RULE else ""))
-        # (1) EMPIRICAL premise: run the real detector's e-values for sampled pool flows
+
         rng = np.random.default_rng(SEED)
         take = pool_idx if pool_idx.size <= N_PAD_SAMPLE else \
             rng.choice(pool_idx, N_PAD_SAMPLE, replace=False)
@@ -170,8 +110,6 @@ def main():
         n_fire = int((pad_e > 0).sum())
         pad_fire_rate = float(n_fire / max(take.size, 1))
         pad_mean_e = float(pad_e.mean())
-        # Zero observed firings does NOT establish a zero firing PROBABILITY: report the exact
-        # one-sided 95% Clopper-Pearson upper bound, which for x=0 is 1 - 0.05**(1/n).
         cp_upper = float(beta.ppf(0.95, n_fire + 1, max(take.size - n_fire, 1)))
         premise[f"{pos}"] = dict(
             pos=pos, NC=int(NC), auroc=auroc, bb_service_code=int(bb_svc),
@@ -198,11 +136,7 @@ def main():
         det = np.flatnonzero(fired & ep["ismal"])
         S = ep["sum_e"]; m = ep["nsz"]
 
-        # (2) measured vs closed-form suppression r*.  The pad flows are real benign-service flows
-        # whose detector e-values were measured above (mean pad_mean_e, firing rate pad_fire_rate);
-        # a suppressed episode needs (S + r*mu_pad)/(m+r) < tau, i.e. r > (S - tau*m)/(tau - mu_pad).
-        # With mu_pad measured as 0 this reduces to the closed form r* = floor(S/tau) - m + 1.  The
-        # comparison is exact rather than brute-forced because r* is up to 1e8 at the stress window.
+
         mu = pad_mean_e
         rec, r_closed_arr = price_suppression(det, S, m, alpha_t, tau_t, mu,
                                               gid_of=ep["order"])
@@ -210,14 +144,7 @@ def main():
         print(f"    detected={det.size}  measured==closed-form on {rec['n_match']}/{det.size} "
               f"episodes  median r*={rec['median_r_closed']}")
 
-        # ---- (3) ITEM R4: the same attack under the CANONICAL key-hash within-bucket order ----
-        # The stream above is emitted in first-flow arrival order.  t53 shows that order is the
-        # LARGEST over the evidence-independent orders audited, and that one early pad under it
-        # moves 373 OTHER hypotheses' spending weights -- which is why the paper recommends a
-        # tie-break reading only the group's OWN key.  Re-run the identical chain under that
-        # canonical order so the attack is not demonstrated solely against an order we argue
-        # against.  Episodes are re-sequenced (bucket-batched, then hashed key, then the raw key);
-        # NOTHING about the evidence, the pool, or the pricing changes.
+
         gid = ep["gid"]
         gsrc = np.zeros(T, dtype=np.int64); gsrc[gid] = src_w
         gdst = np.zeros(T, dtype=np.int64); gdst[gid] = dst_w
@@ -228,7 +155,6 @@ def main():
         assert np.array_equal(np.sort(canon), np.arange(T)), "canonical order is not a permutation"
         assert np.all(np.diff(gbkt[canon]) >= 0), "canonical order breaks bucket-close order"
 
-        # ep["Ev"] etc. are already permuted into the SHIPPED order, so map back to gid space first.
         inv = np.empty(T, np.int64); inv[ep["order"]] = np.arange(T)      # gid -> shipped position
         Ev_g = ep["Ev"][inv]; ismal_g = ep["ismal"][inv]
         S_g = ep["sum_e"][inv]; m_g = ep["nsz"][inv]
@@ -238,8 +164,7 @@ def main():
         rec_c, _ = price_suppression(det_c, S_g[canon], m_g[canon], alpha_c, tau_c, mu,
                                      gid_of=canon)
         rec_c["order"] = "canonical key-hash (splitmix64 of the group's own SrcIP,DstIP,bucket)"
-        # a pad cannot move ANY group's slot under this order: the key is unchanged by an append
-        # within the same bucket, so the induced permutation is bit-identical (t53 measures 0 moved).
+
         rec_c["order_is_key_determined"] = True
         episodes_keyhash[f"{pos}"] = rec_c
         print(f"    [R4] canonical key-hash order: detected={det_c.size}  "
@@ -247,9 +172,6 @@ def main():
               f"measured==closed-form on {rec_c['n_match']}/{det_c.size}  "
               f"median r*={rec_c['median_r_closed']}")
 
-        # representative episode: the one nearest the median closed-form cost, export its E(G)-vs-r
-        # dilution curve for a figure.  rmax is capped (the stress-window r* reaches 1e4-1e8), and
-        # the measured curve uses one shuffled cumulative pad sample so it is O(rmax), not O(rmax^2).
         if det.size:
             med = np.median(r_closed_arr)
             jrep = det[int(np.argmin(np.abs(r_closed_arr - med)))]

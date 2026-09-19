@@ -1,5 +1,3 @@
-"""E4 -- calibration contamination.  What happens to threshold conformal evidence when the"""
-
 
 def main():
     import numpy as np, json, time, math
@@ -21,11 +19,7 @@ def main():
     ACOUNT = (1, 2, 3, 5, 10)
     NPERM_T = 20_000
     NPERM_R = 400
-    # R8/R5b: the paper's headline order is the canonical metadata hash, but every number in this
-    # stage was measured under first-flow arrival.  The contamination MECHANISM is order-free (a
-    # single flow above the calibration maximum raises the threshold for everyone), but the base
-    # recall it destroys, and the milder RANDOM-mislabel arm, are not.  The first-flow arm below is
-    # untouched and byte-identical; the canonical arms are additive.
+
     ORDERS_EXTRA = ("keyhash", "keyed")
     out = {"config": dict(pos=list(POS), k=K, alpha=A, w0=W0, bucket_s=BUCKET, seed=SEED,
                           eps=list(EPS), j_sweep=list(JSWEEP), a_counts=list(ACOUNT),
@@ -35,7 +29,6 @@ def main():
 
 
     def note(cond, msg):
-        """A recorded assertion: violations are collected and re-raised at the end rather than"""
         if not cond:
             FAIL.append(msg)
             print(f"    *** ASSERTION FAILED: {msg}")
@@ -69,7 +62,6 @@ def main():
 
 
     def evalues_from(cal_unsorted, s_te, k=1):
-        """Re-implement nothing: sort, then call h_stream.evalues' own arithmetic through a"""
         cal_u = np.asarray(cal_unsorted, dtype=float)
         e, cal, NC, CEIL = hs.evalues(cal_u, np.zeros(len(cal_u), dtype=np.int64), s_te, k=k)
         return e, cal, NC, CEIL
@@ -93,7 +85,7 @@ def main():
 
 
     def fdp_recall(fired, ismal, n_mal):
-        """FDP is UNDEFINED with no rejections, not 0.  Reporting 0.0 there makes a collapsed"""
+
         r = int(fired.sum()); tp = int((fired & ismal).sum())
         return dict(rejections=r, tp=tp, fp=r - tp,
                     fdp=(float((r - tp) / r) if r else None),
@@ -108,7 +100,7 @@ def main():
 
 
     def run_one(cal_unsorted, s_te, y_te, ts_w, src_w, dst_w, k=K, part=None):
-        """One contamination setting, end to end: e-values -> episodes -> LOND and LORD++."""
+
         e_te, cal, NC, CEIL = evalues_from(cal_unsorted, s_te, k=k)
         if part is None:
             ep = hs.build_episodes(e_te, y_te, ts_w, src_w, dst_w, BUCKET, "src-dst")

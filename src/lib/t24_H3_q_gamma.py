@@ -1,6 +1,3 @@
-"""H3 -- sweep the error target q."""
-
-
 def main():
     import numpy as np, json, time
     from pathlib import Path
@@ -76,8 +73,6 @@ def main():
         scal.append(dict(q=q, margin=mg, margin_plus1=mp1, ratio=mp1 / base, predicted=q / 0.05))
         print(f"  {q:>6.2f} {q/2:>7.3f} {fmt(mg):>26} {mp1:>19.3f} {mp1/base:>17.3f} "
               f"{q/0.05:>10.1f}")
-    print("\n  The ratio column tracks the predicted column exactly, so |C| >= kT/w0 - 1 holds")
-    print("  empirically: relaxing q buys feasibility strictly linearly, no more.")
 
     for gk in GAMMAS:
         print("\n" + "=" * 112)
@@ -96,7 +91,6 @@ def main():
                       f"{(100*sl[1] if sl else 0):>10.1f}%")
 
     print("\n" + "=" * 112)
-    print("H3c -- WHICH LEVER MOVES THE OPERATING POINT MORE, q OR gamma?  (e-LOND, median)")
     print("=" * 112)
     print(f"  {'q':>6} {'recall @ poly':>15} {'recall @ uniform':>18} {'gamma effect':>14}")
     lever = []

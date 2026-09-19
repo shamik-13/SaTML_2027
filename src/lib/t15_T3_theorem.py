@@ -1,6 +1,3 @@
-"""T3 -- general feasibility theorem, numerical verification."""
-
-
 def main():
     import json
     import numpy as np
@@ -80,7 +77,6 @@ def main():
 
     print("\n" + "="*100)
     print("PART 4 -- empirical check: e-LOND fed MAXIMUM evidence at the true attack rate")
-    print("   (best case for the procedure: every attack flow fires at the ceiling)")
     print("="*100)
     def run_elond(T,pi,M,gam,seed=0,p_ben_fire=2e-6):
         """Faithful e-LOND: R increments on ANY rejection, including false ones."""

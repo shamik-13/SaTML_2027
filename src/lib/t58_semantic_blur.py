@@ -1,58 +1,3 @@
-"""R4 -- an EXTERNAL semantic anchor for the resolution (alert-blur) claim.
-
-The granularity result prices coarsening in resolution: each issued alert blurs more of the attack
-together.  t47_W7_coverage measures that as `blur_mal_atoms_per_alert` -- distinct 5-minute
-(SrcIP,DstIP) MALICIOUS episodes merged into one alert.  The reviewer's objection is exact: the
-5-minute atom is OUR OWN proxy for "one attack action", so the exchange rate could be an artefact of
-a denominator we chose.  A denominator nobody on this project chose would settle it.
-
-LSPR23 ships one: the red team's own task record (`data/lspr23_attacknarratives.json`, 288 tasks /
-576 steps, of which 295 carry a submission timestamp spanning 2023-03-09 07:03-15:08 UTC).  t31 uses
-only the step TIMES and the compromise IPs; the task identity, Category, Phase and Segments are
-unused.  This stage uses them to count, per issued alert, how many DISTINCT RED-TEAM STEPS and
-DISTINCT RED-TEAM TASKS it merges -- a semantic unit defined by the attacker, before the dataset was
-published, with no reference to our grouping, our detector or our labels.
-
-THE LINK IS THE SEGMENT VOCABULARY, AND IT IS VERIFIED RATHER THAN ASSUMED.  Each task carries
-`Segments` like `bt_baf_int`; the dataset's own per-flow forensic columns carry `seg_src`/`seg_dst`
-like `baf_int`.  Stripping the constant `bt_` prefix maps one onto the other, and the mapping is
-CHECKED against a channel that does not use it: for every machine-readable compromise report (83 of
-them, 39 IPv4, 36 of which appear as a flow endpoint), the dataset segment of that IP's flows is
-compared with its parent task's declared Segments.  `seg_agree`/`seg_disagree` below report the
-result; the stage refuses to proceed if they disagree.
-
-ATTRIBUTION RULE (pre-committed; both conjuncts required).  A timed red-team step s of task k is
-attributed to an issued alert a iff
-
-  (T)  s's submission time lies inside a's bucket span [b*w, (b+1)*w), and
-  (S)  k's segment set intersects the segments of a's flows, OR one of k's compromise-report IPs is
-       one of a's two endpoints.
-
-WHAT IS MEASURED, against bucket width -- the same x-axis as the granularity figure:
-  1. steps and tasks merged per issued alert  (the external analogue of t47's atom blur, recomputed
-     here on the SAME fired set so the two curves are comparable rather than merely adjacent)
-  2. temporal localisation error |alert bucket midpoint - nearest attributed submission|
-  3. task-level coverage: how many red-team tasks any alert touches at all
-
-FOUR CONFOUNDS, MEASURED AND NOT MERELY DECLARED:
-  (a) A PERMUTATION NULL.  Segments are coarse -- `beg_dmz` alone carries 5.5M flows -- so a merge
-      count could be pure density: every alert overlaps some segment, and some step lands in every
-      bucket.  We permute which task each submission time belongs to (holding the times and the task
-      attributes fixed, breaking only their pairing) and recompute.  Anything the null reproduces is
-      not evidence.  THIS IS THE LOAD-BEARING GUARD, and R4 did not ask for it.
-  (b) REPORTING LAG.  A submission time is when the red team REPORTED, not when it acted, so (2) is
-      an upper bound with unknown lag.  The compromise reports carry their OWN `Time` field, so the
-      lag is estimable: `report_lag_s` below is that distribution.
-  (c) CIRCULARITY.  99 of t31's 152 verdicts already rest on label-generating identities.  If every
-      attributed alert sits on a labelled-malicious episode, the reference partly re-derives the
-      labels rather than testing against them.  `frac_attributed_on_benign` measures it.
-  (d) COVERAGE OF THE REFERENCE ITSELF: only 295 of 576 steps are timed, and only 126 of the 155
-      tasks with a timed step are attributable at all (the rest declare no segment and file no
-      compromise report).  Denominators are reported, never assumed.
-
-Both within-bucket orders are run (review-7 item R3): "keyhash" is the canonical order the paper
-reports, "first-flow" the optimistic upper bound.  Writes out/t58_semantic_blur.json.
-"""
 import numpy as np, json, time, re, math, datetime as dt
 from pathlib import Path
 
@@ -77,11 +22,7 @@ def _iso(s):
 
 
 def load_redteam():
-    """Parse the red-team record into per-TASK attributes and per-STEP submission times.
 
-    Returns (tasks, steps).  tasks[k] carries the declared segments (with the constant `bt_` prefix
-    stripped, which is the whole of the segment mapping), the compromise-report IPv4 addresses and
-    their own reported times, and the category/phase.  steps is a list of (task_index, time)."""
     rows = [json.loads(l) for l in open(NARR) if l.strip()]
     tasks, steps = [], []
     for k, r in enumerate(rows):
@@ -111,12 +52,7 @@ def load_redteam():
 
 
 def verify_segment_map(tasks, meta, cats):
-    """Check the `bt_`-stripping segment map against a channel that does not use it.
 
-    For every compromise IPv4 that appears as a flow endpoint, take the dataset's own modal
-    seg_src/seg_dst for that address and ask whether it is among its parent task's DECLARED
-    segments.  The two come from different places -- the task record and the dataset's forensic
-    columns -- so agreement is evidence the map is right, and disagreement would mean it is not."""
     sip = np.asarray(cats["srcip"]); dip = np.asarray(cats["dstip"])
     ssg = np.asarray(cats["seg_src"]); dsg = np.asarray(cats["seg_dst"])
     srcips = sip[meta["srcip"]]; dstips = dip[meta["dstip"]]
@@ -146,9 +82,7 @@ def verify_segment_map(tasks, meta, cats):
 
 
 def alert_attributes(ep, fired, gid, seg_src, seg_dst, srcip_c, dstip_c, first_ts_g, bucket_s):
-    """Per issued alert: its bucket span, the SET of segment codes its flows touch, and its two
-    endpoint IP codes.  seg is taken as a set over the alert's own flows rather than from the key,
-    because seg_src is not a function of the source address alone for every host."""
+
     orig = ep["order"][np.flatnonzero(fired)]          # original episode ids of the issued alerts
     if orig.size == 0:
         return (orig, [], [], [], np.empty((0, 2), np.int64), np.empty(0, np.int64))
@@ -172,21 +106,7 @@ def alert_attributes(ep, fired, gid, seg_src, seg_dst, srcip_c, dstip_c, first_t
 
 def attribute(step_task, step_time, task_segcode, task_ipcode, segsets, ends, bidx, bucket_s,
               spatial="both"):
-    """Attribute timed steps to alerts under the pre-committed rule.
 
-    Returns (steps_per_alert, tasks_per_alert, nearest_gap_s, attributed_alert_mask,
-             attributed_task_ids).  A step qualifies for an alert when its submission falls inside
-    that alert's bucket span AND its task shares a segment with the alert's flows or names one of
-    the alert's two endpoints.
-
-    `spatial` selects WHICH conjunct is applied, so a null result can be read:
-      "both"    the pre-committed rule (segment OR compromise IP)
-      "none"    TEMPORAL ONLY -- does the alert's bucket contain any timed submission at all?
-      "ip"      the STRICT variant: the task must name one of the alert's own two endpoints
-      "seg"     the LOOSE variant: segment intersection only
-    Comparing "none" against "both" separates "the alerts and the red team never coincide in time"
-    (a fact about the controller, since only a feasible prefix can fire) from "the reference is too
-    sparse to place them in the same segment" (a fact about the record)."""
     n_a = len(segsets)
     if n_a == 0 or step_time.size == 0:
         return (np.zeros(0, int), np.zeros(0, int), np.zeros(0), np.zeros(0, bool), set())
@@ -242,21 +162,12 @@ def main():
     if segmap["seg_disagree"] or segmap["seg_agree"] == 0:
         raise SystemExit("the bt_-stripping segment map is not supported by the compromise reports")
 
-    # ONE code space for each attribute.  h_meta factorises seg_src/seg_dst and srcip/dstip
-    # SEPARATELY, so the same string can carry different integers in the two columns; every flow
-    # attribute below is therefore remapped into the *source* column's space and task attributes are
-    # encoded only there.  (Unioning the two spaces instead would put a dst-column integer into a
-    # set compared against src-column integers -- silently correct on this data, because the two
-    # vocabularies happen to agree on the six segments the red team names, and silently wrong the
-    # moment they do not.)
     seg_codes = {v: i for i, v in enumerate(cats["seg_src"])}
     ip_codes = {v: i for i, v in enumerate(cats["srcip"])}
     d2s = np.array([seg_codes.get(v, -1) for v in cats["seg_dst"]], dtype=np.int64)
     d2sip = np.array([ip_codes.get(v, -1) for v in cats["dstip"]], dtype=np.int64)
     task_segcode = [{seg_codes[v] for v in t["segs"] if v in seg_codes} for t in tasks]
-    # srcip and dstip are separate factorisations; everything is compared in the srcip space, so a
-    # compromise IP that appears ONLY as a destination has no srcip code and would silently never
-    # match.  None do here, but silence is exactly the failure mode this stage is prone to.
+
     dst_only = {v for t in tasks for v in t["ips"]
                 if v not in ip_codes and v in set(cats["dstip"])}
     task_ipcode = [{ip_codes[v] for v in t["ips"] if v in ip_codes} for t in tasks]
@@ -273,7 +184,7 @@ def main():
           f"{n_timed_tasks} tasks with a timed step, {n_attributable} of those attributable "
           f"(declare a segment or file a compromise report)")
 
-    # (b) reporting lag: a compromise report's own Time against its task's step submissions
+
     lags = []
     for t in tasks:
         subs = [tm for k, tm in steps if k == t["idx"]]
@@ -309,7 +220,7 @@ def main():
         e_te, cal, NC, CEIL = hs.evalues(s_cal, y[i1:i2], s_te, k=K)
         mal_flow = y_te.astype(bool)
 
-        # the 5-minute proxy unit, recomputed here so both curves come from ONE fired set
+
         atom = hs.build_episodes(e_te, y_te, ts_w, bucket_s=ATOMIC_BUCKET, keys=[src_w, dst_w])
         atomic_gid = atom["gid"]
 
@@ -336,16 +247,14 @@ def main():
 
                 spa, tpa, gap, hit, hit_tasks = attribute(
                     step_task, step_time, task_segcode, task_ipcode, segsets, ends, bidx, b)
-                # SENSITIVITY 1: the alert's segment set unions seg_src and seg_dst.  Does the union
-                # do the work?  Re-attribute against each side alone.
+
                 side = {}
                 for nm, ss in (("src", segsets_s), ("dst", segsets_d)):
                     sv, _, _, hv, _ = attribute(step_task, step_time, task_segcode, task_ipcode,
                                                 ss, ends, bidx, b, spatial="seg")
                     side[nm] = dict(n_alerts=int(hv.sum()),
                                     steps_per_alert=(float(sv[hv].mean()) if hv.any() else None))
-                # SENSITIVITY 2: the bucket span is what the HYPOTHESIS covers; the episode's
-                # first-to-last FLOW span is when it actually happened.  Same rule, tighter window.
+
                 flow = None
                 if orig.size:
                     fs = ep["first_ts_g"][orig] / 1e6
@@ -365,7 +274,7 @@ def main():
                         sf[a2] = int(kp.sum()); hf[a2] = kp.any()
                     flow = dict(n_alerts=int(hf.sum()),
                                 steps_per_alert=(float(sf[hf].mean()) if hf.any() else None))
-                # which conjunct binds?  "none" is the temporal condition alone.
+
                 variants = {}
                 for nm in ("none", "seg", "ip"):
                     sv, tv, _, hv, tkv = attribute(step_task, step_time, task_segcode, task_ipcode,
@@ -373,15 +282,13 @@ def main():
                     variants[nm] = dict(n_alerts=int(hv.sum()),
                                         steps_per_alert=(float(sv[hv].mean()) if hv.any() else None),
                                         n_tasks=len(tkv))
-                # WHEN do the alerts actually sit?  Only a feasible prefix can fire, so the issued
-                # alerts cluster at the START of a deployment window; if that start predates the
-                # exercise's first submission, no attribution is possible at any bucket width.
+
                 a_span = None
                 if orig.size:
                     ft = ep["first_ts_g"][orig] / 1e6
                     a_span = [float(ft.min()), float(ft.max())]
 
-                # t47's proxy blur on the SAME fired set: distinct malicious 5-min atoms per alert
+
                 blur_atoms = None
                 sel = np.isin(ep["gid"], orig) & mal_flow
                 if sel.any():
@@ -389,13 +296,7 @@ def main():
                     blur_atoms = float(np.bincount(
                         np.unique(pair[:, 0], return_inverse=True)[1]).mean())
 
-                # (a) TWO nulls.  The LABEL null keeps the times and the task attributes and
-                # breaks their pairing -- it asks whether WHICH task acted is informative.  It goes
-                # degenerate at the daily bucket, where every submission shares one bucket and no
-                # permutation can move a step between alerts.  The SHIFT null instead rotates the
-                # whole red-team timeline against the stream, preserving task identity, ordering,
-                # attributes and inter-arrival structure, and asks the sharper question: is the
-                # alignment IN TIME informative?  That one does not degenerate.
+
                 null_mean = null_hi = shift_mean = shift_hi = None
                 if hit.any() and step_task.size > 1:
                     rng = np.random.default_rng(20260902 + int(b))
@@ -414,7 +315,7 @@ def main():
                     null_mean = float(vals.mean()); null_hi = q(vals, 97.5)
                     shift_mean = float(sv_.mean()); shift_hi = q(sv_, 97.5)
 
-                # (c) circularity: are attributed alerts only ever on labelled-malicious episodes?
+
                 ismal_alert = ep["ismal"][np.flatnonzero(fired)]
                 frac_ben = (float((~ismal_alert[hit]).mean()) if hit.any() else None)
 
@@ -451,8 +352,7 @@ def main():
                             n_steps_in_window=len(in_win), n_tasks_in_window=len(tasks_in_win),
                             n_tasks_attributable=len(attributable_in_win)))
 
-    # does the external curve TRACK the 5-minute proxy?  Spearman over the (pos, bucket) grid,
-    # per order, on the rows where both are defined.
+
     def avg_rank(a):
         """Ranks with TIES AVERAGED.  argsort(argsort(x)) hands tied values arbitrary distinct
         ranks, which turns a flat series into a perfectly monotone one: the 0.77 series
@@ -480,9 +380,6 @@ def main():
         d = float(np.sqrt((ra * ra).sum() * (rb * rb).sum()))
         return float((ra * rb).sum() / d) if d > 0 else None
 
-    # POOLED over windows is the wrong comparison -- windows sit at different levels, which
-    # dilutes the very correlation being tested.  The question "does the external count rise with
-    # the alerting unit the way the proxy does?" is WITHIN a window, across bucket widths.
     track, usability = {}, {}
     for order in ORDERS:
         ok = [r for r in rows if r["order"] == order
@@ -491,18 +388,12 @@ def main():
         for pos in POS:
             w = [r for r in ok if r["pos"] == pos]
             allw = [r for r in rows if r["order"] == order and r["pos"] == pos]
-            # why is the reference unusable, where it is?  the two conjuncts fail differently, and
-            # only one of them is a fact about our controller.
+
             t_ovl = sum(a["temporal_only"]["n_alerts"] for a in allw)
             n_al = sum(a["n_alerts"] for a in allw)
             hit = sum(a["n_alerts_with_step"] for a in allw)
             frac_t = (t_ovl / n_al) if n_al else 0.0
-            # attribution only at the 24 h bucket is not attribution.  At that width EVERY
-            # submission falls in the SAME daily bucket, so permuting which task a time belongs to
-            # cannot move a step between alerts -- the permutation is degenerate and the null ties
-            # the observation exactly.  (The spatial conjunct is NOT vacuous there: at 0.70
-            # first-flow/86400 s the temporal-only arm sees 30 alerts against the segment arm's 12.
-            # It is the null that loses its power, not the filter.)  Only sub-daily buckets inform.
+
             fine = [a for a in allw if a["bucket_s"] < 86400 and a["n_alerts_with_step"] > 0]
             why = ("usable" if len(w) >= 3 else
                    "temporal: issued alerts sit in the feasible prefix, which predates the "
@@ -536,8 +427,7 @@ def main():
                                             [r["bucket_s"] for r in ok]))
     beats = [r for r in rows if r["steps_per_alert"] is not None
              and r["steps_per_alert_null_p975"] is not None]
-    # WHICH conjunct carries the result?  If the compromise-IP arm never adds an alert the whole
-    # thing rests on six coarse segment labels, and the paper must say so.
+
     conj = dict(
         temporal_only_alerts=sum(r["temporal_only"]["n_alerts"] for r in rows),
         seg_only_alerts=sum(r["seg_only"]["n_alerts"] for r in rows),
@@ -545,8 +435,7 @@ def main():
         attributed_alerts=sum(r["n_alerts_with_step"] for r in rows))
     conj["ip_adds_nothing_over_seg"] = bool(
         conj["attributed_alerts"] == conj["seg_only_alerts"])
-    # multiplicity: 19 nested cells, so a raw count of 97.5th-percentile wins overstates.  The
-    # honest global statistic is the largest null draw ACROSS cells against the largest observed.
+
     mx = [(r["steps_per_alert"], r["steps_per_alert_null_p975"]) for r in beats]
     conj["n_cells"] = len(mx)
     conj["binomial_tail_if_independent"] = float(

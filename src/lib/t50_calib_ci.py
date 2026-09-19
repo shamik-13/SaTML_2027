@@ -1,21 +1,4 @@
-"""R3 -- exact binomial (Clopper-Pearson) confidence intervals on the benign-firing ratio.
 
-The calibration-validity diagnostic (t30_A1) reports, per window, the measured/nominal benign
-firing ratio.  At the guarantee windows the OBSERVED firing count is tiny (1-3 events with an
-expectation near 1), so a ratio near 1 is not statistical proof that exchangeability holds.  This
-stage attaches an exact interval to each ratio so the paper can separate the theoretical guarantee
-(holds under the assumption) from the empirical diagnostic (limited resolution): the
-guarantee-window intervals are wide and include 1, so they only fail to REJECT validity; the 0.85
-interval excludes 1 by orders of magnitude, a clear violation.
-
-The underlying experiment is a BINOMIAL count -- x benign flows fire out of n_benign, each firing
-with the nominal per-flow probability p0 = k/(|C|+1) under exchangeability -- so the exact interval
-is the Clopper-Pearson binomial interval on p0, not a Poisson interval.  Because p0 is tiny and
-n_benign is large the Poisson approximation is numerically almost identical, but the binomial
-interval is exact under the model that actually generated the count.
-
-Reads out/t30_A1.json (no detector rerun); writes out/t50_calib_ci.json.
-"""
 import json, time
 from pathlib import Path
 from scipy.stats import beta
@@ -50,7 +33,7 @@ def main():
         ratio = float(r["ratio"])
         p0 = float(r["nominal"])
         lo, hi = cp_ratio_ci(x, n, p0)
-        # expected count under the nominal rate, reported for continuity with the earlier diagnostic
+
         lam0 = n * p0
         rows.append(dict(
             pos=float(r["pos"]), seed=int(r["seed"]),

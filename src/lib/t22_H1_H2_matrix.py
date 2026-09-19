@@ -1,6 +1,3 @@
-"""H1 -- second detector.  Every real-data result so far uses HistGradientBoosting alone."""
-
-
 def main():
     import numpy as np, json, time
     from pathlib import Path
@@ -105,8 +102,6 @@ def main():
                        ratio=agg([r["fire_ratio"] for r in sub]))
         print(f"  {det:>9} {fmt(h1[det]['auroc'],4):>22} {fmt(h1[det]['margin']):>22} "
               f"{fmt(h1[det]['tail']):>22} {fmt(h1[det]['ratio'],2):>20}")
-    print("\n  'tail reach' = fraction of ATTACK FLOWS whose e-value reaches the ceiling.")
-    print("  'benign fire ratio' = measured benign firing rate / nominal k/(|C|+1); 1.0 is exact.")
 
     print("\n  per-procedure, k = 1, min/median/max over the 10 configurations:")
     print(f"  {'detector':>9} {'procedure':>20} {'rejections':>18} {'FDP':>20} {'recall':>20} "
@@ -124,7 +119,6 @@ def main():
                   f"{(100*sl[1] if sl else 0):>10.1f}%")
 
     print("\n" + "=" * 118)
-    print("H2 -- RANK k ON REAL DATA.  min/median/max over 5 positions x 2 seeds, per detector")
     print("=" * 118)
     h2 = []
     for det in DETS:
@@ -141,9 +135,6 @@ def main():
                            fire_ratio=ra, elond_uniform_rej=rj))
             rjs = "n/a" if rj is None else f"{int(rj[0])}/{int(rj[1])}/{int(rj[2])}"
             print(f"  {k:>6} {ce[1]:>14,.0f} {fmt(mg):>22} {fmt(tr):>22} {fmt(ra,2):>20} {rjs:>20}")
-
-    print("\n  As k rises the ceiling falls as 1/k, so the feasibility margin falls with it;")
-    print("  the benign fire ratio is the real-data form of F11's reliability trade-off.")
 
     json.dump({"config": dict(POS=POS, SEEDS=SEEDS, KS=KS, DETS=DETS, bucket_s=BUCKET,
                               alpha=A, w0=W0),

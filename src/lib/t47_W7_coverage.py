@@ -1,21 +1,3 @@
-"""W7 -- a grouping-INDEPENDENT semantic coverage metric with a fixed denominator.
-
-The C2 episode-recall curve is weakened by a moving denominator: the episode definition changes
-with the alerting bucket, so recall's denominator is not invariant across groupings.  This stage
-freezes a fine-grained ground truth -- the 5-minute host-pair (src-dst) MALICIOUS episodes, the
-finest bucket -- and measures, as the alerting grouping coarsens, the fraction of those FIXED
-atomic units that are covered by at least one issued alert.  The denominator never changes.
-
-An atomic malicious unit is "covered" by a grouping G if at least one of its malicious flows falls
-in a coarse episode that G's e-LOND run issued as an alert.  Reported alongside the (moving-
-denominator) episode recall and malicious-flow coverage so the contrast is visible.
-
-No detector rerun beyond the standard scoring; reuses h_stream + h6_procs.  Produces
-out/t47_W7.json:
-  config      : windows, seed, families, buckets, atomic unit = (src-dst, 300 s)
-  denom       : per-window fixed atomic-malicious-unit count (the constant denominator)
-  rows        : per (window, family, bucket): fixed coverage, moving recall, flow coverage, feasible
-"""
 import numpy as np, json, time
 from pathlib import Path
 from sklearn.metrics import roc_auc_score
@@ -31,9 +13,7 @@ FAMILIES = ["src-dst", "src", "dst", "subnet24", "src-dport"]
 
 
 def _fired_flow_mask(ep, fired_ordered):
-    """Map an ordered-episode fired mask back to a per-flow boolean: is this flow in a fired
-    coarse episode?  ep['order'][j] is the original id of ordered episode j; ep['gid'] is the
-    per-flow original episode id."""
+
     fired_original = ep["order"][fired_ordered]
     return np.isin(ep["gid"], fired_original)
 
@@ -96,19 +76,13 @@ def main():
                 tot_mal = float(mal_per_ep.sum())
                 flow_cov = float(mal_per_ep[fired].sum() / tot_mal) if tot_mal else None
 
-                # FIXED-denominator coverage: atomic malicious units with a malicious flow in a
-                # fired coarse episode
+
                 in_fired = _fired_flow_mask(ep, fired)
                 sel = in_fired & mal_flow
                 covered_ids = np.unique(atomic_gid[sel])
                 covered_mal = np.intersect1d(covered_ids, mal_atomic_ids, assume_unique=False)
                 cov_fixed = float(covered_mal.size / D) if D else None
 
-                # RESOLUTION cost (the honest, denominator- and gamma-robust one): how many distinct
-                # MALICIOUS atomic units each issued alert blurs together.  A coarse alert that says
-                # "something in this 24 h host-pair blob is malicious" covers many atomic units at
-                # once; blur = mean distinct malicious atomic units per fired episode that carries
-                # any.  Rises with coarsening under every gamma -- that is the resolution lost.
                 blur = None
                 if sel.any():
                     coarse_of_flow = ep["gid"][sel]        # original coarse id per selected flow

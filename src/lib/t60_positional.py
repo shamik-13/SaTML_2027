@@ -1,72 +1,3 @@
-"""R2d/non-claim-21 -- pricing the GROUP-CREATION attack that padding-robustness does not cover.
-
-`thm:padding` and the suppression cost of sec:paddingcost are both about APPENDING flows to a fixed
-hypothesis.  Two results in this paper leave a different lever unpriced and say so:
-
-  * non-claim 21: under group-level calibration with the MAX statistic, appending cannot lower a
-    maximum, so padding does not bite -- but "an adversary who CREATES groups can emit distinct keys
-    ahead of a target and push it past a cold-start prefix only tens of groups wide.  We do not price
-    that attack."
-  * non-claim 25(i): the canonical key-hash order makes a group's slot a function of its own
-    metadata, so padding moves no other group -- but a group's ABSOLUTE rank still depends on which
-    other keys are present, so an adversary that creates keys does move ranks.
-
-This stage prices it.  The lever is the same in both cases and it is the cold-start prefix: only the
-first w_cold steps can reject anything before the first rejection, so an adversary that inserts
-enough hypotheses AHEAD of its own pushes itself out of the only window in which it could have been
-rejected.  Nothing is appended to the attacked episode, so `thm:padding` is irrelevant and the max
-statistic's append-invariance buys nothing.
-
-WHAT IT COSTS TO GET AHEAD OF THE TARGET, which is where the two orders differ and where an earlier
-draft of this file was WRONG.  It is tempting to say no grinding is needed because both orders emit
-in bucket-close order and an adversary can always send in an earlier bucket.  On this data that is
-false: every detection lands in the FIRST bucket of its deployment window, so there is no earlier
-bucket to occupy and the within-bucket tie-break is exactly what the attacker must beat.
-
-  under FIRST-FLOW arrival   free: send the flows earlier inside the same bucket.  This is the
-                             timing lever sec:transfer identifies, used to move OTHER hypotheses
-                             rather than one's own.
-  under the KEY-HASH order   an offline search: the inserted key must hash below the target's.  A
-                             uniformly drawn candidate qualifies with probability h_target/2^63, so
-                             G insertions need about G*2^63/h_target trials -- computation, not
-                             traffic, reported per target as `expected_key_trials`.
-  under the KEYED order      the seed is not public, so the ranking cannot be computed offline at
-                             all.  Run here as a third arm; what it costs an adversary who cannot
-                             rank keys is a different question we do not answer.
-
-So the canonical order does not remove this attack; it converts a free timing manipulation into a
-keyspace search.  THREE CONDITIONS the trial count assumes, none of them free:
-  (i)   the hash seed is public (the keyed arm is exactly the case where it is not);
-  (ii)  the adversary can realise G DISTINCT qualifying keys -- it needs that many endpoint pairs it
-        can actually send between, not merely that many candidate integers;
-  (iii) the target's hash is stable under the insertion.  IN THIS ARTEFACT IT IS NOT, strictly: the
-        cache encodes IPs as pandas category codes over the addresses OBSERVED, so introducing new
-        addresses would renumber them and change every hash.  A deployment would hash the raw
-        address, for which the value is stable; the trial counts here are therefore indicative of
-        the search's SIZE, not an exact operational figure.  Stated rather than hidden.
-
-WHAT IS MEASURED.  For each e-LOND true detection, the minimal number G* of inserted hypotheses that
-stops it being rejected, obtained by REPLAY rather than by a closed form: for each G we prepend G
-synthetic groups, re-run e-LOND on the T+G stream, and record which of the original detections still
-fire.  One run per G yields the answer for every target at once.  Two insertion kinds:
-
-  "zero"    inserted groups carry no evidence.  The cheapest lever and the cleanest: they can never
-            fire, so they only consume positions.
-  "benign"  inserted groups carry evidence resampled from the window's own benign episodes.  This is
-            what real traffic would look like, and it can BACKFIRE: an inserted group that fires is a
-            rejection, which raises R, which widens the feasible window and can let the target back
-            in.  Measured rather than assumed.
-
-Monotonicity is NOT assumed.  A larger G can in principle restore a detection (through exactly the
-bootstrap channel above), so we record both the first G at which a target stops firing and the LAST G
-at which it still fires, and report where the two disagree.
-
-The comparison that matters is against the padding cost of the same detections (`t28b`), in the same
-unit: flows.  An inserted group needs at least one flow, so G* is a LOWER bound on the attack's flow
-cost, on the same oracle footing as every other attack cost in the paper.
-
-Writes out/t60_positional.json.
-"""
 import numpy as np, json, time
 from pathlib import Path
 from scipy.special import zeta
@@ -84,8 +15,7 @@ G_HEADROOM = 1.6              # scan to G_HEADROOM * w_cold past the last detect
 
 
 def cold_start(CEIL, T, R=0):
-    """Largest step at which e-LOND can reject anything with R rejections so far, spelled exactly as
-    Ctx.infeasible spells it, with the closed form beside it."""
+
     g1, _ = make_gamma("poly", T)
     lvl = A * g1[1:T + 1] * (R + 1.0)
     with np.errstate(divide="ignore"):
@@ -96,8 +26,7 @@ def cold_start(CEIL, T, R=0):
 
 
 def lift_t57(names):
-    """Lift t57's own nested calibration rules by AST, so this stage attacks the SAME group
-    construction t57 measures rather than a re-implementation of it."""
+
     import ast, types
     src = (Path(__file__).resolve().parent / "t57_group_calibration.py").read_text()
     tree = ast.parse(src)
@@ -123,26 +52,7 @@ def lift_t57(names):
 
 
 def targeted_gstar(Ev, ismal, CEIL, targets, R_before):
-    """Cost of the TARGETED attack: insert G hypotheses immediately before ONE target.
 
-    This is the attack an adversary actually mounts against its own episode, and it is NOT what a
-    front-prefix insertion measures.  Inserting zero-evidence hypotheses immediately before index p
-    leaves every earlier hypothesis, and therefore the running rejection count R_p, exactly as it
-    was -- they cannot fire.  The target simply moves from step p+1 to step p+1+G and faces
-    level A*gamma_{p+1+G}*(R_p+1).  So it fires iff
-
-        Ev[p] >= 1 / (A * gamma_{p+1+G} * (R_p + 1)),
-
-    and the minimal suppressing G is (last step at which that holds) - p, in closed form.  A
-    front-prefix insertion instead moves EVERY hypothesis, which can kill the earlier detections
-    that raised R in the first place -- a channel unavailable to an attacker inserting only ahead of
-    its own episode.  Reporting the prefix number as a per-target cost overstates the attack, which
-    is exactly what an earlier version of this stage did.
-    """
-    # ANALYTIC, so nothing is truncated.  gamma_t = t^-1.6 / zeta(1.6), so the target clears at
-    # step t iff  A * t^-1.6 / zeta * (R+1) * Ev >= 1  iff  t <= (A (R+1) Ev / zeta)^(1/1.6).
-    # An earlier version searched a gamma array of length 2T+4 and silently capped G* at 2T+3 --
-    # wrong whenever the clearing step exceeds the stream, which the blind audit demonstrated.
     z = float(zeta(1.6, 1))
     out, closed_last = [], []
     for p in targets:
@@ -154,18 +64,11 @@ def targeted_gstar(Ev, ismal, CEIL, targets, R_before):
 
 
 def survival_curve(Ev, ismal, CEIL, targets, g_max, kind, ben_pool, rng):
-    """Replay e-LOND with G inserted hypotheses at the front, for G = 0..g_max.
 
-    Returns (fired_by_G, n_inserted_firing) where fired_by_G[g] is a boolean array over `targets`
-    saying whether that original detection is still rejected when G = g.  Inserting at the front
-    shifts EVERY hypothesis by g, so one run answers for all targets at once."""
     T = len(Ev)
     fired_by_G = np.zeros((g_max + 1, len(targets)), bool)
     n_ins_fire = np.zeros(g_max + 1, int)
-    # The head is drawn ONCE and used in prefixes.  Re-drawing it at each g would make "insert one
-    # more" a fresh experiment rather than an extension, and the curve would wobble for a purely
-    # sampling reason -- which is exactly what an earlier version of this file reported as
-    # non-monotonicity.
+
     full_head = (np.zeros(max(g_max, 1)) if kind == "zero"
                  else ben_pool[rng.integers(0, ben_pool.size, max(g_max, 1))])
     for g in range(g_max + 1):
@@ -220,15 +123,12 @@ def main():
             g_max = int(G_HEADROOM * w_cold) + int(targets.max())
             g_max = min(g_max, 4000)
             ben_pool = Ev[~ismal]
-            # the TARGETED cost, in closed form, verified against a replay below
+
             gt, gt_last = targeted_gstar(Ev, ismal, CEIL, targets, R_before)
-            # Where does the target sit, and what does getting ahead of it cost?  Both orders emit
-            # by bucket first, so an attacker can only precede a target by occupying an EARLIER
-            # bucket or by beating it inside its own.  Measure which is available.
+
             bk = ep["bucket_g"][ep["order"]]
             gsrc = np.zeros(T, np.int64); gsrc[ep["gid"]] = src_w
             gdst = np.zeros(T, np.int64); gdst[ep["gid"]] = dst_w
-            # the hash must be the one that BUILT this order, or the fractions are meaningless
             hseed = 0 if order == "keyhash" else (hs.KEYED_SEED if order == "keyed" else 0)
             h63 = (hs.key_hash(gsrc, gdst, ep["bucket_g"], seed=hseed)
                    & np.uint64((1 << 63) - 1)).astype(float)[ep["order"]]
@@ -237,12 +137,7 @@ def main():
             in_bucket = [int((bk == b).sum()) for b in tb]
             rank_in_bucket = [int(((bk == b) & (np.arange(T) < int(t))).sum())
                               for b, t in zip(tb, targets)]
-            # THE RIGHT EVENT.  The targeted attack needs its insertions to land between the LAST
-            # REJECTION before the target and the target itself -- land them earlier and they shift
-            # that rejection too, which changes R and turns this into the prefix attack.  So the
-            # qualifying hash interval is (h_lastrej, h_target), not the whole space below the
-            # target.  Pricing the wider event understates the search by orders of magnitude, which
-            # is what an earlier version did.
+
             rej_idx = np.flatnonzero(fired0)
             frac_below, frac_gap = [], []
             for t in targets:
@@ -259,30 +154,25 @@ def main():
                        median_target_group_size=int(np.median(nsz[targets])),
                        target_evidence=[float(Ev[x]) for x in targets],
                        target_R_before=[int(R_before[x]) for x in targets],
-                       # TARGETED attack: insert only ahead of this one episode.  This is the
-                       # per-episode cost; the prefix numbers below are a DIFFERENT attack.
+
                        targeted_gstar=gt,
                        targeted_gstar_median=float(np.median(gt)) if gt else None,
                        targeted_gstar_min=int(min(gt)) if gt else None,
                        targeted_gstar_max=int(max(gt)) if gt else None,
-                       # the last step at which THIS episode's own evidence clears at R=0.  w_cold
-                       # is the same quantity for an episode carrying the full ceiling, so it is an
-                       # upper bound; a sub-ceiling episode falls out of the window sooner, and that
-                       # is why G* can be smaller than the naive w_cold - position + 1.
+
                        target_last_clearing_step=[
                            int(np.searchsorted(-(A * g1[1:T + 1] * float(Ev[x])), -1.0,
                                                side="right"))
                            for x in targets],
                        margin_at_0=float((NC + 1) * W0 / T - 1.0),
                        margin_at_gmax=float((NC + 1) * W0 / (T + g_max) - 1.0),
-                       # the access question: can the attacker simply use an earlier bucket?
+
                        n_episodes_in_earlier_buckets=n_before_bucket,
                        n_episodes_in_target_bucket=in_bucket,
                        target_rank_within_bucket=rank_in_bucket,
                        all_targets_in_first_bucket=bool(all(x == 0 for x in n_before_bucket)),
                        hash_fraction_below_target=frac_below,
                        hash_fraction_in_targeted_gap=frac_gap)
-            # VERIFY the closed form by replaying the targeted insertion on a sample of targets
             ver_bad, ver_n = 0, 0
             for jj in list(range(min(40, targets.size))):
                 pp = int(targets[jj]); G = int(gt[jj])
@@ -315,13 +205,12 @@ def main():
                     glast.append(int(on[-1]) if on.size else None)
                     if not off.size:
                         never += 1
-                # non-monotone iff a target fires again after it first stopped
+
                 nonmono = int(sum(1 for a, b in zip(gstar, glast)
                                   if a is not None and b is not None and b > a))
                 gs = [x for x in gstar if x is not None]
                 rec[kind] = dict(
-                    # aligned with `target_positions`, so the mechanism can be checked per target
-                    # rather than by pairing two independently sorted lists
+
                     gstar_by_target=[None if x is None else int(x) for x in gstar],
                     attack="prefix: insert ahead of EVERY hypothesis (silences the window); "
                            "these are NOT per-episode costs -- see targeted_gstar for those",
@@ -334,17 +223,12 @@ def main():
                     glast_max=(max([x for x in glast if x is not None], default=None)),
                     n_inserted_that_fire_at_gmax=int(ins_fire[g_max]),
                     inserted_ever_fire=bool(ins_fire.max() > 0),
-                    # every detection gone at once: the attacker silences the window outright
+
                     g_all_suppressed=(int(np.flatnonzero(~fb.any(axis=1))[0])
                                       if (~fb.any(axis=1)).any() else None))
-                # the KEY-HASH order's price: an offline search, sized per target
+
                 if order == "keyhash":
-                    # PUBLIC seed only.  Under "keyed" the adversary cannot rank keys offline at
-                    # all, so no trial count is defined -- emitting one there (as an earlier version
-                    # did, and with the WRONG seed) would contradict the very point of that arm.
-                    # Two events are priced because they are different attacks:
-                    #   prefix   : land anywhere below the target      -> fraction h/2^63
-                    #   targeted : land inside the last-rejection gap  -> fraction gap/2^63
+
                     tp = [g / f for g, f in zip(gt, frac_gap) if f > 0]
                     pf = [g / f for g, f in zip(gstar, frac_below)
                           if g is not None and f > 0]
@@ -364,12 +248,7 @@ def main():
                       f"non-monotone {nonmono}")
             rows.append(rec)
 
-    # =====================================================================================
-    # The GROUP-CALIBRATED MAX pipeline -- the construction non-claim 21 is actually about.
-    # Padding provably cannot suppress it (appending cannot lower a maximum, t57 verifies
-    # 110/110 ... 152/152 still firing after pads).  Insertion does not append anything, so the
-    # append-invariance buys nothing; this is where that has to be shown rather than argued.
-    # =====================================================================================
+
     T57 = lift_t57(["group_by_key", "group_fires"])
     grp_rows = []
     for pos in POS:
@@ -426,21 +305,13 @@ def main():
         if t28:
             cell = t28[r["order"]][f"{r['pos']}_0"]
             pad = cell["med_pad_real"]
-            # to silence the WHOLE window by padding, every detected episode must be padded
-            # separately, so the comparable total is the SUM of the individual costs -- not the
-            # median.  Insertion silences all of them at once, which is the asymmetry that matters.
-            # UPPER bound: padding every detection separately.  It is not the joint cost --
-            # suppressing an early rejection lowers R and can make later ones vanish or cost less,
-            # so the true joint cost is somewhere between the cheapest single pad and this sum.
+
             pad_total = int(sum(cell["pads_real"])) if cell.get("pads_real") else None
             pad_min = int(min(cell["pads_real"])) if cell.get("pads_real") else None
             pr = sorted(cell.get("pads_real") or [], reverse=True)
             tail_share = (float(sum(pr[:10]) / sum(pr)) if pr and sum(pr) else None)
         g_all = r["zero"]["g_all_suppressed"]
         g_tgt = r["targeted_gstar_median"]
-        # An inserted hypothesis costs at least ONE flow, but a group a defender would actually
-        # form may need more; the comparison is therefore reported at several flows-per-group
-        # rather than asserted at the floor.  f=1 is a lower bound, not a measurement.
         fpg = {}
         for f_ in (1, 2, int(r["median_target_group_size"])):
             fpg[str(f_)] = dict(

@@ -1,6 +1,3 @@
-"""A2 -- adjudicated audit of the emitted alert sample."""
-
-
 def main():
     import numpy as np, json, time, csv, re, datetime as dt
     from pathlib import Path
@@ -439,16 +436,6 @@ def main():
         print(f"  {'':>16}    strict E1+E2 rule    [0.0000, {s_hi:.4f}]")
         print(f"  {'':>16}    EXTERNAL-ONLY (E1)   [{(n_lf-n_lf_ext)/R:.4f}, {e_hi:.4f}]   "
               f"-- {n_lf_ext} of the {n_lf} label-false alerts sit on a confirmed-compromise host")
-    print("\n  The three tiers owe the audited labels different amounts.  The E1+E2 rules are the")
-    print("  informative ones but compute E2 from the `Label` column, so they cannot rule out a")
-    print("  systematic bias in that column; the external-only row owes it nothing but is far less")
-    print("  specific, since a confirmed-compromise host also sends ordinary traffic.")
-    print("  Neither interval is a confidence interval: the width is the fraction of alerts on")
-    print("  which the independent evidence is silent, not sampling error.  The strict interval")
-    print("  is the wider and the more defensible one, because its lower endpoint assumes only")
-    print("  what the discriminative indicators support.")
-    print("  In every case the audit puts FDP BELOW the label-derived value, because alerts the")
-    print("  label calls false carry independent evidence of being genuine attack traffic.")
 
     path = "out/a2_audit_adjudicated.csv"
     cols = ["rank", "utc", "first_ts_us", "last_ts_us", "span_s", "src", "dst", "service", "dport",

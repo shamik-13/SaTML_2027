@@ -1,4 +1,4 @@
-"""E9 -- timestamp-tie sensitivity."""
+
 
 
 def main():
@@ -209,9 +209,6 @@ def main():
 
     out["rows"] = rows
 
-    print("\n" + "=" * 118)
-    print("SUMMARY -- IS THE DETERMINISTIC TIE-BREAK LOAD-BEARING?")
-    print("=" * 118)
     for pos in POS_FULL:
         sub = [r for r in rows if r["pos"] == pos]
         moved = [r for r in sub if r["varies"]]

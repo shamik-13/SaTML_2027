@@ -1,48 +1,4 @@
-"""R7 -- a host-conditioned detector and the padding-transfer boundary (review sec:5.1/sec:15).
 
-The paper's padding attack (Surface A / sec:paddingcost) works because the shipped detector uses
-FLOW-ONLY features carrying no endpoint identity: ordinary victim-service traffic scores like
-ordinary traffic (fires ~0 of the time, experiment W3 / t48) and so dilutes the merged episode
-e-value.  The paper scopes this to flow-level detectors and conjectures that a HOST-CONDITIONED
-detector "would break the argument" but "needs a testbed".  R7 supplies that measurement, honestly.
-
-Design (mirrors t48 at the primary guarantee window 0.55 and the stress window 0.85, seed 0):
-
-  Part A -- causal, non-leaking host-context features.  Six per-flow features from STRICTLY
-    EARLIER-TIMESTAMP traffic only (ts < ts(flow); timestamp ties excluded, not ordered by arbitrary
-    row index -- ~1.03M adjacent flows share a timestamp): src_cnt, src_ddst, src_failfrac, dst_cnt,
-    dst_dsrc, dst_failfrac.  NO endpoint ground-truth (label_src/label_dst/ext_src/ext_dst) and no y
-    are ever used -- those leak (label_src=1 -> attack-rate 1.0).  Validated against a strict-ts
-    brute-force reference on both sides; the augmented matrix width is asserted (33 flow + 6 host).
-
-  Part B -- a COMPETENT host-conditioned detector on X_aug = [X | host features]: report AUROC, tail
-    reach, and e-LOND detections vs the flow-only detector (all e-values via the shared hs.evalues).
-
-  Part C -- the padding-transfer boundary, with a CAUSAL ACCUMULATION REPLAY (not a static graft).
-    Episodes key on (src,dst,bucket), so a pad diluting a detected episode (src*,dst*) must carry
-    src=src*,dst=dst*.  We compute the pair's real causal state at episode end from the global
-    arrays, then REPLAY the append: the k-th appended pad sees src_cnt/dst_cnt raised by (k-1) prior
-    pads, src_ddst/dst_dsrc PINNED (padding one victim adds no new peer), and fail fractions updated
-    by the pool's measured fail rate.  We densely sweep 120 accumulation levels k=1..min(r*,cap) and
-    take the max fire rate.  A pad fires iff its score STRICTLY beats the k-th largest benign
-    calibration score (matching hs.evalues, side='left').  The SUPPRESSION COST is reported only where
-    it is exact: when the max fire rate is a measured 0, mu_pad=0 (no Bernoulli variance), so the cost
-    is the identical flow-level closed form r*=floor(S*alpha_t)-m+1 (unchanged, no HGB extrapolation).
-    Where pads fire (mu_pad>0) the cost is NOT computed -- HGB is non-monotone in the host features so
-    a mean-mu proxy would be neither exact nor a bound -- and that regime is reported inconclusive.
-    The black-box pad pool is selected on NETWORK-OBSERVABLE FREQUENCY ALONE: the most common
-    (proto,dport) over the TRAINING PREFIX [0, i1), which precedes both calibration and deployment --
-    no y labels and no detector output, the strictly weakest attacker (review 5, item 3).  Its benign
-    fraction is AUDITED (1.00 at both windows) but never used to select it.  Two non-black-box rules
-    are kept as a recorded pool_sensitivity; the earlier 0.43 stress-window graft firing came from one
-    of them, which at 0.85 selects a pool that is only ~12% benign.
-
-  Premise -- a well-powered estimate independent of how many episodes e-LOND flags: over a large
-    sample of malicious episodes, score ordinary pool pads under each episode's causal at-end context
-    and report the aggregate fire rate (the host analogue of t48's "20,000 pool flows fire 0").
-
-Produces out/t49_R7.json.
-"""
 import numpy as np, json, time
 from pathlib import Path
 from sklearn.metrics import roc_auc_score
@@ -66,12 +22,7 @@ N_FLOW_FEATS = 33                 # proto + 32 flow stats (h_stream _FEAT); X_au
 
 # --------------------------------------------- strict-timestamp causal host features --------------
 def _sum_before_ts(group, ts, val):
-    """For each i: sum of val over rows sharing `group` with STRICTLY smaller ts (ties excluded).
 
-    The global arrays are ts-sorted, so a stable argsort by group keeps ts non-decreasing within each
-    group.  Rows sharing a (group, ts) form a block; every row in a block gets the cumulative sum as
-    of the block's start, minus the group's base -- i.e. only strictly-earlier-ts same-group rows.
-    """
     order = np.argsort(group, kind="stable")
     g = group[order]; t = ts[order]; v = val[order].astype(np.float64)
     cs = np.cumsum(v)
@@ -171,9 +122,6 @@ def _fire_rate(clf, pad_flowstats, ctx_vec, thr, CEIL):
 
 
 def _episode_base_state(src, dst, ts, is_fail, s_star, d_star, t_end):
-    """Real causal state of the (s_star, d_star) pair at episode end (ts <= t_end), from the global
-    arrays.  Returns [src_cnt, src_ddst, src_failfrac, dst_cnt, dst_dsrc, dst_failfrac] and the raw
-    counts/fails needed to replay pad accumulation."""
     sm = (src == s_star) & (ts <= t_end)
     dm = (dst == d_star) & (ts <= t_end)
     src_cnt = int(sm.sum()); dst_cnt = int(dm.sum())
@@ -186,8 +134,6 @@ def _episode_base_state(src, dst, ts, is_fail, s_star, d_star, t_end):
 
 
 def _replay_ctx(raw, k, pad_fail_frac):
-    """Context an appended k-th pad (src*->dst*) sees: counts += (k-1) prior pads, ddst/dsrc PINNED
-    (no new peer), fail fractions updated by the pool's pad fail rate.  k>=1."""
     add = k - 1
     sc = raw["src_cnt"] + add; dc = raw["dst_cnt"] + add
     sf = raw["src_fail"] + pad_fail_frac * add; df = raw["dst_fail"] + pad_fail_frac * add
@@ -212,13 +158,11 @@ def main():
         rec = t48["episodes"].get(f"{pos}")
         return float(np.median([r["r_closed"] for r in rec["per_episode"]])) if rec and rec["per_episode"] else None
 
-    # documented leakage guard: the endpoint columns are excluded from features (verified attack-rate)
     leakage = {}
     for c in FORBIDDEN:
         v = meta[c]; pv = 1 if 1 in np.unique(v) else int(np.unique(v)[-1]); m = v == pv
         leakage[c] = dict(value=int(pv), n=int(m.sum()), attack_rate=float(y[m].mean()))
 
-    # Part A: strict-ts causal host features (once, over the whole stream), validated both sides -----
     tf = time.time()
     H = build_host_features(src, dst, ts, is_fail.astype(np.float64))
     n_bad = _validate_features(H, src, dst, ts, is_fail)
@@ -237,13 +181,11 @@ def main():
         ts_w, src_w, dst_w = ts[i2:i3], src[i2:i3], dst[i2:i3]
         dp_w = dport_all[i2:i3]; pr_w = np.asarray(X[i2:i3, 0]).astype(np.int32)
 
-        # flow-only baseline (competence contrast) --------------------------------------------------
         score0 = hs.fit_detector(X, y, i1, seed=SEED, kind="hgb", verbose=False)
         s0_cal, s0_te = hs.score_windows(score0, X, i1, i2, i3)
         e0_te, _, NC0, CEIL0 = hs.evalues(s0_cal, y_cal, s0_te, k=K)
         auroc0 = float(roc_auc_score(y_te, s0_te)) if np.unique(y_te).size == 2 else None
 
-        # host-conditioned detector on X_aug = [X | H]  (assert width & provenance) ------------------
         Xaug = np.concatenate([np.asarray(X), H], axis=1).astype(np.float32)
         assert Xaug.shape[1] == N_FLOW_FEATS + len(FEAT_NAMES), "X_aug must be 33 flow + 6 host cols"
         clf = fit_host_detector(Xaug, y, i1, SEED)
@@ -253,9 +195,6 @@ def main():
         thr = calH[NCH - K] if NCH >= K else np.inf           # fire iff score strictly > this
         del Xaug
 
-        # OOD anchor: on REAL data the detector barely fires on benign flows. Any grafted attack-
-        # context pad firing is therefore an out-of-distribution extrapolation -- LSPR23's attacked
-        # pairs are 100% malicious, so there is no real ordinary-flow-to-attacked-victim to validate.
         benm = y_te == 0
         nben = int(benm.sum())
         host_bf = int((eH_te[benm] > 0).sum()); flow_bf = int((e0_te[benm] > 0).sum())
@@ -282,11 +221,7 @@ def main():
         print(f"  pos={pos} PartB: host AUROC={aurocH:.4f} tail={tailH:.3f} det={detH.size} | "
               f"flow-only AUROC={auroc0:.4f} det={det0.size}  [{time.time()-t0:.0f}s]")
 
-        # BLACK-BOX pad pool (review 5, item 3): selected on NETWORK-OBSERVABLE FREQUENCY ALONE --
-        # the most common (proto,dport) over the traffic that PRECEDES deployment.  The previous rule
-        # (most common among flows the DETECTOR does not fire on) used detector output, which a
-        # black-box attacker does not have; this one uses no labels and no detector, and t48 records
-        # that it selects the same service.  Pool membership is likewise unfiltered by detector output.
+
         svc = pr_w.astype(np.int64) * 100000 + dp_w.astype(np.int64)
         svc_tr = (np.asarray(X[:i1, 0]).astype(np.int64) * 100000
                   + dport_all[:i1].astype(np.int64))
@@ -297,12 +232,7 @@ def main():
         pad_flowstats = np.asarray(X[i2 + take])
         pool_fail_frac = float(is_fail[i2 + pool_idx].mean())    # measured pad fail rate (replay)
         pool_benign_frac = float((y_te[pool_idx] == 0).mean())  # AUDIT (labels used only to audit,
-        #   never as a feature): confirm the black-box pool really is ordinary benign traffic.
 
-        # Alternative selection rules, kept ONLY as a sensitivity: the pool choice is a real degree of
-        # freedom and a badly chosen pool can fire under grafted attack context.  Neither is black-box
-        # -- (a) reads detector output, (b) reads the window the attacker is flooding -- so neither is
-        # the attacker model we claim; they bound how much the conclusion depends on the choice.
         _nf = eH_te == 0
         _u, _c = np.unique(svc[_nf], return_counts=True); alt_nonfire = int(_u[np.argmax(_c)])
         _u, _c = np.unique(svc, return_counts=True); alt_winmode = int(_u[np.argmax(_c)])
@@ -323,7 +253,7 @@ def main():
 
         gid = epH["gid"]; order = epH["order"]; S = epH["sum_e"]; m = epH["nsz"]
 
-        # Premise: fire rate over many MALICIOUS episodes, at each pair's causal at-end context ------
+
         mal_eps = np.flatnonzero(epH["ismal"])
         take_eps = mal_eps if mal_eps.size <= N_PREMISE_EPISODES else \
             rng.choice(mal_eps, N_PREMISE_EPISODES, replace=False)
@@ -346,15 +276,7 @@ def main():
               f"(at-end context), fire_rate={premise[f'{pos}']['pad_fire_rate']:.6f} "
               f"pool_fail={pool_fail_frac:.3f}  [{time.time()-t0:.0f}s]")
 
-        # Part C: causal accumulation replay.  For each detected episode we densely sweep the append
-        # k=1..min(r*,cap) (counts rise, src_ddst/dst_dsrc pinned, fail fractions at the pool's
-        # measured rate) and take the max pad fire rate.  The SUPPRESSION COST is reported only where
-        # it is exact: when the max fire rate is a measured 0, every pad contributes e=0 so mu_pad=0
-        # and r*=floor(S*alpha_t)-m+1 is the identical flow-level closed form (no HGB extrapolation).
-        # When pads fire (mu_pad>0) the cost is NOT computed here -- HGB is non-monotone in the host
-        # features, so a mean-mu proxy would be neither exact nor a bound; that regime is reported as
-        # inconclusive.  At a firing episode we ablate each host feature (neutralise to the train-
-        # benign median) to attribute the firing.
+
         recs = []; abl = {n: [] for n in FEAT_NAMES}
         for j in detH:
             members = np.flatnonzero(gid == order[j])
@@ -371,7 +293,7 @@ def main():
                 fr, _ = _fire_rate(clf, pad_flowstats, cx, thr, CEILH)
                 if fr > max_fr:
                     max_fr = fr; arg_ctx = cx
-            # exact cost only when pads fire a measured 0 (mu_pad=0 -> flow-level closed form); else NA
+
             r_suppress = r_star if max_fr == 0.0 else None
             if max_fr > 1e-3:                                  # attribute the firing to a feature
                 for fi, nm in enumerate(FEAT_NAMES):
@@ -382,7 +304,6 @@ def main():
                              n_levels=int(len(levels)), kmax=int(kmax), max_pad_fire=max_fr,
                              base_ctx=[float(z) for z in base]))
 
-        # pool sensitivity: max graft fire under the non-black-box selection rules, same episodes
         alt_fire = {}
         for _nm, _p in alt_pools.items():
             _mx = 0.0
@@ -415,9 +336,7 @@ def main():
         if max_graft_fire and max_graft_fire > 1e-3:
             cand = {n: d for n, d in mean_drop.items() if d is not None and d > 0}
             responsible = max(cand, key=cand.get) if cand else None
-        # OOD guard: grafted-pad firing is credible defense only if the detector ALSO fires on REAL
-        # benign flows.  Real-benign firing ~0 with grafted firing > 0 => out-of-distribution
-        # extrapolation (attacked pairs are 100% malicious), unresolvable on LSPR23 -> needs a testbed.
+
         real_bf = ood[f"{pos}"]["host_real_benign_fire_rate"]
         graft_fires = bool(max_graft_fire is not None and max_graft_fire > 1e-3)
         ood_extrapolation = bool(graft_fires and real_bf < 1e-4)
@@ -430,7 +349,6 @@ def main():
                        "detector fires on ~0 real benign flows -- boundary needs a testbed)")
         else:
             verdict = "fails (grafted pads fire, and the detector also fires on real benign traffic)"
-        # suppression cost: exact where mu_pad=0 (fire=0), else not cleanly computable
         n_cost_clean = len(r_ok)
         cost_note = ("unchanged: mu_pad=0, identical flow-level closed form" if n_cost_clean == n_det and n_det
                      else ("not computable where pads fire (OOD/contaminated)" if n_cost_clean < n_det

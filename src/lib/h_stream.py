@@ -1,12 +1,6 @@
-"""Shared stream construction for the Phase 2 (H*) experiments."""
 import numpy as np, pandas as pd, os, gc, time
 from pathlib import Path
 
-# Inputs and caches.  These default to /tmp, which is where data/README.md's awk recipes write
-# them -- but /tmp is volatile, and on this project the derived CSVs are the only surviving copy of
-# the LSPR23 inputs (the 10.6 GB raw file is not kept).  LSPR_DIR moves all three CSVs and
-# LSPR_CACHE the .npy cache, the same override pattern t51_R7_ait.py already uses for AIT_DIR /
-# AIT_ZIP_DIR.  Defaults are unchanged, so nothing breaks for anyone using the documented recipes.
 _D = os.environ.get("LSPR_DIR", "/tmp")
 CSV = os.environ.get("LSPR_CSV", f"{_D}/lspr_full.csv")
 CACHE = Path(os.environ.get("LSPR_CACHE", f"{_D}/lspr_cache"))
@@ -152,7 +146,6 @@ KEYED_SEED = 0xC0FFEE123456789
 
 
 def _mix64(x):
-    """SplitMix64 finaliser: a deterministic avalanching 64-bit hash, no external dependency."""
     with np.errstate(over="ignore"):
         x = np.asarray(x, dtype=np.uint64).copy()
         x ^= (x >> np.uint64(30)); x *= np.uint64(0xBF58476D1CE4E5B9)
@@ -162,7 +155,6 @@ def _mix64(x):
 
 
 def key_hash(*key_vals, seed=0):
-    """Hash of a group's OWN key tuple -- not of its index among the keys PRESENT."""
     if not key_vals:
         raise ValueError("key_hash needs at least one key array")
     n = len(np.asarray(key_vals[0]))
@@ -174,7 +166,6 @@ def key_hash(*key_vals, seed=0):
 
 
 def hashed_order(hkey, *key_vals):
-    """Bucket-batched, then hashed key, then the raw key itself for hash collisions."""
     if not key_vals:
         raise ValueError("hashed_order needs at least one key array")
     h63 = (np.asarray(hkey, dtype=np.uint64) & np.uint64((1 << 63) - 1)).astype(np.int64)
@@ -188,7 +179,6 @@ ORDERS = ("first-flow", "keyhash", "keyed")
 
 def build_episodes(e_te, y_te, ts_w, src_w=None, dst_w=None, bucket_s=None,
                    family="src-dst", keys=None, tie_key=None, order="first-flow"):
-    """Group one deployment window into episodes and return the ordered stream."""
     if order not in ORDERS:
         raise ValueError(f"order={order!r} must be one of {ORDERS}")
     if tie_key is not None and order != "first-flow":
@@ -247,7 +237,6 @@ def build_episodes(e_te, y_te, ts_w, src_w=None, dst_w=None, bucket_s=None,
 
 
 def frontier(smax, ismal):
-    """Oracle Pareto frontier for the episode max-score threshold family (section 4.19)."""
     T = len(smax); NM = int(ismal.sum())
     ordr = np.lexsort((np.arange(T), -smax)); m = ismal[ordr]
     tp = np.cumsum(m); fp = np.cumsum(~m); kk = np.arange(1, T + 1)

@@ -39,12 +39,8 @@ def main():
                 dict(pos=r["pos"], seed=r["seed"], BH=r["BH"], threshold=float(r["thr"]),
                      median_pad=float(r["med_pad"])))
             print(f"  {r['pos']:>5} {r['seed']:>5} {r['BH']:>3} {r['thr']:>15,.0f} {r['med_pad']:>21.1f}")
-    print("  NOTE: this is a consistency check, not independent evidence -- t17 computes")
-    print("  max(0, floor(sum_e/tau - n) + 1), which IS formula (3).")
-    print("  So the measured costs are the theorem's bound evaluated on real episodes.")
 
     print("\n" + "="*100)
-    print("CHECK 3 -- is (1) tight? compare candidate symmetric rules against max(1, mean)")
     print("="*100)
     def mean_rule(x): return x.mean()
     def convex(x,lam=0.3): return lam + (1-lam)*x.mean()
@@ -61,16 +57,11 @@ def main():
     print("   exactly the price of padding-robustness within a committed cap.)")
 
     print("\n" + "="*100)
-    print("CHECK 4 -- the asymmetric escape, and why tau > 1 is required")
     print("="*100)
-    print("  pre-committed slot F_N(e) = e_1 :")
     for r in (0,10,1000,100000):
         x=np.concatenate([[1e6],np.zeros(r)])
         res.setdefault("precommitted_slot", []).append(dict(pad=r, F=float(x[0])))
         print(f"    padded with {r:>7,} zeros -> F = {x[0]:>12,.0f}   (invariant)")
-    print("  constant rule F == 1 : symmetric, valid, padding-invariant -- but it can never")
-    print("  reject, since rejection needs evidence >= 1/alpha_t > 1. Hence tau > 1 in the")
-    print("  definition is exactly the requirement that the rule can fire at all.")
 
     json.dump(res, open(OUT/"t18_T4.json", "w"), indent=1)
     print(f"\n  wrote out/t18_T4.json")

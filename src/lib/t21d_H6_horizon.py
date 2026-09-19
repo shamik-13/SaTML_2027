@@ -1,9 +1,4 @@
-"""H6, part 3 -- how much of each escape is bought with oracle knowledge of the horizon?"""
-
 import os
-
-# The derived LSPR23 CSV.  Same override pattern as h_stream/h_meta: LSPR_DIR moves the
-# inputs off the volatile /tmp default without changing behaviour for the documented recipes.
 CSV = os.environ.get("LSPR_CSV", f'{os.environ.get("LSPR_DIR", "/tmp")}/lspr_full.csv')
 
 
@@ -56,7 +51,6 @@ def main():
 
 
     def gamma_uniform_hat(That, T):
-        """gamma_j = 1/That for j <= That, 0 afterwards.  If That < T the procedure has spent"""
         g1 = np.zeros(T + 2); n = min(int(That), T)
         g1[1:n + 1] = 1.0 / float(That)
         return g1
@@ -76,7 +70,6 @@ def main():
     rows = []
     CS = [0.1, 0.25, 0.5, 1.0, 2.0, 5.0, 10.0, 100.0]
     print("\n" + "=" * 112)
-    print("HORIZON MISSPECIFICATION -- horizon-uniform gamma over a guessed horizon T_hat = c*T")
     print("=" * 112)
     for c in CS:
         That = max(1, int(round(c * T)))
@@ -91,7 +84,6 @@ def main():
         line("online e-BH", c, That, eb[:4], f"k*_T={eb[4]:,} never-rejectable={100*eb[6]/T:.1f}%")
 
     print("\n" + "=" * 112)
-    print("HORIZON MISSPECIFICATION -- e-GAI e-LORD with w_1 = 1/T_hat")
     print("=" * 112)
     for c in CS:
         That = max(1, int(round(c * T)))
@@ -99,7 +91,6 @@ def main():
              "<- c=1 is the paper's recommended w_1 = 1/T" if c == 1.0 else "")
 
     print("\n" + "=" * 112)
-    print("CONTROL -- ADDIS under gamma prop j^-1.6, which uses no horizon at all")
     print("=" * 112)
     g1p, g0p = make_gamma("poly", T)
     r = run_addis(ctx, g0p, lam=0.25, tau_=0.5)

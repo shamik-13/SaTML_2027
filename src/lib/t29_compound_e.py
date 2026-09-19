@@ -1,6 +1,3 @@
-"""Review priority 1, item 3 -- "the strongest recent compound-e / e-closure method that is"""
-
-
 def main():
     import numpy as np, json, time
     from pathlib import Path
@@ -38,7 +35,6 @@ def main():
 
 
     print("=" * 104)
-    print("BOOSTING A TWO-POINT (THRESHOLD CONFORMAL) e-VALUE")
     print("=" * 104)
     sym = []
     for M in (1e3, 1e5, 1_813_114.0):
@@ -62,12 +58,9 @@ def main():
         closed = np.sqrt(2.0 * tau)
         cont.append(dict(tau=tau, b_star=float(b), closed_form=float(closed)))
         print(f"  tau={tau:>8,.0f}   optimal boost b* = {b:>7.4f}   closed form sqrt(2*tau) = {closed:>7.4f}")
-    print("\n  b* > 1 and grows as sqrt(tau), matching the closed form, because a continuous")
-    print("  e-value has mass sitting below the threshold that boosting can lift.")
-    print("  A two-point e-value has none: its mass is already all at the ceiling or at zero.")
+
 
     print("\n" + "=" * 104)
-    print("EMPIRICAL b* ON REAL LSPR23 SCORES (uses the MEASURED benign firing rate)")
     print("=" * 104)
     X, y, ts, src, dst = hs.load()
     N = len(y)
@@ -96,11 +89,6 @@ def main():
           f"rate = {np.median(bs):.4f}, range [{min(bs):.4f}, {max(bs):.4f}]")
     print(f"  {len(rows) - len(bs)} configurations had zero benign firings, giving b* = inf; "
           f"they are excluded rather than counted as boostable.")
-    print("  Where b* < 1 the nominal e-value is already anti-conservative on real traffic")
-    print("  (F9), so the correct 'boost' is a shrinkage.  Either way there is no free power:")
-    print("  the strongest power-recovery technique for e-BH returns nothing on this evidence,")
-    print("  and it returns nothing for the same reason the feasibility boundary exists -- the")
-    print("  evidence is two-point, not because the procedure is weak.")
 
     json.dump({"two_point": sym, "continuous": cont, "empirical": rows,
                "b_star_median": float(np.median(bs)) if bs else None},

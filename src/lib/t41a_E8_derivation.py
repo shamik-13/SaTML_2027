@@ -1,4 +1,4 @@
-"""E8, part 1 -- the ANALYTIC derivation of the flows -> operational-units conversion, and the"""
+
 import math
 import numpy as np
 
@@ -88,23 +88,6 @@ def main():
         return got
 
 
-
-
-    print("=" * 118)
-    print("D1.  THE DURATION UNIT IS RECOVERED FROM THE FILE, NOT ASSUMED")
-    print("=" * 118)
-    print("""
-    The file carries the totals AND the rates, which overdetermines the duration unit:
-
-            Flow Bytes/s  ==  (fwd_bytes + bwd_bytes) / (Flow Duration / S)                [D1a]
-
-    Only one S in {1, 1e3, 1e6, 1e9} makes that hold.  Getting S wrong scales every required-
-    bandwidth number in E8 by 10^3 or 10^6 -- exactly the class of error the audit procedure
-    exists to catch (docs/01_HANDOFF_PHASE4.md section 7 lists three rescaled headline numbers).
-    t41 runs the recovery on the real column and ASSERTS that the winning candidate beats the
-    runner-up by at least two orders of magnitude, so a near-tie is a failure rather than a
-    coin flip.
-    """)
     for true_name, S in SCALES.items():
         n = 20000
         dur_s = rng.uniform(1e-4, 30.0, n)
@@ -128,21 +111,6 @@ def main():
     check_bool("D1a  the survivor fraction is reported and near 1 on clean synthetic input",
                cov0["frac_used"] > 0.99, note=f"{cov0['frac_used']:.4f}")
 
-    print("=" * 118)
-    print("D2.  A BUDGET IS DRAWN FROM A POOL, SO THE MEAN IS THE WRONG SUMMARY")
-    print("=" * 118)
-    print("""
-    The attack budgets are COUNTS OF FLOWS the attacker must generate, drawn from a pool of
-    real benign traffic.  The attacker chooses which pool flows to imitate, so
-
-            cost(n)  =  n * (a quantile of the pool's per-flow cost)                     [D2a]
-
-    and the operationally meaningful figures are the CHEAPEST realisable attack (a low
-    quantile), the typical one (the median), and the mean -- which is neither, and which
-    heavy-tailed flow-size distributions pull far above the median.  Reporting only n * mean
-    overstates a cost the attacker can avoid paying; reporting only n * min understates one
-    they may not be able to sustain.  E8 reports the interval.
-    """)
     pool = np.concatenate([rng.lognormal(6.0, 1.0, 9000), rng.lognormal(12.0, 0.5, 1000)])
     pk = np.ones_like(pool)
     b = budget_cost(pk, pool, 1_000_000, quantiles=(0.01, 0.5, 0.99))
@@ -169,19 +137,7 @@ def main():
     check("D2a  cost is linear in n", budget_cost(pk, pool, 2_000_000)[0.5]["bytes"],
           2.0 * budget_cost(pk, pool, 1_000_000)[0.5]["bytes"], 1e-6)
 
-    print("=" * 118)
-    print("D3.  THE BYTE FIGURE IS PAYLOAD; HEADERS ARE NOT IN THE CACHE")
-    print("=" * 118)
-    print("""
-    `Total Length of Fwd/Bwd Packet` (columns 14-15) are payload lengths.  Header lengths are
-    columns 42-43, and h_stream's cache stops at column 40, so a wire-bytes figure cannot be
-    computed exactly from what is cached.  Understating it flatters the attacker, so E8 reports
-    BOTH the payload figure and a payload + 40 bytes/packet figure (the TCP/IPv4 minimum
-    header), and says which is which.                                                     [D3a]
 
-    The gap matters most for the many-small-packets flows a padding attack would prefer: at a
-    mean payload of 100 bytes over 2 packets, the 40-byte allowance adds 80%.
-    """)
     X = np.zeros((3, 8))
     X[:, COL["fwd_pkts"]] = [1, 2, 10]
     X[:, COL["bwd_pkts"]] = [1, 0, 10]
@@ -196,19 +152,6 @@ def main():
     check("D3a  the small-flow inflation is 80%", float(by1[1] / by1[1]) * (by1[1] / by0[1]),
           1.8, 1e-9, note="2 packets, 100 B payload -> 180 B")
 
-    print("=" * 118)
-    print("D4.  RATE AND HOSTS")
-    print("=" * 118)
-    print("""
-            required rate  =  8 * total_bytes / window_seconds     bits per second       [D4a]
-            hosts at rate R =  ceil(required rate / R)
-
-    The window is the one the attack must fit inside: for within-episode padding that is the
-    BUCKET duration (2 h = 7200 s), because pad flows must land in the same episode; for the
-    ADDIS state attack it is the deployment window, because precursors only have to precede the
-    target.  Using the wrong window rescales the bandwidth by the ratio of the two, so t41
-    states the window with every rate it prints.                                          [D4b]
-    """)
     r = rate_and_hosts(7200.0 * 1e6 / 8.0, 7200.0)
     check("D4a  1 Mbit/s round trip", r["bits_per_s"], 1e6, 1e-6)
     check("D4a  hosts at 1 Mbit/s each", r["hosts"]["1000000"], 1, 0)

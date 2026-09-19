@@ -1,6 +1,3 @@
-"""E2 -- periodic controller restart and batching, on LSPR23.  Section 4.35."""
-
-
 def main(smoke=False):
     import numpy as np, json, time, sys, gc
     from pathlib import Path

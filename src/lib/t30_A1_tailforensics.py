@@ -1,6 +1,3 @@
-"""A1 -- forensics of the position-0.85 extreme-tail benign flows."""
-
-
 def main():
     import numpy as np, json, time, gc, csv, datetime as dt
     from pathlib import Path
@@ -14,7 +11,6 @@ def main():
 
 
     def _compromise_ips():
-        """IPv4 addresses the Locked Shields red team's own task record names as compromised."""
         import re as _re
         out = set()
         for line in open(NARR):
@@ -146,12 +142,6 @@ def main():
         print(f"  {drow['pos']:>5.2f} {drow['seed']:>5} "
               + " ".join(f"{drow[f'k{kk}']:>10.2f}" for kk in KGRID))
     out["rank_depth"] = depth_rows
-    print("\n  A ratio that decays towards 1 as k grows means a small number of extreme outliers;")
-    print("  a ratio flat in k means the whole benign score distribution has moved.")
-    print("  Ranks use side='left', so tied scores are ranked conservatively and the null is")
-    print("  P(rank <= k) <= k/(|C|+1).  Every ratio below is therefore a LOWER bound on the")
-    print("  anti-conservatism, which is the safe direction for the conclusion drawn from it.")
-    print(f"  [{time.time()-t0:.0f}s]")
 
     i1, i2, i3 = hs.split_indices(N, DEEP_POS)
     w = slice(i2, i3)
@@ -465,13 +455,6 @@ def main():
               + ", ".join(row["steps"][-1]["names"]))
         conc_rows.append(row)
     out["pair_concentration"] = conc_rows
-    print(f"\n  For comparison, the other four window positions measure 1.07-3.79x nominal.")
-    print("\n  The pair exclusion above is [ORACLE] -- the pairs are chosen from the test-split")
-    print("  score tail, so it measures how LOCALISED the cause is and is not a deployable fix.")
-
-    print("\n" + "=" * 112)
-    print("A1d -- REPAIRS: what restores E[e] <= 1, and what it costs")
-    print("=" * 112)
 
 
     def run_stream(e_te_, y_te_, CEIL_, label):

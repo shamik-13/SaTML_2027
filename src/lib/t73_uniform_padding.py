@@ -1,24 +1,3 @@
-"""Is the padding attack an artefact of the spending sequence it was measured under?
-
-WHY THIS EXISTS.  Three independent mock reviewers, given the paper and told to find the strongest
-reason to reject, converged on the same objection: every attack measurement in the paper is taken
-under the horizon-free gamma ~ j^-1.6 with no restart, while the paper's own Corollary 1 proves the
-horizon-uniform gamma_t = 1/T is max-min optimal and Sec. III-C reports it feasible at every window
-(rho = 2.13-3.34).  Since r* = floor(S*alpha_t) - m + 1 grows with the offered level, a configuration
-that detects more should also cost more to suppress -- so the attack may have been priced in the one
-regime that flatters it.
-
-This runs the missing cell.  Same stream, same episodes, same canonical order, same detector, same
-e-values, same r* formula -- ONE argument changed, the spending sequence.  Nothing is reimplemented:
-it calls h6_procs.make_gamma / run_lond and t28b's zero_pad definition, so the two arms are
-comparable by construction.
-
-CONTROL.  The poly arm must reproduce the shipped numbers exactly (0.55: 3 detections at
-r* = 23, 24, 33; 0.62: 11 detections, median 6).  If it does not, this harness is wrong and the
-uniform arm means nothing -- the run asserts it.
-
-    python t73_uniform_padding.py
-"""
 import json
 import time
 from pathlib import Path
@@ -40,9 +19,6 @@ CONTROL = {0.55: (3, [23, 24, 33]), 0.62: (11, 6.0)}
 
 def elond_levels(ctx, T, gamma_kind):
     """e-LOND fired mask and tau_t = 1/alpha_t, with alpha_t = A*gamma_t*(R_{t-1}+1).
-
-    Identical to t28b_reallevel_padding.elond_levels except that the spending sequence is an
-    argument instead of being hardcoded to "poly" -- which is the whole experiment.
     """
     g1, _ = make_gamma(gamma_kind, T)
     fired = np.zeros(T, dtype=bool)

@@ -1,4 +1,4 @@
-"""E6, part 1 -- the ANALYTIC framing of cross-window parameter transfer, verified numerically."""
+
 
 
 def main():
@@ -53,24 +53,6 @@ def main():
         return float(oracle) - float(achieved)
 
 
-    print("=" * 118)
-    print("D1.  REGRET IS NON-NEGATIVE AND THE THREE REFERENCE POINTS ARE NOT INTERCHANGEABLE")
-    print("=" * 118)
-    print("""
-            regret_j = oracle_j - prev_j >= 0                                            [D1a]
-
-    by definition of oracle_j as a maximum over the same grid on the same window.  A negative
-    regret means the evaluation and selection objectives are not the same function, or the grid
-    differs between them -- it is a bug signature, and t39 asserts against it.
-
-    The claim E6 has to support is NOT "regret is small".  It is the conjunction
-
-            frozen_j is close to oracle_j        the headline config was not a lucky draw
-            prev_j   is close to oracle_j        the choice is recoverable without window j
-            spread_j is not ~ 0                  there was something to get wrong           [D1b]
-
-    Reporting only the first two is how a flat grid gets published as a transfer result.
-    """)
     bad = 0
     for _ in range(20000):
         G = int(rng.integers(2, 40))
@@ -81,19 +63,6 @@ def main():
             bad += 1
     check("D1a  regret >= 0 for every draw (20000 grids)", bad, 0, 0)
 
-    print("=" * 118)
-    print("D2.  A FLAT GRID MAKES EVERY TRANSFER RULE LOOK PERFECT")
-    print("=" * 118)
-    print("""
-    If V_j(c) is constant in c then oracle_j = prev_j = loo_j = frozen_j and regret is exactly
-    zero for every rule, including selecting at random.  The experiment then measures nothing.
-    Normalised regret
-
-            rho_j = (oracle_j - achieved_j) / (oracle_j - min_c V_j(c))                  [D2a]
-
-    is 0/0 in that case and must be reported as UNDEFINED rather than 0.  t39 returns None and
-    prints the raw spread at every position so a flat axis is visible as a flat axis.
-    """)
     flat = np.full(12, 0.37)
     check_bool("D2a  normalised regret is None on a flat grid",
                normalised_regret(flat, 0.37) is None, note="not 0.0")
@@ -108,25 +77,7 @@ def main():
     check("D2a  mean rho over all configs equals the random-selection baseline",
           got_rho, exp_rho, 1e-12, note=f"random baseline rho = {exp_rho:.3f}, NOT 0.5 in general")
 
-    print("=" * 118)
-    print("D3.  EPISODE RECALL IS NOT COMPARABLE ACROSS GROUPING FAMILIES")
-    print("=" * 118)
-    print("""
-    Episode recall is  tp_episodes / n_mal_episodes,  and the GROUPING SETS THE DENOMINATOR.
-    Coarser grouping merges malicious episodes, so n_mal falls; a rule that alerts on one
-    coarse episode can score a higher recall than a rule that alerts on many fine ones while
-    covering FEWER attack flows.  In the limit of a single episode containing every malicious
-    flow, recall is 1 whenever that episode fires.                                       [D3a]
 
-    Selecting a grouping family by recall therefore selects coarseness, not detection.  The
-    comparable objective is FLOW COVERAGE -- the fraction of malicious FLOWS that sit inside an
-    alerted episode -- whose denominator is the window's malicious flow count and is the same
-    for every family.  t26_H4_grouping.py already computes it (flow_cov_addis, flow_cov_elond);
-    E6 selects on flow coverage and reports recall alongside so the gap is visible.       [D3b]
-
-    This is F4's flow-vs-episode gap doing damage in a new place, and it is the single design
-    choice most likely to have produced a spurious "coarse grouping wins" result.
-    """)
     mal_flows = np.array([100, 1, 1, 1, 1])
     fine_fired = np.array([False, True, True, True, True])
     fine_recall = fine_fired.sum() / 5
@@ -143,20 +94,7 @@ def main():
                (coarse2_fired.sum() / 5) > (mal2[coarse2_fired].sum() / mal2.sum()))
     check("D3a  single-episode grouping recall is 1 when it fires", 1.0 / 1.0, 1.0, 0)
 
-    print("=" * 118)
-    print("D4.  THE SELECTION VALUE IS BIASED UP; ONLY THE EVALUATION VALUE COUNTS")
-    print("=" * 118)
-    print("""
-    V_{j-1}(chat) is a MAXIMUM over G noisy estimates, so it overstates what chat is worth.  For
-    G configs of equal true value with independent noise of sd sigma,
 
-            E[max] - true  ~  sigma * sqrt(2 ln G)                                       [D4a]
-
-    which at G = 70 is 2.9 sigma.  t39 therefore reports the selection-window value and the
-    evaluation-window value side by side; the DROP between them is the winner's curse and is
-    itself a reportable number.  Quoting the selection-window value as the transferred
-    performance is the error this guards against.
-    """)
     from scipy.stats import norm as _norm
     from scipy.integrate import quad as _quad
 
@@ -183,17 +121,6 @@ def main():
     check_bool("D4a  sqrt(2 ln G) is within 30% of the truth at G = 70 (sizing rule only)",
                abs(math.sqrt(2 * math.log(70)) / emax_exact(70) - 1.0) < 0.30)
 
-    print("=" * 118)
-    print("D5.  TIES ARE THE COMMON CASE, NOT THE EXOTIC ONE")
-    print("=" * 118)
-    print("""
-    The objective is driven by integer detection counts over a grid whose members frequently
-    produce identical alert sets (adjacent bucket widths on a stream whose episodes are hours
-    apart give the SAME partition).  An undeclared tie-break silently encodes the author's
-    preference as a result.  select() takes a priority order fixed in the script's source
-    before any data is read, and returns the number of tied winners so that a coin flip is
-    reported as a coin flip.                                                             [D5a]
-    """)
     v = np.array([0.5, 0.9, 0.9, 0.9, 0.2])
     w, nt = select(v, np.arange(5))
     check("D5a  tie-break picks the lowest declared priority", w, 1, 0)
@@ -215,24 +142,7 @@ def main():
     check_bool("D5a  NaN entries alongside finite ones are simply excluded",
                select(np.array([0.2, np.nan, 0.9, np.nan]), np.arange(4)) == (2, 1))
 
-    print("=" * 118)
-    print("D6.  THE FEASIBILITY GATE NEEDS NO TUNING AND TRANSFERS EXACTLY")
-    print("=" * 118)
-    print("""
-    F5: the feasibility margin is
 
-            margin = CEIL * w0 / T - 1,      CEIL = (|C| + 1)/k                          [D6a]
-
-    a function of |C|, k and T ONLY -- never of the scores or the detector.  |C| is the count of
-    CALIBRATION-window flows labelled benign, so this is not a label-free quantity in general;
-    what matters for E6 is that it uses nothing from the EVALUATION window beyond that window's
-    grouping key and timestamps, so the feasible/infeasible verdict for every configuration is
-    available before any score is computed and cannot be a tuned quantity.  E6 must therefore not count it as one;
-    what E6 tests is whether the choice AMONG FEASIBLE configurations transfers.
-
-    The one thing that can still go wrong is that the feasible SET changes between windows,
-    because T does.  That is measurable without labels, and t39 reports it as a separate row.
-    """)
     W0 = 0.025
     def margin(NC, T, k=1):
         return (NC + 1.0) / k * W0 / T - 1.0
@@ -252,16 +162,7 @@ def main():
     check_bool("D6b  the record's headline grouping is feasible with room",
                margin(NC, 31568) > 0.4, note="T = 31,568 against T* = 45,328")
 
-    print("=" * 118)
-    print("D7.  FOUR PAIRS AND FIVE FOLDS: REPORT EVERY ONE")
-    print("=" * 118)
-    print("""
-    Five positions give four ordered (select, evaluate) pairs for E6a and five folds for E6b.
-    That is too few for an average to hide a failure in, and too few for one to be dismissed as
-    noise.  t39 prints every pair and every fold; the summary line is the WORST case, not the
-    mean, because the claim being defended is "the findings do not require test-window tuning"
-    and a single window where they do refutes it.                                        [D7a]
-    """)
+
     check("D7a  ordered pairs from 5 windows", 5 - 1, 4, 0)
     check("D7a  leave-one-out folds from 5 windows", 5, 5, 0)
 

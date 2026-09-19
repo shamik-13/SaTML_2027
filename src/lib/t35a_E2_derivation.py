@@ -1,4 +1,4 @@
-"""E2, part 1 -- the ANALYTIC derivation of periodic controller restart, verified numerically."""
+
 
 
 def main():

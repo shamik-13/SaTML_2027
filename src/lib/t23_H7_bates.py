@@ -1,6 +1,3 @@
-"""H7 -- apply the Bates et al. calibration-conditional adjustment and measure its power cost"""
-
-
 def main():
     import numpy as np, json, time
     from pathlib import Path
@@ -46,11 +43,6 @@ def main():
                                  beta_ratio=mb / mn, dkw_ratio=md / mn))
             print(f"  {k:>6} {d:>7.2f} {mn:>17,.0f} {mb:>15,.0f} {mb/mn:>8.3f} "
                   f"{md:>14,.0f} {md/mn:>10.5f}")
-    print("\n  The beta form costs a factor 2.3 at k=1 and almost nothing at k=1000: the")
-    print("  correction shrinks as 1 + O(1/sqrt(k)), so it is cheapest exactly where the")
-    print("  ceiling is already lowest.  That is F11 restated with the fix applied.")
-    print("  The DKW form is unusable in this tail: its additive sqrt(log(1/delta)/2n) term")
-    print("  dominates k/(n+1) by three orders of magnitude at k=1.")
 
     X, y, ts, src, dst = hs.load()
     N = len(y)
@@ -90,20 +82,8 @@ def main():
             emp.append(dict(n_cal=n_cal, k=k, analytic=ana,
                             nominal_exceed=exc_nom / B, adjusted_exceed=exc_adj / B))
             print(f"  {n_cal:>8,} {k:>6} {ana:>10.4f} {exc_nom/B:>18.4f} {exc_adj/B:>30.4f}")
-    print("\n  The analytic column is P(Beta(k, n+1-k) > k/(n+1)), which is 1/e = 0.3679 at k=1")
-    print("  for every n (F10).  The measured column matches it at n_cal = 1,000 (0.3705 vs")
-    print("  0.3681)")
-    print("  and drifts below it as n_cal grows, because the check estimates the conditional")
-    print("  null rate u on a FINITE 500,000-flow holdout: at n_cal = 100,000 the quantity being")
-    print("  resolved is u ~ 1e-5, which the holdout can only measure to +/- 2e-6, and the")
-    print("  detector's scores are tied in the far tail.  So the empirical check confirms F10")
-    print("  where it has the resolution to do so and is resolution-limited beyond that; it is")
-    print("  NOT evidence that the 1/e result depends on n.")
-    print("  The adjusted rule holds its stated delta = 0.10 in every cell, which is the claim")
-    print("  H7 exists to test.")
 
     print("\n" + "=" * 112)
-    print("DETECTION COST ON THE REAL EPISODE STREAM, delta = 0.10, 5 positions x 2 seeds")
     print("=" * 112)
     POS = [0.55, 0.62, 0.70, 0.77, 0.85]
     rows = []
@@ -170,11 +150,6 @@ def main():
         a = addis_k[-1]
         print(f"  {k:>6} {a['rejections'][0]:>7}/{a['rejections'][1]:>5}/{a['rejections'][2]:<10} "
               f"{a['fdp'][0]:>8.3f}/{a['fdp'][1]:>6.3f}/{a['fdp'][2]:<9.3f} {over:>7}/{len(fd):<6}")
-    print("\n  ADDIS holds FDP at k = 1 (median 0.033) but not beyond: 0.246 at k = 100 and")
-    print("  0.707 at k = 1000, against a target of 0.05.  Its escape from the section 4.13")
-    print("  template does not come with working error control -- at k = 1 that was luck, not")
-    print("  control, and sweeping k exposes it.  This is the empirical counterpart of the")
-    print("  uniform-conservativeness violation measured in section 4.20.")
 
     json.dump({"analytic": analytic, "empirical_validity": emp, "rows": rows, "addis_by_k": addis_k,
                "summary": summ, "deltas": DELTAS, "ks": KS, "n_ref": NREF},

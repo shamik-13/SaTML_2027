@@ -27,9 +27,6 @@ plt.rcParams.update({
     "xtick.color": INK, "ytick.color": INK,
     "legend.frameon": False, "figure.dpi": 200,
     "savefig.bbox": "tight", "savefig.pad_inches": 0.02,
-    # Embed text as TrueType (Type 42), not Type 3: the submission preflight flags Type 3 fonts, and
-    # matplotlib's default writes every glyph as a Type 3 procedure.  Set here, before any figure is
-    # drawn, so the notebook and the LaTeX build produce the same font objects.
     "pdf.fonttype": 42, "ps.fonttype": 42,
 })
 
@@ -48,33 +45,24 @@ def save(fig, name):
 
 
 def fig2_envelope():
-    """Calibration set required to keep a rejection possible, against the horizon."""
     k, alpha, w0, zeta = 1, 0.05, 0.025, 2.2857744
     T = np.logspace(3, 9.2, 400)
     fig, ax = plt.subplots(figsize=(COL, 1.9))
 
-    # "[oracle]" was the wrong word here and collided with the paper's OTHER use of it (an oracle
-    # attack cost, which knows the realised evidence and the live level).  gamma_t = 1/T knows only
-    # the horizon, so it is the horizon-aware uniform allocation and nothing more.
     ax.loglog(T, k*T/w0 - 1, color=PALETTE[0],
               label=r"$c_0=w_0$ (LORD++), horizon-aware $\gamma_t=1/T$")
     ax.loglog(T, k*T/alpha - 1, color=PALETTE[0], ls=":", lw=1.1,
               label=r"$c_0=\alpha$ (LOND/e-LOND), horizon-aware $\gamma_t=1/T$")
     ax.loglog(T, k*zeta*T**1.6/w0, color=PALETTE[1], ls="--",
               label=r"covered families, $\gamma_j\propto j^{-1.6}$")
-    # The online e-BH curve is gone: the absorbing-horizon predicate is not even DEFINED for a
-    # procedure that decides by a fixed point over the history, so plotting it against the covered
-    # families needed a three-line caption to say it did not belong.  App. C makes the comparison.
 
     ax.axhspan(1.81e6, 2.45e6, color=MUTE, alpha=0.22, lw=0)
     ax.text(2.2e9, 1.35e6, "available corpus, 1.8–2.4M flows",
             fontsize=6.3, color="#3a3a3a", va="top", ha="right")
-    # where the horizon-uniform curve leaves the corpus we actually have
+
     tmax = 2.449031e6 * w0 / k
     ax.plot([tmax], [2.449031e6], "v", ms=4.2, color=PALETTE[0], zorder=6)
 
-    # markers for the two horizons named in the text; only the LSPR23 one is labelled here,
-    # the rest of the scale is quoted in prose rather than crowding the panel
     for x in (16.35e6, 8.64e8):
         ax.plot([x], [k*x/w0 - 1], "o", ms=3.6, color=PALETTE[0], zorder=5)
     ax.annotate("LSPR23 stream:\n$6.5\\times10^{8}$ needed", (16.35e6, k*16.35e6/w0 - 1),
@@ -90,9 +78,6 @@ def fig2_envelope():
 
 
 def fig1_chain():
-    """Top row: the pipeline.  Bottom row: the one causal chain the body follows.  The padding
-    surface hangs off the grouping stage; the controller-state extension is a muted appendix note,
-    so that it cannot compete visually with the main chain."""
     fig, ax = plt.subplots(figsize=(WIDE, 1.75))
     ax.set_xlim(0, 100); ax.set_ylim(0, 56); ax.axis("off")
 
@@ -124,7 +109,6 @@ def fig1_chain():
     ax.text(kx, y + h + 3.2, r"reject iff  $\mathrm{Ev}(G_t)\ \geq\ 1/\alpha_t$,  $\alpha_t\downarrow$",
             ha="center", va="bottom", fontsize=6.8, color=MUTE)
 
-    # --- the attack surface, hanging off the stage that creates it --------------------------
     bx = 46.5 + w/2
     ax.add_patch(FancyArrowPatch((bx, 32.6), (bx, y - 0.4), arrowstyle="-|>",
                                  mutation_scale=8, linewidth=1.0, color=WARN, zorder=1))
@@ -132,14 +116,12 @@ def fig1_chain():
             ha="left", va="center", fontsize=6.9, color=WARN)
     ax.text(bx + 1.2, 26.9, "append ordinary flows to own episode  (Thm. 3)",
             ha="left", va="center", fontsize=6.2, color=WARN, style="italic")
-    # the controller-state extension is an appendix result: dashed, muted, deliberately subordinate
     kx2 = 61.5 + w/2
     ax.add_patch(FancyArrowPatch((kx2, 32.6), (kx2, y - 0.4), arrowstyle="-|>", linestyle="--",
                                  mutation_scale=6, linewidth=0.6, color=MUTE, zorder=1))
     ax.text(kx2 + 1.0, 24.0, "adaptive controller-state extension (App. G)",
             ha="left", va="center", fontsize=5.8, color=MUTE, style="italic")
 
-    # --- the causal chain -----------------------------------------------------------------
     chain = [("bounded evidence\n$M<\\infty$", 1.5, INK),
              ("summable spending\n$\\alpha_t\\to 0$", 21.0, INK),
              ("finite discovery horizon\n(Thm. 1\u20132, Cor. 1)", 40.5, ACC),
@@ -163,16 +145,8 @@ def fig1_chain():
 
 
 def fig3_granularity_body():
-    """Feasibility margin and alert blur against bucket width; five windows, seed 0, with the
-    primary window emphasised and the secondary as its lighter check (restructure, Fig. 3).
-    Same sources as make_figures.fig3_granularity (t26_H4_5pos for the margin, t47_W7 for blur)."""
     d = json.load(open(RES / "t26_H4_5pos.json"))
     rows = [r for r in d["rows"] if r["family"] == "src-dst" and r["seed"] == 0]
-    # Controller-aligned feasibility ratio rho = M*c0/T, so that the threshold is 1 for the
-    # controller actually being discussed.  The stored `margin` is the cross-controller level-w0
-    # slack M*w0/T - 1, on which e-LOND (c0 = 2*w0) stays feasible down to -1/2 -- which is what
-    # forced every caption to explain why negative-margin rows can still detect.  rho is computed
-    # here from NC and T, the same two numbers the margin comes from; nothing is re-measured.
     C0_ELOND = 0.05                       # c_0 = alpha = 2*w_0 for LOND/e-LOND
     for r in rows:
         r["rho"] = (r["NC"] + 1) * C0_ELOND / r["T"]
@@ -182,15 +156,10 @@ def fig3_granularity_body():
 
     fig, axes = plt.subplots(2, 1, figsize=(COL, 1.95), sharex=True)
 
-    # The primary window carries the claim and the secondary is its correlated check; the other
-    # three are context, so they are drawn thin and grey rather than as three more equal series.
     STYLE = {0.55: dict(color=PALETTE[0], lw=1.9, ms=3.4, zorder=5, label="0.55 primary"),
              0.62: dict(color=PALETTE[1], lw=1.2, ms=2.8, zorder=4, label="0.62 secondary")}
 
     def plot_panel(ax, src, key, pos_key=lambda r: r["pos"]):
-        """Primary and secondary as named series; the other three windows as one shaded envelope,
-        because the narrative treats them as context and three more equal lines read as five
-        co-equal experiments."""
         env = {}
         for pos in POS:
             pts = sorted(((r["bucket_s"] or 86400, r[key]) for r in src
@@ -240,15 +209,6 @@ def fig3_granularity_body():
 
 
 def fig4_padding_body():
-    """The headline attack evidence, and only that.
-
-    The previous version plotted the secondary window, the KNOWN-INVALID 0.85 stress window and the
-    first-flow sensitivity family.  A reviewer skimming the figure would have associated the paper's
-    principal attack evidence with the window the paper itself says carries no valid e-value.  The
-    headline evidence is: the three primary-window costs, the secondary-window distribution, and the
-    second dataset.  AIT supplies 79 canonical detections, so the stress window is no longer needed
-    merely to have a larger distribution; it and the first-flow arm move to figE_padding_sensitivity.
-    """
     full = json.load(open(RES / "t28b_reallevel.json"))
     by_order = full["table1_by_order"]
     prim = np.array(by_order["keyhash"]["0.55_0"]["pads_real"], float)     # 23, 24, 33
@@ -256,22 +216,13 @@ def fig4_padding_body():
     t67 = json.load(open(RES / "t67_ait_order.json"))
     c = t67["summary"]["canonical"]
     org_med = c["median_rstar_by_org"]
-    # The same window under the max-min-optimal allocation: more alerts, each dearer.  Plotting it
-    # beside the headline three is the point of the panel -- the cost is a curve set by the level
-    # an alert fires at, not a property of the pipeline (t73).
     unif = np.array(json.load(open(RES / "t73_uniform_padding.json"))
                     ["cells"]["0.55_keyhash_uniform"]["pads"], float)
-
-    # Round 23: the body places this as a two-column figure* so that the headline attack evidence
-    # dominates its page; WIDE canvas, fonts scaled to the larger panels, data unchanged.
     fig, (ax, bx) = plt.subplots(1, 2, figsize=(WIDE, 2.35),
                                  gridspec_kw=dict(width_ratios=[1.35, 1.0]))
     print(f"    fig4: primary {sorted(prim.astype(int))}, secondary median {np.median(sec):.0f} "
           f"({len(sec)} alerts), AIT {c['n_suppressible']}/{c['n_detected']} over {len(org_med)} orgs")
 
-    # --- left: LSPR23 cost per alert -------------------------------------------------------
-    # the grid must reach the axis limit: a CDF that stops at 1e4 while the axis runs to 3e5 draws the
-    # horizon-aware curve as if 22% of its alerts were never suppressed (round 23)
     grid = np.unique(np.concatenate([[1], np.logspace(0, 5.5, 400)]))
     ax.plot(grid, [(sec <= g).mean() for g in grid], color=ACC, lw=2.4, zorder=4,
             label=f"0.62 secondary ({len(sec)} alerts,\nmedian {np.median(sec):.0f})")
@@ -297,7 +248,6 @@ def fig4_padding_body():
               edgecolor=MUTE, facecolor="white", borderpad=0.3)
     ax.set_title("A  LSPR23, canonical order", fontsize=7.6, loc="left", pad=3)
 
-    # --- right: the second dataset ---------------------------------------------------------
     orgs = sorted(org_med, key=org_med.get)
     bx.barh(range(len(orgs)), [org_med[o] for o in orgs], color=ACC, alpha=0.85, height=0.62)
     bx.set_yticks(range(len(orgs)))
@@ -317,7 +267,6 @@ def fig4_padding_body():
 
 
 def figE_padding_sensitivity():
-    """The stress window and the first-flow family, moved out of the body figure (appendix E)."""
     full = json.load(open(RES / "t28b_reallevel.json"))
     guar = full.get("fig4a_guarantee") or full["fig4a_pools"]
     pools = ["generic", "attacker-origin", "protocol-matched", "service-matched", "black-box"]
@@ -356,11 +305,8 @@ def figE_padding_sensitivity():
 
 
 def figA_addis_state():
-    """The two ADDIS panels, stacked at column width for appendix G.  Panel letters B and C are kept
-    from the earlier combined figure so the appendix tables read against it unchanged."""
     fig, axes = plt.subplots(2, 1, figsize=(COL, 3.15))
 
-    # --- B: real ADDIS state attack (0.85 stress) -- greyed, mechanism only ----------------
     t = json.load(open(RES / "t32_B1.json"))
     sw = sorted(t["front_load_sweep"], key=lambda r: r["B"])
     B = [r["B"] for r in sw]; P = [r["p_target_detected"] for r in sw]
@@ -384,7 +330,6 @@ def figA_addis_state():
     ax.set_title("B  state attack, real stream (0.85 stress; mechanism only)",
                  fontsize=6.6, loc="left", pad=3, color="#5a5a5a")
 
-    # --- C: the same attack where ADDIS's guarantee genuinely holds (synthetic) ------------
     ax = axes[1]
     syn = json.load(open(RES / "t52_B1_synthetic.json"))
     a = syn["attack"]; w = a["witness_seed7"]; sweep = sorted(w["sweep"], key=lambda r: r["B"])
@@ -408,8 +353,6 @@ def figA_addis_state():
     fig.tight_layout(h_pad=1.1)
     save(fig, "figA_addis_state")
 
-
-#: the six figures the submission uses, in the order they appear in it
 SUBMISSION = [
     ("fig1_chain", "Fig. 1 -- the trust layer and the causal chain"),
     ("fig2_envelope", "Fig. 2 -- calibration required against the horizon"),

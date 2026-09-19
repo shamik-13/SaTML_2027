@@ -1,4 +1,4 @@
-"""E7 -- a second feedback controller, and disposition delay in real time.  Section 4.39."""
+
 
 
 def main(smoke=False):

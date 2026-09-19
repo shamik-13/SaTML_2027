@@ -1,37 +1,3 @@
-"""R7-AIT-suppression -- the FULL Surface A pipeline on the benign-inclusive AIT testbed, with
-REAL ordinary-to-victim padding flows REPLAYED against the running controller level (no graft).
-
-Motivation (reviewer item 5).  t51 shows the pad-SCORING premise transfers to a benign-inclusive
-host-conditioned setting.  This stage runs, per organisation, the complete chain:
-
-    flow (or host-conditioned) detector, leave-one-org-out, features chosen PER FOLD from the
-    training orgs only -> chronological in-org benign conformal calibration (calibration flows
-    strictly PRECEDE deployment) -> episodes (src-dst 2h) -> e-LOND detections -> suppress each
-    detected malicious episode by REPLAYING real ordinary-to-victim benign flows until the group's
-    mean evidence falls below 1/level -> empirical min/median suppression cost r* and success rate.
-
-The two arms replay pads differently, because the two detectors read different things:
-
-  FLOW-ONLY arm -- flow features carry no context, so a pad's evidence does not depend on how many
-    pads preceded it.  Pads are drawn with replacement from the pool's OBSERVED 0-or-M evidence
-    (empirical_rstar).  A firing pad contributes the maximum e-value M and RAISES the cost, which is
-    exactly what the zero-pad closed form misses.
-
-  HOST-CONDITIONED arm -- the six host features ARE causal (prior-flow counts, distinct peers,
-    failure fractions), so appending pads changes the context every later pad is scored in.  Holding
-    them fixed would be a static-context diagnostic, not a replay (review 5, item 9).  We therefore
-    port t49's accumulation model: the k-th appended pad sees the attacked pair's real causal state
-    at episode end with counts raised by (k-1), distinct-peer counts PINNED (the attacker pads from a
-    host already talking to the victim, so no new peer appears -- this models a SINGLE attacker-victim
-    pair and excludes botnet / new-host padding), and failure fractions moved toward the pool's
-    measured rate.  Scoring the whole pool under that context gives a fire curve p_k, and the replay
-    draws the k-th pad as firing with probability p_k (empirical_rstar_causal).
-
-  A success is only reported over the accumulation range the curve was actually EVALUATED at; an
-  episode whose cost exceeds that reach is returned unvalidated rather than given the closed form.
-
-Writes out/t54_ait_suppression.json.
-"""
 import numpy as np, json, time, glob, os, hashlib
 from pathlib import Path
 from sklearn.metrics import roc_auc_score
@@ -44,9 +10,7 @@ import t49_R7_host_detector as t49
 BUCKET_US = 2 * 3600 * 1_000_000     # 2-hour bucket; AIT ts is in microseconds
 K = 1; A = 0.05; W0 = 0.025
 D_REPLAY = 200                       # random pad-replay draws per detected episode
-# Host-conditioned chain runs on EVERY organisation by default (reviewer round 31): restricting it to a
-# chosen pair leaves the arm open to the reading that the folds were selected for their outcome.
-# ORGS_HOST=a,b in the environment narrows it, for a partial re-run only.
+
 _OH = os.environ.get("ORGS_HOST", "").strip()
 ORGS_HOST = [x for x in _OH.split(",") if x] or None   # None -> all organisations
 N_CTX_LEVELS = 60                    # geometric accumulation levels at which the causal context is scored
@@ -64,12 +28,6 @@ def build_evalues(s_cal, s_te, k=K):
 
 
 def episodes(e_te, y_te, ts_te, src_te, dst_te, order="first-flow"):
-    """Group deployment flows into (src,dst,2h-bucket) episodes.
-
-    `order` is the pre-committed within-bucket sequence: "first-flow" arrival (the default, and what
-    every previously reported AIT number uses) or "keyhash", the canonical metadata hash the LSPR23
-    results report.  The canonical branch calls h_stream's key_hash/hashed_order directly rather than
-    reimplementing them, so the two datasets cannot drift apart in what "canonical" means."""
     bucket = ts_te // BUCKET_US
     key = np.stack([src_te, dst_te, bucket], axis=1)
     _, gid = np.unique(key, axis=0, return_inverse=True)
@@ -96,11 +54,6 @@ def episodes(e_te, y_te, ts_te, src_te, dst_te, order="first-flow"):
 
 
 def empirical_rstar(S, m, lvl, pad_e, rng, D=D_REPLAY):
-    """Minimal number r of REAL replayed pads (each carrying its true 0-or-M evidence, sampled with
-    replacement from the observed ordinary-to-victim pool pad_e) that pushes (S + sum pad_e)/(m+r)
-    below 1/lvl.  Returns the empirical min/median r* and the success rate over D draws.  With a
-    zero-firing pool this collapses to the closed form floor(S*lvl)-m+1; a firing pad ADDS M and so
-    raises the cost, which is exactly what the closed form misses."""
     thr = 1.0 / lvl
     closed = int(np.floor(S * lvl)) - m + 1
     if S / max(m, 1) < thr:                    # already suppressed (should not happen for a detection)
@@ -125,14 +78,6 @@ def empirical_rstar(S, m, lvl, pad_e, rng, D=D_REPLAY):
 
 
 def causal_fire_curve(clf, pad_flowstats, raw, pool_fail, thr, kmax):
-    """p_k: the fraction of the real ordinary-to-victim pool that FIRES when appended as the k-th pad,
-    under the victim's CAUSALLY UPDATED host context.
-
-    This is what makes the host-conditioned arm a real replay rather than a static-context diagnostic:
-    appending pads raises the victim's prior-flow count (and the attacker host's), moves both failure
-    fractions toward the pool's rate, and leaves the distinct-peer counts pinned (padding one victim
-    from a host already talking to it adds no new peer) -- exactly t49's accumulation model, applied
-    here to AIT.  Evaluated on a geometric grid and held piecewise-constant between grid points."""
     levels = np.unique(np.clip(np.round(np.geomspace(1, max(kmax, 1), N_CTX_LEVELS)).astype(np.int64),
                                1, max(kmax, 1)))
     p = np.array([t49._fire_rate(clf, pad_flowstats,
@@ -142,15 +87,6 @@ def causal_fire_curve(clf, pad_flowstats, raw, pool_fail, thr, kmax):
 
 
 def empirical_rstar_causal(S, m, lvl, levels, p_curve, CEIL, rng, D=D_REPLAY, cap=None):
-    """Replay with a CAUSAL context: the k-th pad fires with probability p_k read off `p_curve`.
-    Otherwise identical to empirical_rstar -- a firing pad contributes the maximum e-value M and
-    RAISES the cost.  With a flat curve this reduces exactly to the static replay.
-
-    A suppression is only ever reported as successful over the accumulation range the context curve
-    was actually EVALUATED on: `levels[-1]` is the largest k at which the pool was scored, and any
-    outcome requiring more pads than that is returned as unvalidated (median None, success 0) with
-    `validated_to` recording the reach.  Reporting the deterministic closed form past that point
-    would assume the context stays benign at accumulation levels never scored."""
     thr = 1.0 / lvl
     closed = int(np.floor(S * lvl)) - m + 1
     reach = int(levels[-1])
@@ -180,22 +116,11 @@ def empirical_rstar_causal(S, m, lvl, levels, p_curve, CEIL, rng, D=D_REPLAY, ca
 
 
 def fold_rng(test, use_host, order):
-    """A generator keyed to (organisation, arm, order), not to position in the run.
-
-    ROUND 31: the host arm was extended from a hard-coded pair to all eight organisations.  With one
-    mutable generator threaded through every fold, the pool subsampling and replay draws a fold sees
-    depend on which folds ran before it, so adding organisations silently perturbs the ones already
-    reported and no subset can be re-run on its own.  Keying the seed to the fold makes each row a
-    function of its own organisation, arm and order alone, which is what lets the eight-fold run
-    reproduce the pair exactly, lets any subset be re-run for checking, and makes t67's
-    order-resequencing arms reproduce this stage's first-flow rows by construction."""
     h = hashlib.sha256(f"t54|{test}|{'host' if use_host else 'flow'}|{order}".encode()).digest()
     return np.random.default_rng(int.from_bytes(h[:8], "big"))
 
 
 def run_org(test, scen, names, common_by_fold, use_host, rng=None, order="first-flow"):
-    """Full chain for one held-out org; use_host augments the flow features with causal host context.
-    `order` selects the within-bucket sequence; everything before the episode build is order-free."""
     rng = fold_rng(test, use_host, order)  # fold-keyed; the passed-in `rng` is deliberately ignored
     common = common_by_fold[test]          # features chosen from the TRAINING orgs of this fold
     s = scen[test]; y = s["y"]; ts = s["ts"]
@@ -216,7 +141,6 @@ def run_org(test, scen, names, common_by_fold, use_host, rng=None, order="first-
     except ValueError:
         auroc = float("nan")
 
-    # chronological split: calibrate on benign flows strictly BEFORE the first attack; deploy after
     atk_ts = ts[y == 1]; t_split = int(atk_ts.min())
     cal_mask = (ts < t_split) & (y == 0); dep_mask = ts >= t_split
     if cal_mask.sum() < 2000 or dep_mask.sum() < 50 or int(y[dep_mask].sum()) < 3:
@@ -231,7 +155,6 @@ def run_org(test, scen, names, common_by_fold, use_host, rng=None, order="first-
     rej, tp, sil, _ = run_lond(ctx, g1, fired=fired)
     det = fired & ep["ismal"]; n_det = int(det.sum())
 
-    # real ordinary-to-victim pad pool: benign deployment flows to an attacked victim, same detector
     dep_dst_ip = s["dst_ip"][dep_mask]
     pad_mask = (y_te == 0) & np.isin(dep_dst_ip, list(s["victims"]))
     pad_e = e_te[pad_mask]
@@ -242,15 +165,12 @@ def run_org(test, scen, names, common_by_fold, use_host, rng=None, order="first-
           f"NC={NC:,}, CEIL={CEIL:,.0f} -> e-LOND {rej} rej, {tp} true, {n_det} det; "
           f"pad-pool {int(pad_mask.sum()):,} flows fire {pad_fire:.2e}")
 
-    # price each detected episode by REPLAYING real pads at their true evidence
     base_lvl = np.zeros(ctx.T); R = 0
     for tstep in range(1, ctx.T + 1):
         lvl = A * g1[tstep] * (R + 1); base_lvl[tstep - 1] = lvl
         if not ctx.infeasible(lvl) and ep["Ev"][tstep - 1] >= 1.0 / lvl:
             R += 1
-    # For the HOST-CONDITIONED arm the pad's own evidence is not a fixed draw: appending pads changes
-    # the victim's causal host context, hence the score of every later pad.  We therefore replay the
-    # context causally (t49's accumulation model) rather than holding the host features fixed.
+
     causal = None
     if use_host:
         thr_score = float(np.sort(score_all[cal_mask])[-K])     # fires iff score STRICTLY exceeds it
@@ -268,8 +188,7 @@ def run_org(test, scen, names, common_by_fold, use_host, rng=None, order="first-
     for j in np.flatnonzero(det):
         Sj, mj, lvlj = ep["sum_e"][j], int(ep["nsz"][j]), base_lvl[j]
         if causal is not None and causal["flowstats"].shape[0]:
-            # score the context curve out PAST the cost the episode needs, so a success is never
-            # asserted at an accumulation level the pool was not actually scored at
+
             kcurve = int(max((int(np.floor(Sj * lvlj)) - mj + 1) * CTX_MARGIN, 1000))
             _, raw = t49._episode_base_state(causal["src"], causal["dst"], causal["ts"],
                                              causal["is_fail"], int(ep["src"][j]), int(ep["dst"][j]),
@@ -320,9 +239,7 @@ def main():
     names = [Path(p).parent.name for p in paths]
     print(f"  loading {len(names)} AIT scenarios: {names}")
     scen = {n: t51.load_scenario(p) for n, p in zip(names, paths)}
-    # PER-FOLD feature selection from the TRAINING orgs only, mirroring t51: taking the intersection
-    # over every org (the held-out one included) would let the test org's own column availability
-    # choose the feature set -- a transductive leak in a leave-one-org-out design.
+
     common = {test: sorted(set.intersection(*[scen[n]["good"] & set(scen[n]["Xnum"].columns)
                                               for n in names if n != test]))
               for test in names}

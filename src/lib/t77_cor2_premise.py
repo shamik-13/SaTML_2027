@@ -1,33 +1,3 @@
-"""t77 -- does Corollary 2's premise hold on the AIT joint-attack cells?  (round 32)
-
-Corollary 2 (cor:dilution) is stated for e-LOND under HORIZON-UNIFORM spending and has one premise about
-the rest of the stream: no hypothesis other than the attacker's own episodes carries evidence at or
-above the cold-start threshold T/alpha.  The paper previously inferred that the premise "fails" in an
-organisation from the existence of a baseline non-attacker alert.  That inference is invalid: a
-non-attacker alert can fire only after earlier rejections have raised the level, at which point its
-evidence may be well below T/alpha.  This stage measures the premise directly, per organisation and
-detector arm, on exactly the episode streams t76_joint_ait attacked:
-
-  max_{j not own} Ev_j / (T/alpha)     >= 1  <=>  the cold-start premise fails on that stream
-  n_nonown_at_cold_start                the number of non-attacker episodes at or above T/alpha
-  per baseline non-attacker alert       its evidence, the R it fired at, and whether it clears the
-                                        R = 0 level at its own position (fires_at_R0) or only the
-                                        raised level (level-raised)
-
-together with the own-episode side (max own evidence, c_crit = max_own Ev * alpha / T, whether some
-own episode attains the ceiling so that c_crit = rho).  The other three diagnostics the review asked
-for -- episodes excluded for insufficient prior templates, the firing behaviour of admitted pads, and
-the residual attacker alerts -- are already in out/t76_joint_ait.json and are read from there by the
-table generator; this stage does not recompute them.
-
-CONTROL.  The streams are rebuilt with t76.prepare_org (t54's leave-one-organisation-out chain,
-canonical order) and the clean e-LOND walk must reproduce t76's stored baselines field by field
-(T, NC, CEIL, rho, c_int, rejections, true detections, own and non-attacker alert counts) for every
-cell, or the stage fails.  Cells: flow arm on all eight organisations, host arm on the two the joint
-host arm covers (t76.ORGS_HOST).
-
-Writes out/t77_cor2_premise.json.    AIT_DIR=... python t77_cor2_premise.py
-"""
 import glob
 import json
 import time

@@ -1,72 +1,3 @@
-"""t76 -- the JOINT attack on the benign-inclusive AIT stream (design: docs/48_joint_ait_design.md).
-
-WHAT THIS CLOSES.  The paper's AIT results (t54, t67) price every alert on its own against the level it
-received on the unperturbed e-LOND trajectory, and the LSPR23 joint rerun (t75) propagates ZERO-evidence
-pads through the controller state.  Neither shows what happens when real pads can fire, when
-non-attacker episodes reject and raise R, and when a host-conditioned detector re-scores every later
-flow to the victim -- all at once, on one trajectory.  This stage re-runs the whole deployment window
-after the attack, per organisation, under both spending regimes, with the canonical within-bucket order.
-
-THE ONE CAUSAL CHAIN (docs/48 sec. 3.0).  Pads for the attacker's own episode j are inserted immediately
-after the attacker's OWN last flow in j, t_atk(j) (co-resident benign flows can end the episode later
-and the attacker cannot see them; on LSPR23 t_atk = t_end).  Virtual times t_atk + k*eps: originals at or
-before t_atk see no pad; originals after t_atk on the pair's src or dst see all r pads (counts, fail
-sums; distinct peers unchanged because the pair already exists); pad k sees everything at or before
-t_atk, every earlier pad event on its hosts, and pads 1..k-1 of its own event.  Host features are
-t49.build_host_features' strict-earlier-timestamp features evaluated on that timeline, implemented
-lazily (per-row offsets, re-scored once when the controller reaches the episode) and VALIDATED against a
-full rebuild of the padded flow stream on seeds 0-4.  Original timestamp ties are handled by the strict
-semantics; pad events sharing one timestamp are serialised by controller position (recorded per org).
-
-ATTACKERS.
-  GREEDY (K1, oracle; the LSPR23 t75 sequential attacker with sampled pads): buckets in time order; a
-      bucket is tested in controller order with the carried R; the first own episode (by t_atk) that
-      fires and is not frozen is padded with sampled templates until its realised mean is below its live
-      threshold; the pads' downstream effect is applied; the bucket is re-tested; repeat until no
-      unfrozen own episode fires.  An episode is frozen at SIM_CAP pads or when its pool is unavailable.
-  MULTIPLIER (K0, state-free, pre-committed): c = floor(rho)+1 with rho = M*alpha/T (Corollary 2's
-      integer prescription; also c = 3, the LSPR23-carried value), appended to EVERY own episode at its
-      t_atk with no controller read, in two knowledge variants: THEORY sizes on the observed total arity
-      m_total (more than the attacker knows; isolates firing pads and non-attacker rejections) and
-      OPERATIONAL sizes on the attacker's own flow count m_atk (the uncertainty the paper already names).
-      The padded stream is regime-independent and is evaluated under both spending sequences.
-
-TEMPLATES.  Primary pool for episode j = benign flows to j's victim with ts < t_atk(j) (calibration period
-included: all of it precedes the first attack), sampled with replacement from a seeded stream per
-(trajectory, episode).  Fewer than N_MIN deployment templates -> flagged pool-extended (calibration
-templates carry zero flow-arm evidence by construction under k = 1); fewer than N_MIN in total ->
-pool-unavailable, never padded, never treated as zero-firing.  Comparability arm: t54's whole-deployment
-benign-to-any-victim pool (labelled non-causal).
-
-OUTCOME CLASSES for an own baseline alert that still fires (docs/48 sec. 3.6), total quantities from the
-episode's original flows: budget B_j (K0: (c-1)*m_x; GREEDY: SIM_CAP); need_R0 / need_live = zero-evidence
-pads that would suppress its live evidence at the cold-start / live level.  pool-unavailable; structural
-(B < need_R0); cascade (need_R0 <= B < need_live); pad-fired (B >= need_live, so the residual firing is the
-sampled pads' own evidence).  Created alerts (rejected identities not rejected at baseline) are counted
-separately, own and non-own; no subset-of-baseline assertion is made because re-scoring can create alerts.
-
-CONTROLS.  The clean canonical baselines reproduce t67's canonical flow-only rows (T, NC, rejections,
-true detections) exactly; the clean run of the in-file controller equals h6_procs.run_lond; every K0
-attacked run is re-run through run_lond on the final padded evidence and must agree with the in-file walk;
-the padded flow stream regroups (t54.episodes) to the same episodes with arities m + r (seeds 0-4).
-
-BURSTS.  Where a chunk cannot be proved exact -- the episode's own evidence, or its own live level, could
-move while the chunk is sampled -- the attacker sends a bounded burst of CHUNK_INEXACT pads and the caller
-re-scores and re-tests between bursts, rather than one pad per controller re-test.  Such an attacker acts
-on state up to one burst old, so its cost is an UPPER bound on the fully-informed oracle's: a burst is only
-ever sent while the episode was still firing at the start of it, so the count can overshoot by at most one
-burst per episode and never undershoot.  `n_inexact_bursts` records how many bursts were sent.  Where a
-chunk IS provably exact (the flow arm always; on the host arm an episode with no original flow after
-t_atk and no earlier-position episode in its bucket that its pads could re-score), doubling chunks are
-used and the result is identical to appending one pad at a time.
-
-FUTILITY.  A suppression attempt stops early when at least FUTILE_MIN pads have been sent and their
-running mean evidence is already at or above the episode's threshold: the episode mean is bounded
-below by the pad mean as the count grows, so no further pad can help.  Such episodes are frozen and
-counted as `pad_fired` failures, with `n_futile` recorded separately.
-
-Writes out/t76_joint_ait.json.    AIT_DIR=... python t76_joint_ait.py
-"""
 import glob
 import hashlib
 import json
@@ -293,10 +224,6 @@ class Pools:
         self.t54_rows = dep[(y[dep] == 0) & vic]
 
     def causal(self, victim, t_atk):
-        """Templates for a pad at t_atk: benign flows to `victim` strictly before it.  The PRIMARY pool
-        is the DEPLOYMENT part; calibration-period flows (all of which precede the first attack) are
-        appended only when the deployment part is undersized (docs/48 sec. 3.3), because they carry zero
-        flow-arm evidence by construction under k = 1 and would otherwise dilute every pool."""
         if int(victim) not in self.ben_by_dst:
             return np.empty(0, dtype=np.int64), 0, False
         rows, rts = self.ben_by_dst[int(victim)]
@@ -310,8 +237,6 @@ class Pools:
 
 # ------------------------------------------------------------------ one attacked trajectory -----------
 class Trajectory:
-    """Mutable state of one attacked run over one organisation: pad counts and evidence per episode,
-    lazy host-feature offsets and dirty rows, per-host pad-event lists (for later pads' base states)."""
 
     def __init__(self, org, seed, pool_kind):
         self.org = org; ep = org["ep"]; self.ep = ep; T = ep["T"]
@@ -343,18 +268,12 @@ class Trajectory:
                     self.unavailable.add(int(j))
             self.pools[int(j)] = rows
         self.log_events = []                                    # (j, r, fails, sum_e_pads) in time order
-        # A chunked pad search is EXACT only when the episode's own live evidence cannot move while the
-        # chunk is being sampled: that holds on the flow arm (nothing is ever re-scored) and, on the host
-        # arm, for an episode with no original flow after t_atk (its own co-resident benign flows, if any,
-        # all precede the pads).  Everything else takes one pad per fixed-point step.
         self._own_rows = {}
         self.exact_batch = {}
         self.exact_level = {}
         for j in np.flatnonzero(ep["ismal"]):
             j = int(j)
             self.exact_batch[j] = (not org["use_host"]) or self.n_after_t_atk(j) == 0
-            # j's own live level can move mid-chunk only if a pad of j re-scores a flow belonging to an
-            # episode EARLIER in j's own bucket (that would change R before j).  Structural, so cached.
             if not org["use_host"]:
                 self.exact_level[j] = True
             else:
@@ -484,23 +403,6 @@ class Trajectory:
 
     # -- greedy pad search for one episode at one live level -------------------------------------
     def pad_until(self, j, lvl):
-        """Pad own episode j at live level `lvl`.
-
-        When a chunk is provably exact -- j's own evidence cannot move while the chunk is sampled
-        (`exact_batch`) and j's own live level cannot move either (`exact_level`) -- sample in doubling
-        chunks and stop at the first crossing: identical to appending one pad at a time, but vectorised.
-        Otherwise append exactly ONE pad and return, so the caller re-scores and re-runs the bucket's
-        controller test before the next pad (docs/48 sec. 3.4).  Returns one of:
-          "suppressed" -- j is below threshold at `lvl` (the caller re-tests regardless);
-          "step"       -- a bounded burst was appended, j not yet below: the caller re-scores and re-tests;
-          "frozen"     -- j can take no more pads: SIM_CAP, or the attack is FUTILE.
-
-        Futility, checked on the realised draws only: the episode mean is
-        (S + sum e)/(m + r) > (sum e)/(m + r), which tends to the mean pad evidence as r grows.  So once
-        at least FUTILE_MIN pads have been sent and their running mean is at or above the threshold, no
-        further pad can bring the episode below it -- the pads are themselves too anomalous to dilute
-        with.  The episode is frozen and surfaces as a `pad_fired` outcome.
-        """
         j = int(j); thr = 1.0 / lvl
         pool = self.pools[j]; rng = self.rng(j)
         exact = self.exact_batch[j] and self.exact_level[j]
@@ -685,9 +587,6 @@ def classify(tr, g1, fired, lvl, base_fired, budget_of):
 
 # ------------------------------------------------------------------ validation -------------------------
 def validate_rebuild(tr):
-    """Materialise the padded stream over the WHOLE organisation with rescaled integer timestamps, rebuild
-    the strict-time host features, and assert they equal the lazy features (deployment rows) and the
-    contexts the pads were scored in."""
     org = tr.org; ep = tr.ep
     total = int(tr.pad_cnt.sum())
     if total == 0:
@@ -760,8 +659,6 @@ def validate_rebuild(tr):
 
 
 def validate_regroup(tr):
-    """Append the pads as flows (at t_atk, after the originals there) and regroup with t54.episodes:
-    same episodes, same order, arities m + r, unchanged labels, evidence as used."""
     org = tr.org; ep = tr.ep; dep = org["dep"]
     y = org["y"][dep]; ts = org["ts"][dep]; src = org["src"][dep]; dst = org["dst"][dep]
     e = tr.e_cur
@@ -777,9 +674,6 @@ def validate_regroup(tr):
     ok = ep2["T"] == ep["T"] and np.array_equal(ep2["src"], ep["src"]) and np.array_equal(ep2["dst"], ep["dst"]) \
         and np.array_equal(ep2["nsz"], ep["nsz"] + tr.pad_cnt) and np.array_equal(ep2["ismal"], ep["ismal"]) \
         and np.allclose(ep2["Ev"], tr.ev_all(), rtol=1e-9, atol=1e-6)
-    # a pad is an APPEND: first timestamps and bucket keys per controller position are unchanged.
-    # t54.episodes returns no gid/first_ts, so the in-file builder (asserted equal to it in
-    # prepare_org) supplies them for the padded stream.
     ep3 = episodes_with_gid(*padded)
     first_ok = bool(np.array_equal(ep3["first_ts"], ep["first_ts"]))
     key_ok = bool(np.array_equal(ep3["bucket"], ep["bucket"]) and
@@ -832,9 +726,6 @@ def summarise(results):
 
 
 def precommit(org):
-    """Everything the K0 policies depend on, written to the JSON BEFORE any attacker runs: the declared
-    horizon T, the calibration size and ceiling, the feasibility ratio and the resulting integer
-    multiplier, and the fixed seeds.  A reader can check that c was not chosen after the outcome."""
     T = org["ep"]["T"]; rho = org["CEIL"] * A / T
     return dict(T=int(T), NC=int(org["NC"]), CEIL=float(org["CEIL"]), rho=float(rho),
                 c_int=int(np.floor(rho)) + 1, c_carried=C_CARRIED, alpha=A, k=K,

@@ -1,106 +1,3 @@
-"""Joint attacked-trajectory rerun: does the attack survive when the controller is re-run under it?
-
-WHY THIS EXISTS.  Every suppression number the paper reports is PER-ALERT: each detected episode is
-padded on its own and judged against the controller level it received on the UNPERTURBED trajectory
-(t48, t74).  The paper says so, and a reviewer read the abstract's "suppresses all 212" as one
-simultaneous end-to-end attack run anyway, then named a joint rerun as "the single highest-value
-additional experiment".  This is that experiment: pad, then RE-RUN e-LOND over the whole padded
-stream, so the controller's own state (its rejection count R, hence every later level) responds to
-the attack.
-
-WHAT CHANGES UNDER A JOINT RERUN, AND WHAT CANNOT.  e-LOND offers alpha_t = alpha * gamma_t * (R_{t-1}+1).
-Suppressing an earlier alert lowers R_{t-1} for every later step, so every later level is LOWER and
-every later threshold 1/alpha_t HIGHER.  Two consequences, both measured here rather than argued:
-  * a pad sized on the unperturbed level still suppresses on the attacked trajectory (the threshold
-    only rose), so the per-alert set is jointly suppressible and Table I's per-alert TOTAL is an
-    upper bound on the joint cost -- the paper states this as a caption remark; the run checks it;
-  * an attacker who pads SEQUENTIALLY, sizing each pad against the level the attacked trajectory
-    actually offers, pays LESS than the per-alert sum.  The gap is the price of ignoring controller
-    state, and it is what a "joint minimum" means here.
-
-THE STREAM PERMUTATION IS CHECKED, NOT ASSUMED.  Every attacker below is applied to the ordered episode
-vector (evidence overwritten in place), which is only legitimate if appending the pads to the FLOW
-stream and regrouping reproduces the same episode order with the same evidence.  Under the canonical
-order that is a theorem (the order hashes the group's OWN (src, dst, bucket) key, which an append does
-not change, and arity enters nowhere); under first-flow it holds only if every pad arrives after its
-target's first flow, so that the (first_ts, first_pos) pair of every group keeps its RELATIVE order
-(absolute positions of later rows shift; the sort compares them, not their values).  So for the STATIC and ADAPTIVE pads, and for the integer state-free multiplier,
-`check_padded_stream` constructs the padded flow stream as the pipeline would receive it online: one
-row per pad flow, carrying the target's (src, dst) -- by definition of the attack the pad IS traffic
-from the attacker's host to the victim -- the timestamp of the target's LAST flow (any instant after
-the attacker's own first flow and inside the bucket would do; this one is convenient), label 0 and
-zero evidence (the pool is asserted firing-free, so this is the evidence a pool flow carries); the
-whole stream is then re-sorted by time with a STABLE sort, so every pad sits after every original
-flow of its target and the stream stays chronological.  It then calls
-h_stream.build_episodes on that stream under the SAME order and asserts (i) the episode count is
-unchanged, (ii) the (src, dst, bucket) key at every stream position is unchanged, (iii) the arities
-are m + r, (iv) no label changed and (v) the evidence vector equals the one the attacker was run on.
-It is run on the STATIC pads (the largest vector), the ADAPTIVE pads and the integer multiplier; the
-capped and other multiplier vectors are sub- or super-sets of those with the same keys, and the
-invariance is a property of the keys, not of the pad sizes.  A failed check is a bug in this file,
-not a result.
-
-THREE ATTACKERS, kept apart because they know different things:
-  STATIC   oracle per-alert pads r*_j = floor(S_j/tau_j) - m_j + 1 from the unperturbed trajectory,
-           applied to every true detection at once, then the controller is re-run.  The pad evidence is
-           drawn from the black-box pool's e-values (N_DRAWS draws, as t74), but because that pool
-           contains no firing flow -- measured on the shipped detector by t48/t74 and asserted again
-           here -- every draw is zero and the arm is a ZERO-EVIDENCE rerun; the draws are kept only so
-           that a pool that did fire would be exercised rather than assumed away.  The end-to-end
-           real-flow replay (pool flows through the detector) is t48/t74's, not this file's.
-           Question: does the per-alert set stay suppressed when the controller re-runs?
-  ADAPTIVE oracle attacker that walks the stream, and at each of its own episodes that WOULD be
-           rejected at the live (attacked-trajectory) level pads it minimally.  Question: what is the
-           joint minimum, and how far below Table I's total is it?
-  STATE-FREE multiplier c on EVERY malicious episode (the attacker does not know which of its
-           episodes will alert, so it pads all of them), c in MULTIPLIERS.  Question: how many true
-           detections survive a joint rerun, against the per-alert prediction from t66's rule
-           c >= 1 + r*/m?
-For every attacker the run also records what happens to the FALSE discoveries, which the attacker
-does not touch: with lower levels they can only disappear, and the queue that remains is the
-defender's view of the attacked stream.
-
-TWO FURTHER MEASUREMENTS the joint setting makes possible and the per-alert one cannot:
-  CAPPED ADAPTIVE  Sec. V-D prices the per-host-pair volume cap on the PER-ALERT pads: an alert is
-           "suppressible under the cap" iff m + r* <= n.  Jointly the question is sharper, because an
-           alert the attacker cannot hide under the cap FIRES, raises R, and makes every later pad
-           dearer.  So the adaptive attacker is re-run under each cap in CAPS: it pads an episode only
-           if the padded arity stays within the cap, and otherwise lets it fire.  Reported per cap:
-           true detections that survive, the share of benign episodes above the cap (t74's price; nothing is truncated), and a
-           MEASURED cascade account: each surviving alert is classified as STRUCTURAL (its pad would
-           not fit under the cap even at the cold-start level, R = 0) or a CASCADE VICTIM (it would
-           have fitted at R = 0 and fires only because earlier alerts had already raised R).  The
-           caps are the sampled grid; nothing is claimed between grid points.
-  CRITICAL MULTIPLIER  With R = 0 throughout, e-LOND's cold-start threshold at step t is
-           1/(alpha*gamma_t), rejection is INCLUSIVE (Ev >= 1/alpha_t), and the largest evidence any
-           episode can carry is CEIL.  Treat the multiplier c as a real number (evidence Ev/c, the
-           continuous relaxation of appending (c-1)*m flows).  Then c_crit = max_j Ev_j*alpha*gamma_{t_j}
-           is the BOUNDARY: in exact arithmetic every c > c_crit silences every malicious episode from
-           cold start and every c <= c_crit leaves the maximising episode rejected (at c = c_crit it
-           sits exactly on the inclusive threshold).  Under the horizon-uniform allocation
-           c_crit <= CEIL*alpha/T = rho, the paper's feasibility ratio (eq. rho), with equality iff
-           some malicious episode attains the ceiling: the feasibility margin the defender buys by
-           grouping is the dilution factor that erases it.
-           What is ASSERTED, and on what: c_crit*(1 + 1e-3) silences everything and c_crit*(1 - 1e-3)
-           leaves >= 1 alert (relaxation, evidence overwritten); the REALISABLE attack is the integer
-           multiplier c_int = floor(c_crit) + 1, i.e. (c_int - 1)*m appended flows per episode, which
-           is asserted to silence everything AND is checked at the flow-stream level, while c_int - 1
-           (when it still pads, i.e. >= 2) is asserted to leave >= 1 alert.  The silence assertions
-           hold while no false discovery survives to raise R, recorded as `exact`.  c = c_crit itself is
-           rerun and RECORDED as a numerical-boundary observation: floating-point division may land on
-           either side of >=, so no claim rests on it.
-
-CONTROL.  The unperturbed canonical arms must reproduce t73's shipped cells exactly (0.55: 3 true
-detections at r* = 23, 24, 33, total 80, 0 FD; horizon-aware 105 / total 627,495 / 0 FD; 0.62: 11 /
-median 6 / total 926 / 0 FD; horizon-aware 107 / total 977,567 / 1 FD).  Without that the rerun
-compares against the wrong baseline, so it is asserted.  The black-box pool must contain NO flow that
-reaches the conformal tail (t74 found none at either window over the full pool); this is asserted
-because the STATIC subset check below is a theorem only for evidence-non-increasing pads.  The
-rejection set of every attacked run must then be a SUBSET of the unperturbed rejection set; a
-violation would be a harness bug and stops the run.
-
-    LSPR_DIR=... python t75_joint_rerun.py
-"""
 import json
 import time
 from pathlib import Path
@@ -148,20 +45,6 @@ def trajectory(Ev, ismal, CEIL, g1):
 
 
 def adaptive_attack(S, m, ismal, CEIL, g1, cap=None, diag=None):
-    """Walk the stream as e-LOND does; pad each of the attacker's episodes that would be rejected at
-    the LIVE level by the minimum that prevents it.  Benign rejections are left alone and advance R.
-
-    With `cap`, the attacker pads only if the padded arity m + r stays within the cap; an episode it
-    cannot hide under the cap fires and advances R like any other rejection.
-
-    With `diag` (a dict), the capped run also records, for every MALICIOUS episode that fires because
-    its pad would not fit under the cap: the rejection count R at that moment, and whether the pad it
-    would have needed at R = 0 (the cold-start level) WOULD have fit.  An alert that fits at R = 0 but
-    not at the live R is a cascade victim: it fires only because an earlier alert fired.
-
-    This is run_lond's loop with one insertion -- the pad -- so that the level algebra cannot drift
-    from h6_procs.  Returns (pads per stream position, fired mask of the attacked run).
-    """
     T = len(S)
     pads = np.zeros(T, dtype=np.int64)
     fired = np.zeros(T, dtype=bool)
@@ -193,15 +76,6 @@ def adaptive_attack(S, m, ismal, CEIL, g1, cap=None, diag=None):
 
 
 def check_padded_stream(flows, ep, pads, Ev_expect, order):
-    """Append the pads as FLOWS, regroup with h_stream.build_episodes under the same order, and assert
-    the stream is the same permutation carrying the expected evidence.  `pads` is per stream position.
-
-    Each pad flow carries its target's (src, dst) and the timestamp of the target's LAST flow (same
-    bucket by construction).  The padded stream is re-sorted by time with a stable sort, so a pad sits
-    after every original flow carrying the same timestamp, hence after every flow of its target: the
-    target's first flow (timestamp AND position) is unchanged, which is what an online APPEND means
-    under both orders, and the stream the grouper sees is chronological.
-    """
     e_te, y_te, ts_w, src_w, dst_w = flows
     assert np.all(np.diff(ts_w) >= 0), "the deployment window must be chronological"
     T = ep["T"]; gid = ep["gid"]; ordr = ep["order"]
@@ -478,8 +352,6 @@ def main():
         assert (b["true_detections"], b["false_discoveries"], b["total_r_static"]) == (d_, f_, tot_), \
             f"CONTROL FAILED at {p} {gk}: {b}"
     out["control_reproduced"] = True
-    print("\n  CONTROL OK: unperturbed canonical arms reproduce t73 (3/80, 105/627495, 11/926, "
-          "107/977567); every padded stream regrouped to the same permutation")
     json.dump(out, open("out/t75_joint_rerun.json", "w"), indent=1)
     print(f"  wrote out/t75_joint_rerun.json  [{time.time()-t0:.0f}s]")
     return out

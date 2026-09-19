@@ -1,4 +1,4 @@
-"""E9, part 1 -- the ANALYTIC framing of timestamp-tie sensitivity, verified numerically."""
+
 
 
 def main():
@@ -50,19 +50,7 @@ def main():
         return fired
 
 
-    print("=" * 118)
-    print("D1.  WHAT A TIE-BREAK CAN AND CANNOT MOVE")
-    print("=" * 118)
-    print("""
-    build_episodes orders by np.lexsort((first_pos, first_ts)): PRIMARY key first_ts, SECONDARY
-    key first stream occurrence.  Replacing the secondary key with a random one permutes
-    episodes WITHIN equal-first_ts blocks and leaves the across-block order untouched.   [D1a]
 
-    So the deterministic tie-break is not a modelling choice about which episodes come first in
-    time -- the data does not say -- it is a choice among orderings the data cannot distinguish.
-    Nothing outside a tie block can move.  That is what makes the exposure in D2 an exact bound
-    rather than a heuristic.
-    """)
     ts_b = np.array([10, 10, 10, 20, 30, 30, 40])
     pos_b = np.arange(7)
     det = np.lexsort((pos_b, ts_b))
@@ -75,17 +63,7 @@ def main():
             moved_out += 1
     check("D1a  a random tie key never changes the timestamp sequence", moved_out, 0, 0)
 
-    print("=" * 118)
-    print("D2.  THE EXPOSURE IS COMPUTABLE FROM TIMESTAMPS ALONE")
-    print("=" * 118)
-    print("""
-            n_tied = #{episodes in a first_ts block of size >= 2}                        [D2a]
 
-    is an EXACT upper bound on how many episodes any tie-break can move, and it needs no
-    detector, no labels and no procedure run.  If n_tied = 0 the deterministic tie-break is
-    inert, 50 seeds would all return the identical stream, and E9 is a one-line appendix note.
-    t42 therefore reports the exposure FIRST and only then spends anything on seeds.
-    """)
     e = tie_exposure(np.array([1, 1, 2, 3, 3, 3, 4]))
     check("D2a  n_tied on a worked example", e["n_tied"], 5, 0, note="2 + 3, the singleton 2, 4 excluded")
     check("D2a  B_max on the same example", e["B_max"], 3, 0)
@@ -96,20 +74,7 @@ def main():
     e1 = tie_exposure(np.zeros(50))
     check("D2a  all-identical timestamps expose everything", e1["n_tied"], 50, 0)
 
-    print("=" * 118)
-    print("D3.  A PERMUTATION'S BLAST RADIUS IS THE BLOCK, UNLESS THE BLOCK'S REJECTION COUNT MOVES")
-    print("=" * 118)
-    print("""
-    LOND's state after step t is the single integer R_t.  Two orders that agree outside a block
-    and make the SAME NUMBER of rejections inside it leave R identical at the block's end, so
-    every later step is bit-identical.                                                   [D3a]
 
-    Hence a tie-break can only propagate beyond its own block by changing that count.  The
-    consequences are worth separating, because they answer different halves of the accept
-    criterion: WITHIN-block reordering moves which episodes are alerted and when (a first-
-    detection-time effect), while a changed count moves everything downstream (a discoveries
-    and FDP effect).
-    """)
     gam1, _ = make_gamma("poly", 60)
     same_after = diff_after = 0
     for _ in range(4000):
@@ -151,28 +116,7 @@ def main():
     check_bool("D3a  the in-block count really does change at the boundary",
                diff_boundary > 200, note=f"{diff_boundary} of 4000 -- the check has power")
 
-    print("=" * 118)
-    print("D4.  THE EXTREMES OF THE PERMUTATION DISTRIBUTION, AND WHERE THE RECORD'S ORDER SITS")
-    print("=" * 118)
-    print("""
-    Fifty seeds sample the permutation distribution.  For a single block of size B <= 7 the
-    distribution can be enumerated exactly (B! orders), giving the true min and max instead of
-    an estimate.  The tempting shortcut is to skip the enumeration:
 
-        CONJECTURE (FALSE): within a block, processing the SMALLEST p-values first maximises
-        the number of rejections, because LOND's level rises with R and falls with t.
-
-    Brute force over all B! orders REFUTES it: on 127 of 600 random blocks some other order
-    beats smallest-p-first, by as much as 3 rejections.  The reason is that the two effects do
-    not align.  Rejecting a small p early does raise R for every later step, but a p small
-    enough to be rejected anywhere is rejected late as well, so spending the largest gamma_t on
-    it wins nothing; the order that maximises the count spends the early, high-gamma steps on
-    the MARGINAL episodes and leaves the certain ones for later.  There is no cheap surrogate
-    for the optimum here.                                                                [D4a]
-
-    Consequence for the measurement: the extremes are enumerated exactly where B! is tractable
-    and SAMPLED otherwise, and a sampled extreme is labelled as a sample, never as the optimum.
-    """)
     gam1s, _ = make_gamma("poly", 20)
     n_ok = n_bad = 0
     worst_gap = 0
@@ -215,17 +159,7 @@ def main():
     check_bool("D4a  the permutation spread is non-zero somewhere (600 blocks)",
                spread_seen > 0, note=f"{spread_seen} blocks had max > min")
 
-    print("=" * 118)
-    print("D5.  FIRST-DETECTION RANK MOVES BY AT MOST THE BLOCK, WHEN THE COUNT IS FIXED")
-    print("=" * 118)
-    print("""
-    If the first rejection falls in a block of size B occupying stream positions t..t+B-1, then
-    under any permutation that keeps the in-block count the first rejection stays inside those
-    positions, so its RANK moves by at most B-1.                                         [D5a]
 
-    The record reports first detection as a rank, so B_max is a direct bound on the reportable
-    uncertainty in that number -- again available from the timestamps alone.
-    """)
     bad5 = 0
     for _ in range(3000):
         T, B, st = 24, 5, 8
@@ -242,18 +176,7 @@ def main():
             bad5 += 1
     check("D5a  first-detection rank moves by at most B-1 (3000 trials)", bad5, 0, 0)
 
-    print("=" * 118)
-    print("D6.  WHAT THE MEASUREMENT MUST REPORT")
-    print("=" * 118)
-    print("""
-      1  the exposure (n_tied, B_max, tied fraction) at every position -- BEFORE any seed, and
-         with the note that it is detector- and label-free                                [D2a]
-      2  the deterministic value of each statistic, and its PERCENTILE within the 50-seed
-         randomised distribution.  A statistic whose deterministic value sits at an extreme
-         percentile is one the tie-break is choosing, and the accept criterion turns on that
-      3  sd and full range of discoveries, true positives, FDP, recall and first-detection rank
-      4  FDP reported as None where there are no rejections, not as 0.0
-    """)
+
     check("D6   statistics to report", 5, 5, 0, note="discoveries, tp, FDP, recall, first rank")
 
     print("=" * 118)

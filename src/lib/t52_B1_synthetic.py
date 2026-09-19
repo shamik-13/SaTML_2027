@@ -1,29 +1,4 @@
-r"""B1-synthetic -- ADDIS state poisoning on a stream where ADDIS's guarantee GENUINELY holds.
 
-Motivation (reviewer item 4).  In the real-data demonstration (t32, window 0.85) ADDIS's
-null-consistency is violated, so a sceptic argues the permanent silencing is unclear because ADDIS's
-FDR guarantee did not hold there anyway.  This stage isolates the mechanism from that confound.
-
-An important subtlety, surfaced in review: the two-point threshold-conformal evidence used elsewhere
-in the paper is \emph{inherently} not uniformly conservative -- its ADDIS horizon-escape (the
-spending index never advances) is the SAME property that makes its null p-values violate ADDIS's
-assumption.  So one cannot make a guarantee-valid ADDIS stream out of that evidence.  We therefore use
-genuinely uniformly-conservative null p-values (independent Uniform(0,1)), for which ADDIS's FDR
-guarantee provably holds, and we verify it empirically -- including the all-null case, the honest
-test.  The attack is then \emph{adversarial state poisoning}: the attacker injects attacker-generated
-ALTERNATIVE (non-null) precursor episodes with p in (lambda, tau].  ADDIS restricts only TRUE-NULL
-p-values (they must be uniformly conservative); alternatives may carry ANY p-value.  So the legitimate
-nulls stay U(0,1) and ADDIS's assumption -- hence its FDR guarantee -- holds on the ATTACKED stream, not
-merely the clean one.  These SELECTED non-candidates (p<=tau so ADDIS does not discard them, but
-p>lambda so they are non-candidates, and too large to be rejected) advance the selected-non-candidate
-index and drive the target to silence (absorbing over the finite realization -- a rare null false
-positive can transiently restore wealth, so B* is a DISTRIBUTION over streams, not a constant).  The
-point: on a stream whose nulls satisfy ADDIS's assumption EVEN AFTER the attack, an adversary who can
-add traffic still silences the controller -- a genuine post-attack failure of a guarantee-valid stream,
-not an artefact of the dataset already violating the assumption.
-
-No detector, no dataset: pure mechanism.  Writes out/t52_B1_synthetic.json.
-"""
 import numpy as np, json, time
 from pathlib import Path
 
@@ -53,8 +28,7 @@ def make_stream(seed, with_targets=True):
         p[pos] = P_ALT
         ismal[pos] = True
     Ev = 1.0 / np.maximum(p, 1e-300)
-    # CEIL only bounds the Ctx e-value ceiling used by infeasible(); with continuous p there is no
-    # conformal floor, so set CEIL large enough not to clip any legitimate evidence.
+
     return Ev, ismal
 
 
@@ -77,11 +51,11 @@ def main():
     print(f"  synthetic stream: T={T:,}, {N_TARGET} targets (p={P_ALT}), null p~U(0,1), "
           f"precursor p={P_PRE}  [{time.time()-t0:.0f}s]")
 
-    # ---- Part A: does ADDIS control FDR on this VALID stream? (the honest test) -------------
+
     print("\n" + "=" * 92)
     print("A -- ADDIS FDR CONTROL under uniformly-conservative U(0,1) nulls (the assumption it needs)")
     print("=" * 92)
-    # all-null (no targets): FDP = 1{any rejection}; FDR = P(any rejection) must be <= q
+
     fdps_null, rej_null = [], []
     for s in range(N_SEED):
         Ev, ismal = make_stream(2000 + s, with_targets=False)
@@ -108,7 +82,7 @@ def main():
           f"mean recall {np.mean(rec_mix):.3f}  <= q?  {fdps_mix.mean() <= A}")
     print(f"  => ADDIS's guarantee genuinely holds on this stream (unlike LSPR23's 0.85 window).")
 
-    # selected-null uniform-conservativeness diagnostic: P(P/tau <= x | P <= tau) <= x
+
     rng = np.random.default_rng(9)
     pn = rng.uniform(0, 1, 2_000_000); sel = pn[pn <= TAU]
     diag = [dict(x=x, lhs=float((sel <= x * TAU).mean()), ok=bool((sel <= x * TAU).mean() <= x + 5e-3))
@@ -118,22 +92,9 @@ def main():
     for d in diag:
         print(f"    x={d['x']:.2f}  lhs={d['lhs']:.3f}  {'ok' if d['ok'] else 'VIOLATED'}")
 
-    # ---- Part B: the state-POISONING attack -- B* is a DISTRIBUTION over streams, not a constant --
-    print("\n" + "=" * 92)
-    print("B -- STATE POISONING: alternative precursors p in (lambda,tau] (SELECTED non-candidates; "
-          "nulls stay U(0,1)")
-    print("     => ADDIS-valid post-attack) silence the target.  B* varies by realization (a rare null")
-    print("     false positive can transiently restore wealth), so we report B*'s DISTRIBUTION.")
-    print("=" * 92)
 
     def attack(seed, Bmax=8000):
-        """One stream: return (b_star, stable, n_det0, base, det0, rej_at).  b_star = smallest B whose
-        front-injected ALTERNATIVE precursors (p=P_PRE, non-null so ADDIS's true-null assumption is
-        untouched -- the nulls stay U(0,1) and the guarantee holds on the attacked stream) drive total
-        rejections to zero.  ADDIS decides on p-values alone, so the label (null vs alternative) never
-        changes the run, only the FDP accounting; precursors at p=0.375 are never rejected, so no false
-        discovery is manufactured.  'stable' confirms silence persists at b_star, 2*b_star, 4*b_star,
-        since a rare null false positive can revive wealth just above the first crossing."""
+
         Ev, ismal = make_stream(seed=seed, with_targets=True)
         base = addis_run(Ev, ismal)
         det0 = base["fired"] & ismal
@@ -158,9 +119,7 @@ def main():
         stable = all(rej_at(min(int(b_star * f), Bmax))[0] == 0 for f in (1, 2, 4))
         return b_star, stable, n_det0, base, det0, rej_at
 
-    # distribution of B* over N_ATTACK independent streams (each with U(0,1) nulls => ADDIS-valid).
-    # Seeds 0..N-1 include the tail case (an early null false positive raises the wealth, so more
-    # precursors are needed) so the reported spread is honest, not just the modal minimum.
+
     N_ATTACK = 300
     bstars, stables = [], 0
     for s in range(N_ATTACK):
@@ -173,7 +132,6 @@ def main():
           f"median={q(50):.0f} q75={q(75):.0f} max={int(bstars.max())}; "
           f"silence stable above B* on {stables}/{N_ATTACK}")
 
-    # illustrative single-stream witness (seed 7) with a fine sweep, for the figure panel
     b7, st7, n_det0, base, det0, rej7 = attack(7)
     grid = sorted({0, 32, 128, 256, b7 - 1, b7, b7 + 1, 2 * b7} - {x for x in (b7 - 1,) if b7 <= 0})
     grid = [b for b in grid if b >= 0]

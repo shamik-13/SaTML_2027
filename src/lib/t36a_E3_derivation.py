@@ -1,5 +1,3 @@
-"""E3, part 1 -- the ANALYTIC derivation of deterministic precommitted weighting under"""
-
 
 def main():
     import numpy as np, json, time

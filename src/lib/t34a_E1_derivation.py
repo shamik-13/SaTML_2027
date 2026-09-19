@@ -1,6 +1,3 @@
-"""E1, part 1 -- the ANALYTIC derivation of both routes, verified numerically at small scale."""
-
-
 def main():
     import numpy as np, json, time
     from math import lgamma, log, exp
@@ -145,13 +142,6 @@ def main():
     check("D2d truncating the gamma tail at 4e6 is NOT adequate",
           float(ALPHA * M_LSPR * (tail - tail_trunc) > 1.0), 1.0, 0.0,
           f"exact {soft_yield:.1f} vs truncated {ALPHA*M_LSPR*tail_trunc:.1f}")
-    print(f"         t* = {t_star}; sum_(t>t*) gamma_t = {tail:.5f} (exact, Hurwitz);\n"
-          f"         alpha*M*tail = {soft_yield:.1f} expected rejections available beyond the "
-          f"hard horizon\n"
-          f"         AT R = 0, spread over ALL hypotheses there (attack and benign alike).\n"
-          f"         This is the rejection-free bound only: once R > 0 the LOND level is\n"
-          f"         alpha*gamma_t*(R+1) and the yield scales with it, so the real-data script\n"
-          f"         measures the realised number rather than quoting this one.")
 
     print()
     print("=" * 100)

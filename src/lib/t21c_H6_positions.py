@@ -1,9 +1,4 @@
-"""H6, part 2 -- the procedure comparison repeated over the five window positions and two"""
-
 import os
-
-# The derived LSPR23 CSV.  Same override pattern as h_stream/h_meta: LSPR_DIR moves the
-# inputs off the volatile /tmp default without changing behaviour for the documented recipes.
 CSV = os.environ.get("LSPR_CSV", f'{os.environ.get("LSPR_DIR", "/tmp")}/lspr_full.csv')
 
 

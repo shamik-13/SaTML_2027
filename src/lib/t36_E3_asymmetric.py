@@ -1,5 +1,3 @@
-"""E3 -- deterministic precommitted weights and the ordering attack, on LSPR23.  Section 4.36."""
-
 
 def main(smoke=False):
     import numpy as np, json, time, sys, gc
@@ -309,24 +307,7 @@ def main(smoke=False):
                       f"{(L if L is not None else float('nan')):>18,.0f} "
                       f"{(ps if ps is not None else float('nan')):>17,.0f}")
 
-    print("\n" + "=" * 140)
-    print("READING THIS TABLE")
-    print("=" * 140)
-    print("  'pad-inv'      whether the scheme is invariant to zero-padding APPENDED after the")
-    print("                 counted positions [D1b] -- attacker model (i), who cannot reorder.")
-    print("  'L*'           attacker model (ii): the number of benign flows that must be placed")
-    print("                 FIRST to make detection impossible, at the episode's own realised")
-    print("                 level [D3a].  Finite for every summable weight sequence [D3b].")
-    print("  'sym pad (paired)' the section 4.16 cost against the record's arithmetic mean, on")
-    print("                 the episodes THIS ARM AND THE MEAN ARM BOTH detect, at the same")
-    print("                 levels: floor(sum e/tau - m) + 1, appended anywhere.")
-    print("  L* is quoted at the UNPERTURBED level.  A sequential attacker that suppresses")
-    print("  earlier episodes leaves LOND with a smaller R, hence a smaller alpha_t and a weakly")
-    print("  SMALLER L*, so every L* below is an UPPER BOUND on the real cost.")
-    print("  Arms are NOT at a matched alert budget, so recall is read against 'oracle@bud',")
-    print("  the achievable episode recall at each arm's own alert count (section 4.19).")
 
-    print("\n" + "=" * 140)
     if failures:
         print("FAILURES:")
         for f in failures: print("  " + f)

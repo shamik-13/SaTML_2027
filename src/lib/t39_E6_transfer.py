@@ -1,10 +1,10 @@
-"""E6 -- cross-window parameter transfer.  Were the grouping width, family, cap or spending"""
+
 import numpy as np
 
 
 
 def select(values, order):
-    """argmax with a PRE-DECLARED deterministic tie-break.  Returns (index, n_tied)."""
+
     v = np.asarray(values, dtype=float)
     o = np.asarray(order)
     if np.isinf(v).any():

@@ -1,56 +1,3 @@
-"""R8/R4 -- what a KEYED canonical order actually costs the insertion attacker.
-
-`sec:attack` used to assert that under a keyed hash "the attack still works.  The keyed seed removes
-the search, not the attack."  That was never demonstrated.  Under a secret seed the adversary cannot
-compute the target's rank, so it cannot choose keys that precede the target; it can only instantiate
-keys and hope.  This stage measures the difference.
-
-THE MODEL, and what is assumed in the attacker's favour at each step:
-
-  * The order is bucket-batched, then hashed key.  t60 established that every true detection lands
-    in the FIRST bucket of its window, so there is no earlier bucket to occupy and the attacker must
-    win inside the target's own bucket.  Insertions are therefore placed in that bucket -- the most
-    favourable placement available.
-  * Each inserted key hashes uniformly over the 63-bit space, because the seed is secret.  An
-    insertion precedes original episode i iff its hash falls below h_i.
-  * Inserted hypotheses carry ZERO evidence, so they never fire and never raise R.  This is a
-    theorem, not a measurement: rejection needs Ev >= 1/alpha_t and 1/alpha_t > 0 for every finite
-    level, so Ev = 0 never rejects.  An earlier version claimed this was "verified" while returning
-    a hard-coded zero, which is worse than either.
-  * Cost is counted in INSTANTIATED KEYS -- distinct (SrcIP, DstIP) pairs the adversary must
-    actually send traffic between.  This is the resource the reviewer is right to insist on: under a
-    public hash the search is offline and free, and only G* keys are instantiated; under a keyed
-    hash every trial is real traffic.
-
-WHAT IS MEASURED, per (window, order, target):
-
-  N50 / N90 / N99   the blind budget at which the target is suppressed in 50 / 90 / 99% of draws
-  G*                the public-hash cost: exactly the keys that must precede it, all of them useful
-  N50 / G*          the price of the secret seed, in instantiated keys
-
-THE SIMULATION IS A REPLAY, NOT A BINOMIAL, and the difference is not cosmetic.  A blindly drawn key
-shifts every episode whose hash exceeds its own, so insertions land among the EARLIER detections too
-and can suppress them.  Each suppressed earlier detection lowers R at the target, which lowers the
-target's level, which suppresses it at fewer insertions than its own displacement would require.
-The binomial P(Bin(N,u) >= G*_targeted) prices only the target's own displacement at fixed R, so it
-is a strict LOWER BOUND on the replay's success, not an estimate of it.  We report it as exactly
-that and assert the one-sided inequality; an earlier version compared the replay against a binomial
-built on the wrong G* and reported "deviations" up to 1.000 that were the model's, not the data's.
-
-Two public-hash costs are therefore reported, because they are two different attacks:
-
-  G*_front      insert below EVERY hash in the bucket.  Cheapest here, because it also kills the
-                earlier detections and drops R.  This is t60's prefix number.
-  G*_targeted   insert immediately ahead of the target only, leaving R untouched.  t60's per-episode
-                number, and the event the binomial prices.
-
-ONE PROPERTY MAKES THIS CHEAP.  alpha_t = alpha*gamma_t*(R+1) with gamma decreasing, so once the
-offered level falls below 1/CEIL at the current R, it can never rise again: R cannot increase
-without a rejection, and a rejection cannot happen while infeasible.  The absorbing state of
-`thm:family1` is therefore also a stopping rule -- the replay needs only the feasible prefix, a few
-hundred steps of a 57k stream.  `_elond_prefix` is asserted against `h6_procs.run_lond` on every
-unshifted stream before it is used.
-"""
 import json, time
 import numpy as np
 from pathlib import Path
@@ -67,31 +14,12 @@ A = 0.05
 W0 = 0.025
 BUCKET = 2 * 3600
 N_REP = 400
-# The success curve is a sum of ~N Bernoullis, so it goes from 0 to 1 over a NARROW band of N.
-# On a one-point-per-half-decade grid that band is invisible: an earlier version jumped 0.000 ->
-# 1.000 between 3,000 and 10,000 and then log-interpolated "N50 = 5,477", four significant figures
-# of pure interpolation.  Six points per decade brackets the transition to within a factor 1.47,
-# and every N50/N90/N99 is reported WITH the grid bracket that contains it so the precision is
-# visible in the artefact rather than implied by the digits.
 BUDGETS = tuple(sorted({int(round(10 ** (e / 6.0))) for e in range(6, 37)}))
 Z16 = float(zeta(1.6, 1))
 HMAX = float(1 << 63)
 
 
 def _elond_prefix(Ev, CEIL, shift, alpha=A):
-    """e-LOND rejections when `shift[i]` hypotheses have been inserted ahead of original i.
-
-    Returns the boolean fire mask over ORIGINALS.  Inserted hypotheses carry zero evidence, so they
-    are never rejected and never advance R; they only move every later original's step index.
-
-    Stops at the first infeasible step.  That is sound ONLY IF `shift` is non-decreasing, because
-    then step = i + shift[i] + 1 is non-decreasing, the level alpha*gamma_step*(R+1) is
-    non-increasing at fixed R, and R cannot advance while nothing can fire -- so infeasible once is
-    infeasible forever.  Every mask this module builds is non-decreasing and the invariant is
-    ASSERTED here rather than trusted: an earlier `_front` shifted only the episodes up to the
-    target and left later same-bucket episodes unshifted, which is both physically impossible (an
-    insertion hashing below the target hashes below everything after it too) and non-monotone.
-    """
     if np.any(np.diff(np.asarray(shift)) < 0):
         raise ValueError("shift must be non-decreasing along the stream order; the early stop is "
                          "unsound otherwise")
@@ -110,12 +38,7 @@ def _elond_prefix(Ev, CEIL, shift, alpha=A):
 
 
 def shifts_from_hashes(h63, bucket, b0, draws):
-    """How many blindly-inserted keys precede each original episode.
 
-    Every insertion is sent into bucket `b0` (the target's own, and the first of the window), so it
-    precedes every episode in a LATER bucket, no episode in an earlier one, and an episode in b0
-    exactly when its hash is smaller.
-    """
     T = len(h63)
     c = np.zeros(T, np.int64)
     if len(draws) == 0:
@@ -148,8 +71,6 @@ def _interp_budget(budgets, p, want):
         return None
     j = int(ok[0])
     if j == 0 or p[j] == want:
-        # an exact grid hit must return the grid point itself: exp(log(a) + (log(b)-log(a)))
-        # is 99.99999999999999, and N50 is a reported number.
         return float(budgets[j if p[j] == want else 0])
     b0, b1 = float(budgets[j - 1]), float(budgets[j])
     p0, p1 = p[j - 1], p[j]
@@ -177,7 +98,6 @@ def main():
             ep = hs.build_episodes(e_te, y_te, ts_w, src_w, dst_w, BUCKET, "src-dst", order=order)
             T, Ev, ismal = ep["T"], ep["Ev"], ep["ismal"]
 
-            # the replay engine must agree with the shipped controller before it is trusted
             f_ref = np.zeros(T, bool)
             run_lond(Ctx(Ev, ismal, CEIL, alpha=A, w0=W0), make_gamma("poly", T)[0], fired=f_ref)
             f_mine = _elond_prefix(Ev, CEIL, np.zeros(T, np.int64))
@@ -194,17 +114,9 @@ def main():
             hseed = 0 if order == "keyhash" else hs.KEYED_SEED
             gsrc = np.zeros(T, np.int64); gsrc[ep["gid"]] = src_w
             gdst = np.zeros(T, np.int64); gdst[ep["gid"]] = dst_w
-            # INTEGER hashes throughout.  float64 has a 53-bit mantissa, so casting a 63-bit
-            # hash rounds away its low 10 bits and can invent ties that the integer lexsort which
-            # BUILT this order never saw.
             h63 = (hs.key_hash(gsrc, gdst, ep["bucket_g"], seed=hseed)
                    & np.uint64((1 << 63) - 1)).astype(np.int64)[ep["order"]]
             bucket = ep["bucket_g"][ep["order"]]
-            # MAJOR (round-8 audit): every target in a cell was costed using targets[0]'s bucket
-            # while `same_bucket` was merely recorded.  Enforce it, and record the two facts that
-            # make the whole model conservative or not: whether the target bucket is the FIRST of
-            # the window (if an earlier bucket exists the adversary inserts there and every key
-            # precedes the target with probability 1, so a keyed seed is no mitigation at all).
             b0 = int(bucket[targets[0]])
             same_bucket = bool(all(int(bucket[t]) == b0 for t in targets))
             n_earlier_bucket_eps = int((bucket < b0).sum())
@@ -217,11 +129,8 @@ def main():
                              f"target with probability 1 and this cost model is far too high")
             u = h63[targets] / HMAX                       # the target's hash quantile
 
-            # ---- the PUBLIC-hash controls: two placements, two costs -------------------------
             def _front(G, t):
-                # An insertion at the front of bucket b0 hashes below EVERY episode in b0, not
-                # only those up to the target.  Shifting a prefix and leaving the rest of the
-                # bucket in place is not a realisable attack, and it is not monotone.
+
                 c = np.zeros(T, np.int64)
                 c[bucket >= b0] = G
                 return c
@@ -286,15 +195,11 @@ def main():
                 fails.append(f"replay fell below its binomial lower bound by {viol:.3f} at "
                              f"pos={pos} order={order}")
 
-            # MAJOR (round-8 audit): "all 84 targets fall at 1e6" was inferred from
-            # `N50 is not None`, which only says 50% success was reached somewhere on the grid.
-            # Read the last grid row directly.
+
             p_at_max = [float(psucc[-1, j]) for j in range(len(targets))]
             n_certain_at_max = int(sum(1 for x in p_at_max if x >= 1.0))
 
-            # MAJOR (round-8 audit): N50 (50% success) over G* (certain suppression) is not a
-            # cost multiplier at matched reliability.  The headline ratio is now N99/G*; N50/G*
-            # is kept as the optimistic end and labelled as such.
+
             def _ratio(nn):
                 return [(nn[j] / gstar[j]) if (nn[j] and gstar[j]) else None
                         for j in range(len(targets))]
@@ -320,9 +225,7 @@ def main():
                        replay_slack_over_binomial_lower_bound=slack,
                        N50=n50, N90=n90, N99=n99,
                        N50_bracket=br50, N90_bracket=br90, N99_bracket=br99,
-                       # Per-cell medians live HERE, not in the table generator.  A number computed
-                       # while typesetting is a number no artefact gate can check, and the median of
-                       # an even-length list is not one of its elements, so it would never match.
+
                        N50_median=(float(np.median([x for x in n50 if x is not None]))
                                    if any(x is not None for x in n50) else None),
                        N90_median=(float(np.median([x for x in n90 if x is not None]))
@@ -332,8 +235,7 @@ def main():
                        blind_over_public_ratio_median=(
                            float(np.median([x for x in ratio if x is not None]))
                            if any(x is not None for x in ratio) else None),
-                       # the widest multiplicative gap between the grid points that bracket an
-                       # answer: the honest precision of every N above
+
                        bracket_width_max=max(
                            [(hi / lo) for b in (br50 + br90 + br99)
                             for lo, hi in [b] if lo and hi] or [float("nan")]),

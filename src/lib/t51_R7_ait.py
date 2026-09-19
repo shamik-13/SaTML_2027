@@ -1,39 +1,4 @@
-"""R7 on a benign-inclusive testbed (AIT-LDSv2.0) -- the padding-transfer question WITHOUT a graft.
 
-On LSPR23 the R7 measurement ("does ordinary victim-service traffic score benign under a host-
-conditioned detector?") could only be done by GRAFTING attack context onto ordinary flow-stats,
-because LSPR23's attacked host pairs are 100% malicious -- no real ordinary-to-victim traffic exists.
-The graft is out-of-distribution, so the LSPR23 stress-window result was inconclusive.
-
-AIT-LDSv2.0 removes that obstacle: its victims are real servers that serve heavy benign traffic while
-being attacked (audited: attacked servers are 79-99.9% benign).  So the R7 question is answered
-DIRECTLY on real flows -- no graft, in-distribution.  AIT's attacks are recon + web-exploit + exfil
-(scans, wpscan, dirb, webshell, dnsteal, cracking, post-exploitation commands), i.e. the LOW/MODERATE
-regime; it has NO high-volume DDoS flood, so it resolves R7's moderate regime, not the flood.
-
-Design (leave-one-scenario-out; 8 orgs share one red-team playbook, so a detector trained on 7 orgs
-detects the 8th -- a realistic "deploy on a new network" test):
-  - Flow features: numeric tstat statistics, selected PER FOLD from the TRAINING orgs only, with all
-    identity/label/role and ABSOLUTE-TIME fields excluded (first,last,req_tm,res_tm are epoch-scale
-    and would leak the attack schedule), plus a programmatic epoch-scale guard.
-  - Six strictly-causal host features (reused from t49, validated builder): per-host prior count,
-    distinct peers, failed-conn fraction (fail = TCP reset), src and dst side, built within scenario.
-  - Detector: HGB on the 7 training orgs (flow-only and host-conditioned X_aug=[flow|host]).
-  - Conformal calibration: the TEST org's own early benign window (in-distribution, valid); the rest
-    of the test org is the deployment window.  Threshold conformal e-value (hs.evalues, strict >).
-
-Decisive measurement (no graft): among the test org's deployment flows, the FIRE RATE of REAL benign
-flows whose destination is an attacked victim ("benign->victim", the pad analog), under the flow-only
-vs the host-conditioned detector.  The claim rests on how much HOST conditioning ADDS over
-flow-only (host - flow benign->victim), and how that compares to the LSPR23 grafted magnitude.  On
-real data host conditioning adds a MODEST, org-dependent effect (host mean benign->victim ~1% vs
-flow-only ~0.02%; zero on ~half the orgs, up to ~8% on one) -- real but WEAK and INCONSISTENT, and
-6-38x below the LSPR23 grafted 43%.  So the graft was an out-of-distribution OVERESTIMATE (not a pure
-artifact), host conditioning is not the strong defence it appeared, and padding substantially
-transfers.  Reported with per-fold, median, signed, weighted, and mean-absolute deltas.  TCP flows.
-
-Produces out/t51_R7_ait.json.
-"""
 import numpy as np, pandas as pd, json, time, glob, os, zipfile
 from pathlib import Path
 from sklearn.ensemble import HistGradientBoostingClassifier
@@ -43,9 +8,7 @@ import t49_R7_host_detector as t49
 
 K = 1; SEED = 0; CAL_FRAC = 0.35; EPOCH_GUARD = 1e11    # drop any feature whose |median| exceeds this
 AIT_DIR = os.environ.get("AIT_DIR", "/tmp/ait_cache")   # tstat netflows are extracted to here
-# The AIT-LDSv2.0 netflow zips.  Third-party data, not redistributed here: fetch Zenodo 5789064 into
-# src/data/ait/, or point AIT_ZIP_DIR at wherever they are kept.  Once extracted, AIT_DIR caches the
-# tcp_complete.csv per organisation and the zips are no longer needed.  See src/data/README.md.
+
 AIT_ZIP_DIR = os.environ.get("AIT_ZIP_DIR", "")
 
 
@@ -67,21 +30,18 @@ def ensure_extracted():
         with zipfile.ZipFile(z) as zf:
             with zf.open("tcp_complete.csv") as src, open(out, "wb") as dst:
                 dst.write(src.read())
-# complete malicious TCP flow-label set (NF__label_info.txt), exact match. This experiment is
-# TCP-only (tcp_complete.csv); the sole UDP malicious label "data exfiltration" (DNSteal) is NOT
-# covered here, so it is deliberately excluded and no DNS-exfil coverage is claimed.
+
 MAL = set("""service_scan online_cracking host_discover_dmz host_discover_local wpscan dirb_scan
 upload_rce_shell check_user_id check_netstat_t read_resolv check_network_config check_ps_a
 check_release read_group read_passwd check_date list_web_dir check_wp_config dump_wp_users
 read_profile dns_brute_force_start list_www check_who clear check_last check_id vpn_connect
 check_whoami check_uname_r check_meminfo check_uname_a check_df check_netstat_nat list_home
 check_netstat_l check_cpuinfo check_uptime check_pwd list_l""".split())
-# known BENIGN TCP labels (NF__label_info.txt); rows whose label is in neither set (e.g. empty) are
-# dropped as unknown rather than silently counted benign.
+
 BENIGN = {"browsing/update", "benign_share", "broken flow - benign", "mail", "monitoring",
           "HTTP(S) intra", "HTTP(S) DMZ", "HTTP", "HTTPS", "DNS", "SSH", "proxy",
           "update/command on unassigned port"}
-# identity / label / role / ABSOLUTE-TIME columns never used as features
+
 EXCL = {"c_ip", "s_ip", "c_port", "s_port", "timestamp", "first", "last", "req_tm", "res_tm",
         "role_cli", "ipv4_address_cli", "network_cli", "role_serv", "ipv4_address_serv",
         "network_serv", "label", "fqdn", "c_tls_SNI", "s_tls_SCN", "dns_rslv", "c_npnalpn",
@@ -144,7 +104,7 @@ def main():
     for test in names:                                    # leave-one-scenario-out
         tr = [n for n in names if n != test]
         feat = sorted(set.intersection(*[scen[n]["good"] for n in tr]))   # PER-FOLD, training orgs only
-        # epoch-scale guard on training data (drop any absolute-time-like feature that slipped through)
+
         med = pd.concat([scen[n]["Xnum"][feat] for n in tr]).abs().median()
         feat = [c for c in feat if med[c] < EPOCH_GUARD]
         def flowX(n): return scen[n]["Xnum"][feat].to_numpy(np.float32)
@@ -177,7 +137,6 @@ def main():
               f"host={res['host']['benign_to_victim_fire']:.4f} flow={res['flow']['benign_to_victim_fire']:.4f} "
               f"(delta {res['host_minus_flow_b2v']:+.4f}, n={res['host']['n_benign_to_victim']})  [{time.time()-t0:.0f}s]")
 
-    # ---- honest aggregation: signed / weighted / mean-abs delta, and per-fold spread ----
     deltas = np.array([folds[n]["host_minus_flow_b2v"] for n in names])
     wts = np.array([folds[n]["host"]["n_benign_to_victim"] for n in names], float)
     hb = np.array([folds[n]["host"]["benign_to_victim_fire"] or 0 for n in names])
@@ -199,10 +158,7 @@ def main():
                                    per_fold={n: folds[n]["host_minus_flow_b2v"] for n in names}),
         lspr23_grafted_fire=LSPR23_GRAFT,
         max_real_host_fire_vs_grafted=f"{hb.max():.3f} real vs {LSPR23_GRAFT} grafted (~{LSPR23_GRAFT/max(hb.max(),1e-6):.0f}x)")
-    # Honest verdict: host conditioning DOES add a real, org-dependent effect (host mean benign->victim
-    # >> flow mean; zero on ~half the orgs, up to `hb.max()` on one) -- so NOT "adds nothing". But it
-    # is weak/inconsistent and 6-38x below the LSPR23 grafted magnitude, so the graft was an OOD
-    # OVERESTIMATE (not a pure artifact), and host conditioning is not the strong defence it appeared.
+
     far_below_graft = float(hb.max()) < 0.25 * LSPR23_GRAFT
     verdict = (f"host conditioning adds a REAL but WEAK and INCONSISTENT defence against ordinary-to-"
                f"victim traffic on real in-distribution data: it fires zero on ~half the orgs (median "

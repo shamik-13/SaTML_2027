@@ -1,29 +1,3 @@
-"""Does padding still work against a controller that alerts, and against a defender that caps volume?
-
-WHY THIS EXISTS.  Two rounds of blind mock review converged on the same objection, and t73 confirmed
-its premise: the attack had only ever been priced under the horizon-free spending sequence, where the
-primary window issues three alerts out of 275 malicious episodes.  t73 showed the horizon-aware
-allocation detects 105 at zero false discoveries and costs ~123x more per alert.  Two gaps remained,
-and both were named by more than one reviewer:
-
-  (1) NO REAL-FLOW VALIDATION AT THE ARM THAT MATTERS.  The 105-alert arm was priced by closed form
-      alone.  That matters here in a way it does not at r ~ 24: a pad of ~2,946 flows draws ~0.44
-      expected conformal-tail hits at the measured pool firing rate, and ONE such hit adds the whole
-      ceiling M to S.  The expectation is not the question; the DRAW is.  So this replays real pool
-      flows stochastically, as the AIT arm does, and reports per-draw success.
-  (2) THE CAP.  Sec. V-C reports that a per-host-pair volume cap blocks 87-95% of horizon-aware pads.
-      That is measured on the pad SIZE.  The attacker's actual question is different: can it suppress
-      while staying UNDER the cap, i.e. is r* <= n - m?  This measures that, per cap, against the
-      benign truncation the cap costs.
-
-  (3) A third structural defence, raised by one reviewer: choose a grouping key the attacker cannot
-      cheaply co-occupy.  Padding cost is swept over the grouping families.
-
-CONTROL.  The poly x canonical x src-dst arm must reproduce the shipped 3 detections at
-r* = 23, 24, 33.  The run asserts it; without that the other arms mean nothing.
-
-    python t74_defended_replay.py
-"""
 import json
 import time
 from pathlib import Path
@@ -77,18 +51,13 @@ def main():
         s_cal, s_te = hs.score_windows(score, X, i1, i2, i3)
         e_te, cal, NC, CEIL = hs.evalues(s_cal, y_cal, s_te, k=K)
 
-        # --- the black-box pool, selected exactly as t48 does: modal proto/port on the TRAINING
-        #     prefix [0, i1), which precedes calibration and deployment.  No labels, no detector.
         svc = pr_w.astype(np.int64) * 100000 + dp_w.astype(np.int64)
         svc_tr = (np.asarray(X[:i1, 0]).astype(np.int64) * 100000
                   + dport_all[:i1].astype(np.int64))
         u, c = np.unique(svc_tr, return_counts=True)
         pool_idx = np.nonzero(svc == int(u[np.argmax(c)]))[0]
         rng = np.random.default_rng(SEED)
-        # Score the WHOLE pool, not a 20k sample.  This matters: resampling from a sample whose
-        # measured firing rate is zero can never produce a firing flow, so a "stochastic" replay
-        # over it is deterministic and tests nothing.  Over the full pool the firing count is a
-        # fact about the pool the attacker actually draws from.
+
         pad_e = e_te[pool_idx]                               # REAL flows, real detector e-values
         n_fire = int((pad_e > 0).sum())
         pad_fire = float(n_fire / pad_e.size)
@@ -118,12 +87,7 @@ def main():
                 got = (Sj + draws.sum(axis=1)) / (mj + r_c) < tauj if r_c > 0 else \
                     np.zeros(N_DRAWS, bool)
                 succ = float(got.mean())
-                # --- and the stress test the replay CANNOT perform ---------------------------
-                # The pool contains no firing flow, so resampling it can never produce one.  That
-                # is a fact about this pool, not a bound on the risk.  So separately simulate pads
-                # in which each flow fires INDEPENDENTLY at the Clopper-Pearson upper bound -- the
-                # worst firing rate the data is consistent with -- where one hit adds the whole
-                # ceiling to S.  This is what decides whether a 10^3-flow pad is safe.
+
                 hits = (rng.binomial(max(r_c, 1), p_ub, size=N_DRAWS) if p_ub
                         else np.zeros(N_DRAWS, int))
                 got_ub = ((Sj + hits * CEIL) / (mj + r_c) < tauj if r_c > 0
