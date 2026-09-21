@@ -13,14 +13,14 @@ AIT_ZIP_DIR = os.environ.get("AIT_ZIP_DIR", "")
 
 
 def ensure_extracted():
-    """Extract each scenario's tcp_complete.csv from src/data/ait/NF__<name>_netflows.zip if absent."""
+    """Extract each scenario's tcp_complete.csv from data/ait/NF__<name>_netflows.zip if absent."""
     data = (Path(AIT_ZIP_DIR) if AIT_ZIP_DIR
             else Path(__file__).resolve().parents[1] / "data" / "ait")
     zips = sorted(data.glob("NF__*_netflows.zip"))
     if not zips and not glob.glob(f"{AIT_DIR}/*/tcp_complete.csv"):
         raise FileNotFoundError(
             f"no AIT netflow zips in {data} and no cache in {AIT_DIR}. Fetch AIT-LDSv2.0 "
-            "(Zenodo 5789064) per src/data/README.md.")
+            "(Zenodo 5789064) per data/README.md.")
     for z in zips:
         name = z.name[len("NF__"):-len("_netflows.zip")]
         out = Path(AIT_DIR) / name / "tcp_complete.csv"

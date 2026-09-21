@@ -1,9 +1,8 @@
 .localdata/
 
-# src/data/ait/
+# data/ait/
 
 .venv/
-proto/.venv/
 __pycache__/
 *.py[cod]
 .ipynb_checkpoints/
@@ -27,13 +26,11 @@ __pycache__/
 *.backup.tex
 
 
-!src/lib/out/   
-!src/lib/out/*.json
-!src/lib/data/               
-!src/data/README.md          
-!src/requirements.txt
-!paper/tables/            
-!paper/figures/
+!lib/out/
+!lib/out/*.json
+!lib/data/
+!data/README.md
+!requirements.txt
 
 .attic/
 .localdata/
