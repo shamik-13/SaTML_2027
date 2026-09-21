@@ -42,7 +42,15 @@ if not __debug__:
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 PDF = pathlib.Path(os.environ.get("T68_PDF", ROOT / "paper" / "satml.pdf"))
 # The numbered body ends where the unnumbered, page-limit-exempt sections begin.
-BODY_ENDS_AT = "Open Science"
+# MATCHED ON LETTERS ALONE (case and whitespace stripped).  IEEEtran sets section headings in
+# small caps, and what pdftotext extracts depends on both the engine and the text font.  The same
+# heading has come out three ways here: "Open Science" (XeTeX falling back to Latin Modern, which
+# has no small-caps shape in TU encoding), "OPEN SCIENCE" (XeTeX with TeX Gyre Termes) and
+# "O PEN S CIENCE" (pdflatex with ptm, whose small caps pdftotext reads as letter-spaced).  A
+# literal match found no marker at all in two of the three, LAST fell back to the last page, and
+# the float check silently widened from the body to the whole document -- reporting appendix
+# floats as body defects.  Comparing letters only survives every combination.
+BODY_ENDS_AT = "openscience"
 COL_SPLIT_X = 311.0          # page is 612pt wide; the gutter sits either side of 306
 SPAN_MIN_X = 301.0
 HYPHENATED = re.compile(r"[A-Za-z]{2,}[-‐‑]$")
@@ -90,7 +98,7 @@ def body_last_page():
     """Last page of the NUMBERED body -- the page-limit-exempt sections start on it or after."""
     txt = subprocess.run(["pdftotext", str(PDF), "-"], capture_output=True, text=True).stdout
     for i, page in enumerate(txt.split("\f"), start=1):
-        if BODY_ENDS_AT in page:
+        if BODY_ENDS_AT in "".join(page.split()).lower():
             return i
     return len(PAGES)
 

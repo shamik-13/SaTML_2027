@@ -1,27 +1,10 @@
-%% IEEE SaTML 2027 submission -- SUBMISSION DRAFT (rewrite of main.tex).
+%% IEEE SaTML 2027 submission -- main-body writing revision.
 %%
-%% Structure follows ../docs/satml_2027_restructure_outline.md, which replaced the earlier
-%% two-equal-surfaces plan with ONE causal chain carried end to end by the body:
-%%   bounded evidence -> finite horizon -> grouping restores it -> grouped hypothesis is
-%%   attacker-influenceable -> symmetric padding impossibility -> per-alert replay and transfer evidence.
-%% Three contributions, not "C1 / bridge / C2", and ONE attack in the body.  Round 22 (novelty
-%% positioning, docs/40_r22_positioning.md) recast them as (1) a deployment-level feasibility law,
-%% (2) a cross-arity security impossibility, (3) an operational cost-and-mitigation boundary, with the
-%% feasibility--resolution exchange folded into (1).  Prior art is still credited AT each theorem
-%% (the mock reviewers' demand), but each passage now opens with what the result adds, never with
-%% what it does not: a contribution note that opens by conceding what is not new hands a reviewer
-%% the first line of a novelty rejection.  t65 forbids those openers by string.  Round 23
-%% (docs/41_r23_claim_scope.md) fixed the horizon-aware false-discovery statement (the 0.62 arm has one
-%% false discovery; Table I counts TRUE detections, so its column now says so), stopped calling the
-%% primary/secondary windows "guarantee-bearing", made every set total an upper bound in the caption
-%% that shows it, moved Sec. V-E to costs -> replay -> scope -> ordering, compressed the abstract and the
-%% Theorem 3 note, and wrote the LLM disclosure.  The ADDIS
-%% controller-state result is a deliberate appendix EXTENSION (app:state): it is a second mechanism
-%% with a second threat model, its real-stream arm sits on a known-invalid window, and giving it
-%% equal weight made the paper look broader but less convincing.
-%% Every number is the one main.tex carried, sourced from ../docs/04_EXPERIMENTS_AND_FINDINGS.md and
-%% the generated tables in tables/ (built from ../src/lib/out/ by make_appendix_tables.py).
-%% Nothing may be strengthened without a new experiment.
+%% Main argument: bounded evidence -> finite horizon -> grouping and resolution ->
+%% attacker-controlled membership -> padding impossibility -> replay and controller feedback.
+%% The main body separates the padding theory from its empirical evaluation. Full diagnostic,
+%% controller, ordering, and capacity comparisons remain in the appendices; ADDIS is a separate
+%% appendix extension. The abstract and experimental values are fixed.
 %%
 %% MANDATED BY THE CFP -- do not change the class line.  "Using a different template, or
 %% modifying font size, margins, or spacing to fit more content, is grounds for desk
@@ -31,11 +14,26 @@
 %% PAGE BUDGET.  12 pages of BODY TEXT.  References, appendices, and the Open Science /
 %% Ethical Considerations / LLM sections do NOT count.  Reviewers are NOT required to read
 %% appendices, so every theorem, proof idea, primary result and limitation THE MAIN ARGUMENT USES
-%% stays in the body.  The one deliberate exception is the ADDIS controller-state extension, which
-%% the restructure demoted to app:state and which the body therefore never relies on: Sec. III-D and
-%% Sec. VII-C point at it, and nothing in Secs. I-VI, the abstract or the conclusion is conditional
-%% on it.  Do not promote it back without re-reading the outline's reasoning.
+%% stays in the body. The ADDIS controller-state extension remains in app:state, and the
+%% main feasibility and padding argument does not depend on it.
 \newcommand{\satmlanon}{1}
+
+%% TEMPLATE FIDELITY.  IEEEtran sets \rmdefault to ptm (Times).  Under a Unicode engine the
+%% document encoding is TU, ptm has no TU font definition, and LaTeX substitutes Latin Modern
+%% WITHOUT an error -- so a tectonic/xelatex build of this file shipped in the wrong typeface.
+%% TeX Gyre Termes/Heros/Cursor are the metric-compatible families pdflatex's ptm/phv/pcr resolve
+%% to, so this restores the mandated rendering.  Math stays Computer Modern, as in a pdflatex
+%% IEEEtran build.  The guard leaves pdflatex builds untouched.
+\usepackage{iftex}
+\ifPDFTeX\else
+  \usepackage{fontspec}
+  \setmainfont{texgyretermes}[Extension=.otf,UprightFont=*-regular,BoldFont=*-bold,
+                              ItalicFont=*-italic,BoldItalicFont=*-bolditalic]
+  \setsansfont{texgyreheros}[Extension=.otf,UprightFont=*-regular,BoldFont=*-bold,
+                             ItalicFont=*-italic,BoldItalicFont=*-bolditalic]
+  \setmonofont{texgyrecursor}[Extension=.otf,UprightFont=*-regular,BoldFont=*-bold,
+                              ItalicFont=*-italic,BoldItalicFont=*-bolditalic]
+\fi
 
 \usepackage{amsmath,amssymb,amsthm}
 \usepackage{booktabs}
@@ -116,7 +114,7 @@
 \hyphenation{window windows position positions calibration deployment detection detections
               secondary canonical recent procedure procedures hypothesis hypotheses evidence
               feasibility aggregation controllers controller unperturbed conditional horizon
-              uninterrupted membership characterise suppressible}
+              uninterrupted membership characterise suppressible sampled}
 
 \begin{document}
 
@@ -155,63 +153,945 @@ adversarial robustness of the composed alerting system.
 %% =======================================================================================
 \section{Introduction}\label{sec:intro}
 
-A network intrusion detector produces scores; a security operations centre (SOC) acts on alerts. AUROC, AUPRC, and threshold recall describe a classifier, but they do not tell an
-operator how much of the resulting alert queue is false. At the low base rates typical of intrusion
-detection, even a strong classifier can produce a queue dominated by false
+A network intrusion detector produces scores; a security operations centre (SOC) must decide which
+activity to investigate. A useful alerting system therefore needs more than a classifier with good
+ranking performance. It must turn scores into evidence, decide which observations belong to the same
+investigation, and manage false alerts over a continuing stream. At the low base rates typical of
+intrusion detection, even a strong classifier can produce a queue dominated by false
 positives~\cite{axelsson1999baserate,axelsson2000baserate}.
 
-Online multiple testing provides a natural control layer. At each time $t$, a procedure tests one
-hypothesis, makes an immediate decision, and updates future testing levels while controlling an online
-false-discovery criterion~\cite{javanmard2015lond,ramdas2017lordpp,xu2024elond}. Conformal calibration
-can turn detector scores into distribution-free evidence under
-exchangeability~\cite{vovk2005alrw,bates2023outliers}; e-values can support false-discovery-rate (FDR) control under
-arbitrary dependence~\cite{vovk2021evalues,wang2022evaluebh}. These components form a modular
-\emph{statistical trust layer}: detector $\to$ conformal evidence $\to$ security grouping $\to$
-online controller $\to$ alert (\cref{fig:system}). Prior work combines subsets of this chain: anomaly
-scores with online FDR control, conformal evidence with online or batch decisions, or calibrated
-streaming intrusion alerts~\cite{rebjock2021online,farzaneh2025coad,wang2025multilayer,caliburn2026,gao2026boundary}.
-We assemble the full composition as an evaluated design and study a failure mode that is absent from the guarantee of any
-single module.
+Statistical methods offer a principled way to make these decisions. Conformal calibration converts
+detector scores into evidence under an exchangeability assumption~\cite{vovk2005alrw,bates2023outliers}.
+Grouping combines related flows into security hypotheses, such as communication between two hosts
+during a time interval. An online multiple-testing procedure then decides which hypotheses to reject
+while controlling a false-discovery criterion~\cite{javanmard2015lond,ramdas2017lordpp,xu2024elond}.
+Together, these components form a \emph{statistical trust layer} between the detector and the analyst
+(\cref{fig:system}). Prior systems combine subsets of this
+pipeline~\cite{rebjock2021online,farzaneh2025coad,wang2025multilayer,gao2026boundary}.
+We assemble and evaluate the full composition to study the security consequences of its design choices.
 
-The first problem is feasibility. A finite calibration set places a hard upper bound on deterministic
-conformal evidence, while an uninterrupted online controller distributes a finite error budget over a
-potentially long stream. Along a rejection-free run, its offered levels can eventually become too
-small for even the maximum admissible evidence. At that point, no detector output can trigger an
-alert. This structural inability to report a discovery and its onset
-can be calculated before deployment.
+The first consequence concerns whether an alert is possible at all. Finite calibration limits the
+strength of deterministic conformal evidence. Meanwhile, an uninterrupted online controller must
+allocate its error budget across an ongoing sequence of hypotheses. During a run without discoveries,
+the evidence required for rejection can eventually exceed the maximum the calibration permits.
+Beyond that point, even a detector that assigns the strongest possible score to an attack cannot
+produce an alert. We call this state \emph{structural silence}. Its onset is a property of the
+calibration and controller, and can be calculated before deployment.
 
-A natural repair is to test fewer hypotheses. SOCs already aggregate flows into host-, service-, or
-time-based episodes; coarser grouping reduces the horizon that the controller must cover. Yet the same operation determines which observations share a hypothesis. When group membership depends on endpoints, services, and time, an attacker can often directly influence it by generating additional traffic.
+Grouping offers a natural response: testing episodes instead of individual flows reduces the number
+of decisions the budget must support. This choice also determines what an alert means and who can
+influence its evidence. Consider an attacker communicating with a victim inside a host-pair time
+bucket. Ordinary connections to the same victim enter the same hypothesis as the malicious activity.
+If those connections contribute little evidence, they dilute the group's arithmetic mean. The attack
+flows retain their scores, but the alert disappears.
 
-We connect these facts into one causal chain. Our contributions are:
+Changing the averaging rule cannot generally resolve this exposure. We show that any symmetric
+e-merging family that can attain an alert threshold is vulnerable to sufficiently many zero-evidence
+additions when membership is unbounded and attacker-controlled. The controller then creates a further
+interaction: suppressing an early alert removes the increase in testing levels that it would have
+provided. Later alerts can consequently become cheaper to suppress or disappear without further
+padding. Security depends on the composition of evidence, membership, and controller state.
 
-\emph{A deployment-level feasibility law (\cref{sec:feasibility}).} We turn the interaction
-between finite conformal resolution and online error spending into an attained, ex-ante deployment
-criterion: given $\nCal$, $k$, and $T$, one can decide before deployment whether a covered controller
-can possibly report an alert throughout the intended horizon, independently of the detector. Grouping restores
-feasibility at exactly the criterion's exchange rate. Switching the
-primary window from a host-pair to a source-host key raises canonical detections from $3$ to $46$ and the
-median exact suppression cost, from $24$ to $496$ added flows. So one grouping
-choice sets feasibility, alert semantics, and attack cost together (\cref{sec:granularity}).
+Our contributions follow this chain.
 
-\emph{A cross-arity security impossibility (\cref{sec:attack}).} E-merging theory studies a fixed set of
-e-values; our adversary can enlarge its own hypothesis. We formalise robustness across arities and
-prove that, under attacker-controlled, unbounded membership, no symmetric e-merging family can both
-attain an alert threshold and remain above it after arbitrary zero-evidence padding. For the arithmetic mean, the bound is tight and gives the exact
-suppression cost.
+\emph{A deployment feasibility law (\cref{sec:feasibility,sec:granularity}).} We characterise finite
+discovery horizons for two families of arrival-time controllers and derive the best attainable
+cold-start calibration requirement. At rank depth $k=1$ and error level $0.05$, LOND/e-LOND require
+$20T-1$ calibration units to keep every step of a horizon $T$ feasible under the optimal allocation.
+Grouping reduces this requirement in direct proportion to the hypothesis count, at a measurable cost
+in alert resolution.
 
-\emph{An operational attack boundary (\cref{sec:attack,sec:fixes}).} We evaluate the attack along a
-capability ladder: a sequential oracle that sizes each pad exactly from the realised controller state, a
-retrospective attacker that replays real benign-to-victim traffic, and a temporally restricted,
-state-free attacker limited to traffic the victim had already received and to its own episode size. The distance between
-the rungs is a measured result rather than an assumption: on AIT-LDSv2.0 the retrospective attacker
-suppresses 78 of 79 flow-only true detections under the canonical order, while the victim-prior and
-state-free arms leave 24 to 65 standing, because template availability and attacker knowledge bind before
-the algebra does. Controller
-allocation raises the price of an individual alert by two orders of magnitude, but a joint rerun on
-LSPR23 shows a controller-state feedback: once early alerts are suppressed, later alerts remain near
-their cheaper cold-start levels. A capacity-constrained attacker shows where a membership bound would
-interrupt the attack; we do not present that constraint as an end-to-end admission policy.
+\emph{A security impossibility across group sizes (\cref{sec:attack}).} We formalise robustness to
+an attacker enlarging its own hypothesis and prove that no alert-capable symmetric e-merging family
+withstands arbitrary zero-evidence padding. For the arithmetic mean, the quantitative bound provides the
+exact suppression cost. We also connect the feasibility ratio to a sufficient integer padding
+multiplier under stated conditions on the rest of the stream.
+
+\emph{An empirical account of attack cost and capability (\cref{sec:evaluation,sec:fixes}).}
+We run real-flow replay on LSPR23 and AIT-LDSv2.0 to test the padding mechanism. We also rerun Joint controller to show
+that independently pricing alerts can overstate campaign cost by roughly two orders of magnitude.
+Restricting the attacker's templates and controller knowledge reveals where practical suppression
+falls short of the algebraic bound. These results identify where mitigations must act and distinguish
+the tested capacity constraints from a complete admission policy.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.72\textwidth]{fig1_chain.pdf}
+\caption{The statistical trust layer and the argument of the paper. Bounded evidence and decaying
+testing levels create a finite discovery horizon (\cref{sec:feasibility}). Grouping reduces the number
+of tests (\cref{sec:granularity}), but also lets an attacker add ordinary traffic to its own
+hypothesis (\cref{sec:attack}). Padding changes the aggregate while preserving the original malicious
+flows and their scores.}
+\label{fig:system}
+\end{figure*}
+
+%% =======================================================================================
+\section{System and Threat Model}\label{sec:model}
+
+We study the pipeline from a scored flow to an issued alert. Its basic unit of investigation is an
+\emph{episode}: flows sharing a pre-committed metadata key and time bucket. An episode is a true null
+when all its flows are benign; rejecting its null hypothesis issues an alert. Our main configuration
+uses source--destination host pairs in two-hour buckets. The following construction makes both
+the evidence available to each episode and the level at which the controller can reject it explicit.
+
+\subsection{From detector scores to bounded evidence}\label{sec:controllers}
+
+Flows $x_1,x_2,\ldots$ arrive in timestamp order, and a detector assigns scores $s_i=f(x_i)$, with
+larger scores indicating more anomalous activity. A benign calibration set $\Cal$ is disjoint from
+training and precedes deployment. Let $K_i=1+\#\{c\in\Cal:s_c\ge s_i\}$ be the rank of the test score
+from the top of the calibration scores, resolving ties against the test flow. At rank depth
+$1\le k\le\nCal+1$, we use threshold conformal evidence
+\begin{equation}\label{eq:evalue}
+e_i=\frac{\nCal+1}{k}\,\mathbf 1\{K_i\le k\}.
+\end{equation}
+Under the null and the relevant exchangeability premise, $\mathbb E[e_i]\le1$, so $e_i$ is an
+e-value. A flow receives positive evidence only if its score reaches the selected calibration tail.
+The construction therefore has two possible outputs, zero and the ceiling
+\begin{equation}\label{eq:ceiling}
+\ceil=\frac{\nCal+1}{k}.
+\end{equation}
+Once a score reaches that tail, increasing it further cannot increase its evidence. This finite
+resolution is inherited from deterministic rank-based conformal
+calibration~\cite{vovk2005alrw,hennhofer2026resolution}.
+
+\subsection{From flows to security hypotheses}\label{sec:grouping}
+
+At bucket close, the controller receives one hypothesis for each non-empty episode $G_j$. We combine
+its flow evidence using the arithmetic mean,
+\begin{equation}\label{eq:mean}
+\Ev(G_j)=\frac1{m_j}\sum_{i\in G_j}e_i,\qquad m_j=\lvert G_j\rvert.
+\end{equation}
+The mean preserves the ceiling $\ceil$. It is also an e-merging rule: at any fixed arity, it combines
+marginally valid e-values into a valid e-value under arbitrary dependence. This property accommodates
+flows that share a calibration set and can be strongly dependent within an episode.
+
+Metadata-selected membership requires an additional premise. For the nominal FDR guarantee, each
+true-null \emph{group} must have marginally valid evidence. We use the sufficient condition that every
+benign member of a true-null group remains e-valid conditional on the local metadata fixing that
+group's key, membership, arity, order position, and horizon (\cref{assump:groupval}). Linearity then
+gives group validity. Unconditional flow validity alone does not imply this condition, because
+metadata can correlate with detector features. \Cref{app:groupval} states the condition formally and
+gives a construction where it holds. The feasibility and suppression results concern realised
+evidence and rejection rules; they do not require this empirical validity premise.
+
+\subsection{Online decisions and the role of earlier alerts}\label{sec:decisions}
+
+Write $\alpha$ for the target error level and $\alphat$ for the testing level offered to the $t$-th
+episode. The controller rejects when
+\begin{equation}\label{eq:reject}
+\Ev(G_t)\ge1/\alphat.
+\end{equation}
+A larger testing level therefore makes rejection easier. Our principal controller is e-LOND, which
+controls FDR under arbitrary dependence given marginally valid group
+e-values~\cite{xu2024elond}. FDR is the expected fraction of false discoveries among issued alerts,
+with that fraction defined as zero when no alert is issued. It controls false alerts without
+requiring any discoveries. If $R_{t-1}$ is the number of earlier rejections, e-LOND's level is
+\begin{equation}\label{eq:elond}
+\alphat=\alpha\gamma_t(R_{t-1}+1).
+\end{equation}
+The non-negative weights $\gamma_t$ have total mass at most one. Before the first alert, the level is
+$\alpha\gamma_t$; subsequent alerts increase the levels available to later hypotheses. This dependence
+on discovery history matters both for detection and for the cost of an attack.
+
+We compare two allocations. The \emph{horizon-free} allocation uses
+$\gamma_j=j^{-1.6}/\zeta(1.6)$ and supports uninterrupted operation without a specified terminal
+horizon. The \emph{horizon-aware} allocation uses
+$\gamma_j=T^{-1}\mathbf 1\{j\le T\}$ for a known hypothesis count $T$. It gives every step the same
+cold-start weight and is the optimal cold-start benchmark derived in \cref{sec:exchange}.
+All experiments use $q=\alpha=0.05$, $w_0=0.025$, and $k=1$. We also analyse LOND, e-LORD, and LORD++;
+their definitions and additional procedures appear in \cref{app:procedures,app:feasibility}.
+For p-value procedures we use $p_i=\min(1,1/e_i)$.
+
+\subsection{Attacker control and knowledge}\label{sec:threat}
+
+The adversary controls traffic from an attacker-operated or compromised host. Before an episode's
+bucket closes, it can open ordinary connections to the destination it is already attacking. These
+connections share the episode's $(\mathrm{SrcIP},\mathrm{DstIP},\text{bucket})$ key and join its
+tested hypothesis. The defender implements its pipeline correctly; the attacker changes neither its
+code nor the original malicious flows. Its objective is to suppress alerts on its own activity.
+
+Our formal padding model permits unbounded additions carrying zero evidence. The experiments test
+whether real traffic supplies such additions and how capacity constraints restrict them. We
+distinguish an \emph{oracle} that knows the realised evidence and live controller level from a
+\emph{state-free} attacker that applies a fixed multiplier to its own flow count. Template
+availability is a separate capability: on AIT we compare a retrospective deployment-wide pool with
+traffic the victim had received before the attacker's last flow in the target episode. Temporal
+availability does not establish that a compromised source could observe that traffic.
+
+Groups closing in the same bucket are tested in a canonical order: a deterministic hash of each
+group's metadata key, with collisions broken by the key. Appending flows to an existing group then
+leaves every other group's position unchanged, preserving the local validity premise for untouched
+true nulls. This order does not prevent padding. We report first-flow ordering as an explicitly
+labelled sensitivity analysis; \cref{sec:transfer} examines ordering and key manipulation in detail.
+
+\subsection{Evaluation setting}\label{sec:data}
+
+LSPR23~\cite{lspr23} provides 16,353,511 flows from a 161.5-hour live-fire exercise. Of these,
+1,644,599 are malicious: 10.06\% of flows, or $0.48$--$0.81\%$ of episodes. Each evaluation uses
+chronological training, benign calibration, and deployment blocks; calibration and deployment each
+span 15\% of the dataset. The primary detector is HistGradientBoosting using protocol and 32 flow
+timing and volume features. Host-context experiments add six strictly causal features.
+AIT-LDSv2.0~\cite{aitlds} supplies an external setting with eight organisations where attacked hosts
+also receive benign traffic.
+
+Positions 0.55 and 0.62 were fixed as the primary and secondary LSPR23 windows before validity
+diagnostics. They are overlapping views of one exercise, so the secondary window acts as a correlated
+robustness check. Position 0.85 violates marginal e-validity and is used only for explicitly labelled
+stress measurements. The remaining diagnostics do not establish the group-validity premise.
+Unless stated otherwise, results use seed 0, canonical order, and horizon-free spending.
+\Cref{app:procedures,app:splits,app:validity} give the preprocessing, split geometry, and validity
+diagnostics.
+
+%% =======================================================================================
+\section{Bounded Evidence Creates a Finite Discovery Horizon}\label{sec:feasibility}
+
+Before asking how often the detector identifies attacks, we ask whether its evidence can ever be
+strong enough to trigger an alert. Combining the ceiling in \eqref{eq:ceiling} with the rejection
+rule in \eqref{eq:reject} gives the necessary condition
+\begin{equation}\label{eq:feas}
+\alphat\ge1/\ceil.
+\end{equation}
+We call a step \emph{evidence-feasible} when this condition holds. It depends on the calibration size,
+rank depth, and offered level, independently of the detector's ranking performance. Feasibility
+allows a rejection; the observed evidence still has to reach the threshold.
+
+For e-LOND, the source of a finite horizon is already visible in \eqref{eq:elond}. Before any
+rejection, $\alphat=\alpha\gamma_t$. As the spending weights decay, the required evidence
+$1/\alphat$ eventually exceeds $\ceil$. A stronger score cannot overcome this ceiling, and a stream
+that cannot reject cannot obtain the increase in levels that an earlier rejection would provide.
+
+\subsection{When silence becomes permanent}\label{sec:horizon}
+
+On a rejection-free run, the last evidence-feasible step is the \emph{discovery horizon}
+$t^\star$. Beyond it, the run is absorbed: every admissible observation fails the rejection rule.
+We call this operational state \emph{structural silence}. The following results establish finite
+horizons for two common forms of arrival-time controller. Their assumptions concern the level
+sequence and evidence ceiling, so they also apply when the evidence lacks a nominal validity
+guarantee.
+
+\begin{theorem}[Finite discovery horizon, multiplicative family]\label{thm:family1}
+Let the evidence be bounded by $\ceil<\infty$ and the controller run without restart, with
+$\alphat=\alpha\,\gamma_t\,g(\mathcal H_{t-1})$, $\gamma\ge0$, $\sum_t\gamma_t\le1$ and
+$g\le c_g(R_{t-1}+1)^d$ for the rejection count $R$ and some $d\ge0$ (which the step below uses; every
+procedure we cover has $d\in\{0,1\}$). Since $R_{t-1}\le t-1$, a rejection is possible at
+$t$ only if $\gamma_t t^d\ge1/(\alpha c_g\ceil)$. If $\gamma_t t^d\to0$, only finitely many steps are
+feasible on a rejection-free run; if that set is non-empty it has a last element $t^{\star}$ and the run
+is absorbed from $t^{\star}+1$ onward, and if it is empty the run is absorbed from step $1$. No monotonicity of $\gamma$ is needed: a set of steps that is
+finite already has a maximum.
+\end{theorem}
+
+\begin{theorem}[Finite discovery horizon, lag-sum family]\label{thm:family2}
+Let the evidence be bounded by $\ceil<\infty$ and
+$\alphat=w_0\gamma_t+\sum_j a_j\gamma_{t-\tau_j}$ over prior rejection times $\tau_j<t$, with
+$w_0\ge0$, $0\le a_j\le\alpha$, $\gamma\ge0$ and $\sum_t\gamma_t<\infty$. During a rejection-free run of length $\Delta$ every lag
+is distinct and at least $\Delta$, so $\alphat\le(w_0+\alpha)\sum_{u\ge\Delta}\gamma_u$. The tail sum
+tends to zero, so $\Delta^{\star}=\min\{\Delta:(w_0+\alpha)\sum_{u\ge\Delta}\gamma_u<1/\ceil\}$ is finite
+and the run is absorbed once $\Delta\ge\Delta^{\star}$, with no monotonicity assumption on $\gamma$.
+\end{theorem}
+
+The proof mechanism is a bound on the largest level the controller could offer. For the
+multiplicative family, $R_{t-1}\le t-1$ gives
+$\alphat\le\alpha c_g\gamma_t t^d$, which eventually falls below $1/\ceil$ under the stated decay
+condition, regardless of the preceding history. For the lag-sum family, a long gap without
+rejections leaves every reward at a large lag. The remaining tail of the spending sequence then
+bounds their total contribution and tends to zero. Once no rejection is possible, the gap can only
+grow. \Cref{app:proofs} gives the full proofs.
+
+These scopes differ: the first bound is uniform over rejection histories, whereas the second
+requires a sufficiently long rejection-free gap. LOND, e-LOND, and the stated deterministic
+reparametrisation of e-LORD fall under \cref{thm:family1}; LORD++ falls under
+\cref{thm:family2}. The horizon-free sequence $\gamma_j\propto j^{-1.6}$ satisfies both sets of
+conditions. Coverage is always of a procedure together with its spending sequence
+(\cref{app:horizonscope}).
+
+Huo et al.~\cite{huo2024realtime} identify the conformal floor and its adverse effect on online
+testing. Our results characterise when this interaction makes rejection permanently impossible for
+the covered controllers. The next result translates that mechanism into a calibration requirement
+that can be checked before deployment.
+
+\subsection{The best attainable calibration requirement}\label{sec:exchange}
+
+A deployment with a known horizon can choose its allocation to keep the weakest cold-start step as
+strong as possible. Write $c_0$ for the cold-start coefficient, so $\alphat=c_0\gamma_t$ before the
+first rejection: $c_0=\alpha$ for LOND/e-LOND and $c_0=w_0$ for LORD++. Because the weights have total
+mass at most one, their minimum over $T$ steps cannot exceed $1/T$. Uniform allocation attains
+this value. We call a deployment \emph{cold-start feasible through $T$} if every step remains
+evidence-feasible before the first rejection.
+
+\begin{corollary}[Horizon-uniform feasibility]\label{cor:budget}
+Cold-start feasibility over a horizon $T$ --- every step $t\le T$ evidence-feasible before the first
+rejection, which the ceiling decides and detection power does not --- requires $\nCal\ge k/\alpha_T-1$,
+for $\alpha_T$ the level offered at step $T$. Under the horizon-uniform allocation
+$\gamma_t=T^{-1}\mathbf 1\{t\le T\}$, where $\alpha_T$ is also the smallest level offered over the
+horizon, the condition is necessary \emph{and} sufficient and reads
+\[
+\nCal\ \ge\ \frac{kT}{c_0}-1 .
+\]
+The requirement is a scale-free count ratio $k/c_0$: at $k=1$ it is $20$ calibration units per
+hypothesis for LOND/e-LOND and $40$ for LORD++, whatever the unit is --- exactly $20T-1$ and $40T-1$
+over a horizon $T$, the ratio being the rate rather than the count.
+\end{corollary}
+
+This is an attained sizing boundary. If calibration falls short, no pre-committed allocation can
+keep every cold-start step feasible. If it meets the requirement, horizon-uniform spending does so.
+The result concerns the possibility of detection, not a lower bound on recall.
+
+For comparisons across configurations, define the allocation-optimal feasibility ratio
+\begin{equation}\label{eq:rho}
+\rho_p=\frac{\ceil c_{0,p}}{T}=\frac{(\nCal+1)c_{0,p}}{kT}.
+\end{equation}
+Under horizon-uniform allocation, $\rho_p\ge1$ is necessary and sufficient for cold-start
+feasibility through $T$. A different allocation has minimum-level ratio
+$\rho_p(\gamma)=\ceil c_{0,p}\min_{t\le T}\gamma_t\le\rho_p$.
+Throughout the paper, $\rho$ denotes the horizon-uniform ratio.
+
+At network scale, even the optimal requirement is substantial (\cref{fig:envelope}). Testing all
+16,353,511 LSPR23 flows in one uninterrupted run would require about $3.3\times10^8$ calibration
+flows for LOND/e-LOND and $6.5\times10^8$ for LORD++. The smaller requirement is already 20 times
+the entire exercise, compared with the $1.8$--$2.4$ million benign calibration flows available
+before each evaluation window. Increasing calibration and deployment together does not remove this
+count-ratio constraint. Horizon-free spending is more demanding still; its full scaling appears in
+\cref{app:feasibility}.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.70\columnwidth]{fig2_envelope.pdf}
+\caption{Calibration needed to keep every cold-start step feasible through horizon $T$
+($k=1$, $w_0=0.025$). The optimal horizon-uniform requirement grows linearly; horizon-free
+$\gamma_j\propto j^{-1.6}$ requires growth as $T^{1.6}$. The grey band marks the
+$1.8$--$2.4$M calibration flows available in the LSPR23 windows.}
+\label{fig:envelope}
+\end{figure}
+
+\subsection{Scope and alternatives}\label{sec:escapes}
+
+The theorems concern uninterrupted arrival-time decisions with the specified level forms.
+Restart, randomised smoothing, selective advancement of a spending index, and reconsideration of
+earlier hypotheses can change those premises. For example, ADDIS can stop advancing its effective
+index, while online e-BH revisits the observed history rather than fixing each decision at arrival.
+\Cref{app:taxonomy} compares these mechanisms and their measured costs; the separate ADDIS state
+attack remains an extension in \cref{app:state}.
+
+Grouping takes a different route. It preserves the evidence construction and controller, but reduces
+the number of hypotheses the calibration must support. We next examine what this buys and what an
+alert loses as its unit becomes coarser.
+
+%% =======================================================================================
+\section{Grouping Restores Feasibility by Changing the Security Unit}\label{sec:granularity}
+
+The calibration requirement makes the alerting unit a consequential design choice. A SOC can
+investigate related flows together rather than spend a test on every connection. With flow
+calibration fixed, replacing individual-flow hypotheses by episodes reduces the horizon to
+$T_{\mathrm{group}}$ without changing the maximum flow evidence. The allocation-optimal requirement
+becomes
+\begin{equation}\label{eq:exchange}
+\nCal_{\min}+1=\frac{kT_{\mathrm{group}}}{c_0}.
+\end{equation}
+Thus grouping reduces the required calibration size in direct proportion to the hypothesis count.
+
+\subsection{Restoring feasibility and recovering detections}\label{sec:feasnotdet}
+
+Two-hour host-pair grouping reduces the LSPR23 windows to 31,568--57,368 hypotheses. Horizon-uniform
+e-LOND is then cold-start feasible in all five windows, with $\rho=2.13$--$3.34$. Across five
+grouping families and seven bucket choices, each family becomes feasible once its buckets are
+sufficiently coarse (\cref{app:granularity}).
+
+This change creates the opportunity to alert, but the allocation still determines how widely that
+opportunity is available. Under horizon-free spending, only the first 748--902 hypotheses are
+feasible before the first rejection, or $1.6$--$2.6\%$ of a window. Strong evidence must arrive
+within that prefix to start the controller's discovery history. In the primary window, canonical
+e-LOND consequently detects three of 275 malicious episodes. With the same detector, groups, and
+order, horizon-aware spending detects 105, with no observed false discoveries
+(\cref{tab:costcurve}).
+
+The distinction matters when interpreting low recall. At flow granularity, the allocation-optimal
+calibration requirement is already too large. At episode granularity, grouping makes the optimal
+allocation feasible, while a decaying allocation can still leave most of the stream beyond its
+cold-start horizon. Detector quality influences which episodes supply sufficient evidence; it does
+not change $\rho$. \Cref{app:feasnotpower} reports the detector and prevalence comparisons that
+separate these effects.
+
+\subsection{The resolution cost of an alert}
+
+Coarsening an episode also changes what the analyst learns from an alert. Ordinary episode recall
+cannot quantify this cost across bucket widths because the positive unit and its denominator both
+change. We therefore use a fixed reference: each malicious source--destination episode in a
+five-minute bucket is one \emph{atom}. An alert's \emph{blur} is the number of distinct malicious
+atoms it represents. These atoms are an evaluation reference, not independently validated incidents.
+
+Under first-flow order, which yields alerts at every evaluated width and is held fixed in this
+comparison, mean primary-window blur grows from $1.0$ at five minutes to $7.2$ at one hour,
+$16.1$ at two hours, and $38.5$ at one day (\cref{fig:granularity}). Fixed atomic coverage also
+increases: broader alerts cover more activity, but localise it less precisely.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{fig3_granularity_body.pdf}
+\caption{Coarsening the source--destination bucket increases the feasibility ratio $\rho$ through
+$1$ and increases alert blur. Blur counts fixed five-minute malicious atoms per issued alert.
+Lines show the primary and secondary windows; shading covers the other three. Seed 0; the
+two-hour main configuration is marked.}
+\label{fig:granularity}
+\end{figure}
+
+There is also a security consequence. The grouping key decides which observations contribute to
+the same statistical decision. When an attacker can generate traffic with that key before the
+bucket closes, it can change the composition of its own hypothesis. The next section examines this
+control over membership.
+
+%% =======================================================================================
+\section{Padding Evasion through Attacker-Influenceable Membership}\label{sec:attack}
+
+\subsection{How ordinary traffic suppresses an alert}
+
+Consider an episode whose malicious flows produce enough evidence for rejection. The attacker opens
+additional ordinary connections to the same destination before the bucket closes. Each added flow
+that misses the calibration tail contributes zero evidence. Under the arithmetic mean, these flows
+increase the denominator without increasing the evidence sum. Enough additions therefore move the
+episode below its alert threshold, even though every original malicious flow retains its score.
+
+This mechanism raises two questions. Can another valid aggregation rule prevent dilution? And if
+padding is possible, how much traffic does the attacker need? We answer the first for the symmetric
+e-merging class and the second exactly for the arithmetic mean. Both results concern suppression at
+a specified controller level. They do not depend on whether the empirical null evidence is valid;
+\cref{app:groupval} also constructs a stream where true-null validity holds and padding still erases
+an alert.
+
+\subsection{An impossibility across group sizes}\label{sec:impossibility}
+
+An e-merging function combines valid input e-values into a valid output under arbitrary dependence.
+A symmetric rule gives the same output to every permutation of its inputs. Existing e-merging
+theory compares such rules at a fixed arity. Padding instead changes the arity: the same malicious
+activity is assessed by $F_m$ before the attack and by $F_{m+r}$ after $r$ additions. Robustness
+must therefore relate the rules across group sizes.
+
+\begin{definition}[$\theta$-padding-robustness, attainment]\label{def:padding}
+A family $\{F_N\}_{N\ge1}$ of e-merging functions is $\theta$-padding-robust, for $\theta>1$, if for every
+$m\ge1$, every finite $x\in[0,\infty)^m$ with $F_m(x)\ge\theta$ and every integer $r\ge0$,
+$F_{m+r}(x,0^{r})\ge\theta$. It
+\emph{attains} $\theta$ if some finite input has $F_m(x)\ge\theta$.
+\end{definition}
+
+Attainment requires that the rule can issue an alert at the threshold under discussion. Without
+it, a constant rule such as $F\equiv1$ would be padding-invariant simply because it never alerts.
+
+\begin{theorem}[Symmetric padding impossibility]\label{thm:padding}
+No family of symmetric e-merging functions that attains $\theta$ is $\theta$-padding-robust, for any
+$\theta>1$. Quantitatively, for every symmetric e-merging family, every $m\ge1$, every finite
+$x\in[0,\infty)^m$, every $\theta>1$ and every integer $r\ge0$,
+\[
+F_{m+r}(x,0^{r})<\theta\qquad\text{whenever}\qquad r>\frac{\sum_i x_i}{\theta}-m .
+\]
+\end{theorem}
+
+\begin{proof}[Proof idea]
+Vovk and Wang~\cite[Prop.~3.1]{vovk2021evalues} show that the arithmetic mean essentially dominates
+every symmetric e-merging function: $F(e)>1$ implies $\mathrm{mean}(e)\ge F(e)$. Splitting on
+whether $F(e)\le1$ gives $F_N(x)\le\max\{1,\mathrm{mean}(x)\}$ on finite inputs. After padding,
+the mean is $\sum_i x_i/(m+r)$, which falls below $\theta$ under the stated bound on $r$.
+The arithmetic mean attains the bound, so it is tight. \Cref{app:proofs} gives the full argument,
+including inputs containing zeros.
+\end{proof}
+
+The security implication concerns membership as well as aggregation. Under attacker-controlled,
+unbounded membership, any alert issued by a symmetric e-merging family has a finite zero-padding
+budget that suppresses it. Replacing the mean with another member of this class cannot provide
+invariance to arbitrary additions. The inherited domination result supplies the mathematical bound;
+the cross-arity robustness definition identifies the adversarial property it rules out.
+
+\subsection{Exact cost for one alert}\label{sec:paddingcost}
+
+Let $S_t=\sum_{i\in G_t}e_i$ and $m_t=\lvert G_t\rvert$. After $r$ zero-evidence additions, the
+mean is $S_t/(m_t+r)$. If the original episode is rejected at level $\alphat$, suppression requires
+$S_t/(m_t+r)<1/\alphat$. The smallest integer pad is therefore
+\begin{equation}\label{eq:rstar}
+r^\star_t=\lfloor S_t\alphat\rfloor-m_t+1.
+\end{equation}
+Exact sizing requires the realised evidence and controller level. We consequently report
+$r^\star_t$ as an oracle per-alert cost. It is also a lower bound for replay with real traffic:
+a pad that contributes positive evidence can increase the required number of additions.
+
+The level has a direct operational consequence. A larger $\alphat$ makes the original alert easier
+to obtain, but requires more padding to remove it. For the baseline true detections $\mathcal D$,
+the sum $\sum_{t\in\mathcal D}r^\star_t$ prices every alert at its level on the unperturbed run.
+It does not account for what the controller does after an earlier alert is removed.
+
+\subsection{From individual alerts to the attacked trajectory}\label{sec:jointtheory}
+
+Equation~\eqref{eq:elond} explains why campaign cost can be smaller than that sum. Suppressing an
+early rejection reduces $R_{t-1}$ for later episodes, so their testing levels fall and their required
+evidence rises. Some later alerts need fewer pads; others cease to reject without being padded at
+all. We use $J_{\mathrm{seq}}$ for the total cost of a greedy sequential oracle that sizes each pad
+against the level on the attacked trajectory. It is one strategy's cost, hence an upper bound on
+the minimum joint cost.
+
+An attacker without live controller knowledge can instead multiply each of its own episodes by a
+fixed integer $c$, appending $(c-1)m_t$ zero-evidence flows. At a given level this suppresses an
+alert whenever $c\ge1+r^\star_t/m_t$. Under horizon-uniform e-LOND, keeping the entire trajectory
+at cold start yields a stronger result.
+
+\begin{corollary}[Horizon-uniform feasibility ratio as a dilution threshold]\label{cor:dilution}
+Run e-LOND under the horizon-uniform allocation, so that $\alphat=(\alpha/T)(R_{t-1}+1)$ with
+$R_0=0$, on arithmetic-mean group evidence whose flow e-values are bounded by $\ceil$, and write
+$\rho=\rho_{\text{e-LOND}}=\ceil\alpha/T$, the horizon-uniform ratio \eqref{eq:rho} for e-LOND. Suppose no hypothesis other than the attacker's own
+episodes carries evidence at or above the cold-start threshold $T/\alpha$, and the attacker
+multiplies every one of its own episodes by an integer $c\ge1$, appending $(c-1)m_t$ zero-evidence
+flows to an episode of arity $m_t$. If $c>\rho$, the attacked trajectory is rejection-free. If
+$c\le\rho$ and some attacker episode attains $\ceil$, it is not rejection-free. Hence the smallest integer
+multiplier that suffices for every stream satisfying the hypotheses is
+$c_{\mathrm{int}}=\lfloor\rho\rfloor+1$.
+\end{corollary}
+
+The argument is inductive. With no earlier rejection, the threshold is $T/\alpha$.
+Multiplication by $c>\rho$ brings every attacker episode below it, while the premise on other
+hypotheses prevents them from raising the controller level. Conversely, a ceiling-attaining
+episode still rejects if $c\le\rho$. Thus the ratio that measures best-case feasibility also
+determines the universal integer dilution threshold under these assumptions.
+
+For a particular stream, the smaller multiplier $\lfloor c_{\mathrm{crit}}\rfloor+1$ suffices,
+where $c_{\mathrm{crit}}$ is the largest attacker episode evidence multiplied by $\alpha/T$ and
+$c_{\mathrm{crit}}\le\rho$. Equality holds when an attacker episode attains the ceiling.
+\Cref{app:proofs} supplies the proof. The empirical question is now whether suitable pads are
+available and whether other alerts allow the controller to escape cold start.
+
+%% =======================================================================================
+\section{Experimental Evaluation}\label{sec:evaluation}
+
+We evaluate the attack in three stages. First, real-flow replay tests whether ordinary traffic
+provides the low-evidence additions assumed by the theory. Second, we compare allocations and rerun
+the controller to measure the difference between individual-alert and joint cost. Third, AIT tests
+how benign co-resident traffic, host context, and restricted attacker capabilities affect suppression.
+The principal comparisons hold the detector, grouping, and order fixed.
+
+\subsection{Real-flow replay tests the padding model}\label{sec:replay}
+
+The closed form predicts a traffic count, but its operational relevance depends on how the detector
+scores the added traffic. For LSPR23, we choose the most frequent protocol--port pair in the training
+prefix and use real flows from that service as padding templates. This selection precedes
+calibration and deployment and uses only network-observable service frequency, with no attack
+labels or detector outputs.
+
+At their original controller levels, the three canonical primary-window alerts require 23, 24,
+and 33 zero-evidence additions. Replaying real flows suppresses all three at exactly those counts.
+All eleven secondary-window alerts also suppress at their predicted costs, with median six
+(\cref{tab:main,fig:attacks}). Under horizon-aware spending, the same per-alert replay suppresses
+$105/105$ and $107/107$ true detections in the primary and secondary windows on every draw.
+
+None of the $845{,}691$ available primary-window pool flows reaches the conformal tail. For this
+finite pool, replay therefore agrees exactly with the zero-evidence model. A one-sided 95\%
+upper bound on a common firing probability is $3.5\times10^{-6}$; extending that interpretation
+to future traffic requires a common-rate sampling assumption. \Cref{app:pools} gives the sampled-pool
+diagnostics, alternative pools, and residual-risk analysis.
+
+This experiment scores real traffic and suppresses each alert separately at its original level.
+It establishes the pad model used in the LSPR23 joint rerun below. LSPR23's attacked host pairs
+contain no benign traffic, so these templates come from a common service across the window.
+The AIT experiments address the resulting limitation using actual benign traffic to attacked victims.
+
+\begin{table}[t]
+\centering
+\caption{Padding results under horizon-free spending at seed 0. Order is canonical unless stated.
+LSPR23 costs are exact zero-pad oracle costs from \eqref{eq:rstar}; AIT costs marked ``emp.'' are
+per-organisation empirical replay medians and are no smaller than the closed form. Suppression uses
+per-alert real-flow replay; AIT uses the retrospective deployment template pool. For the canonical
+flow-only AIT row, per-draw success is $0.93$--$1.00$. \Cref{app:attacks} gives all arms.}
+\label{tab:main}
+\footnotesize
+\setlength{\tabcolsep}{0.5pt}
+\begin{tabular}{@{}llrlr@{}}
+\toprule
+Setting & order & det. & cost & suppr. \\
+\midrule
+LSPR23 0.55 primary & canonical & 3 & 23, 24, 33 & 3/3 \\
+LSPR23 0.62 secondary & canonical & 11 & med.\ 6 & 11/11 \\
+AIT flow-only, 8 orgs & canonical & 79 & med.\ 12--4{,}650 (emp.) & 78/79 \\
+AIT host-cond., 8 orgs & first-flow & 63 & med.\ 43--8{,}471.5 (emp.) & 57/63 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.72\textwidth]{fig4_padding_body.pdf}
+\caption{Per-alert suppression cost under canonical order, seed 0. \textbf{A}: LSPR23. Points mark
+the three primary-window horizon-free alerts suppressed by real-flow replay at $23$/$24$/$33$
+added flows; the solid curve shows the secondary window and the dashed curve the primary window
+under horizon-aware allocation. \textbf{B}: AIT empirical replay medians by organisation.
+Replay cost is at least the zero-pad bound and equals it in seven of eight organisations.
+Suppression success is reported separately in \cref{tab:main}; \cref{fig:padsens} gives sensitivity
+results.}
+\label{fig:attacks}
+\end{figure*}
+
+\subsection{Allocation raises individual cost; feedback lowers joint cost}\label{sec:costcurve}
+
+A horizon-aware allocation gives the detector more opportunities to alert. Does it also make padding
+substantially harder? \Cref{tab:costcurve} separates the effect on each alert from the effect on the
+whole trajectory. In the primary window, changing only the allocation increases true detections from
+three to 105 and the median per-alert cost from $24$ to $2{,}946$ flows. No false discovery occurs
+in either primary-window run. The secondary window shows the same increase in detections and cost,
+with one false discovery under horizon-aware spending (realised FDP $0.009$).
+
+\begin{table*}[t]
+\centering
+\caption{Detection and padding cost with detector, grouping, canonical order, and seed 0 fixed.
+$r^{\star}_t$ is the oracle cost of one alert; $\mathcal D$ is the set of true detections; and
+$J_{\mathrm{seq}}$ is the cost of a greedy sequential oracle on the attacked trajectory
+(\cref{sec:costcurve,apptab:joint}). The per-alert sum upper-bounds the joint cost; FDP is realised.}
+\label{tab:costcurve}
+\footnotesize
+\setlength{\tabcolsep}{8pt}
+\begin{tabular}{@{}llrrrrr@{}}
+\toprule
+Window & allocation & true det. & FDP & median $r^{\star}_t$ & $\sum_{t\in\mathcal D} r^{\star}_t$ & $J_{\mathrm{seq}}$ \\
+\midrule
+0.55 primary & horizon-free & 3 & 0.000 & $24$ & $80$ & $30$ \\
+\quad & horizon-aware & 105 & 0.000 & $2{,}946$ & $627{,}495$ & $5{,}650$ \\
+\midrule
+0.62 secondary & horizon-free & 11 & 0.000 & $6$ & $926$ & $859$ \\
+\quad & horizon-aware & 107 & 0.009 & $3{,}908$ & $977{,}567$ & $9{,}992$ \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+The individually priced pads sum to $627{,}495$ flows in the primary horizon-aware run. Applying
+them together and rerunning e-LOND suppresses every true detection, but that sum overstates what
+the sequential oracle needs. Once earlier alerts disappear, later episodes receive lower testing
+levels. The sequential oracle pays $5{,}650$ flows in total; the secondary-window total is
+$9{,}992$, compared with a per-alert sum of $977{,}567$. These are roughly two orders of magnitude
+smaller than the independent sums.
+
+The change is visible at the episode level. Among episodes the sequential oracle actually pads,
+median additions are $48.5$ and $33$ flows in the primary and secondary windows. A further $13$
+and $4$ baseline alerts need no pad because they fired only after earlier rejections had raised
+their levels. The secondary window's false discovery also disappears. Suppression thus affects
+both the target episode's evidence and the testing levels offered to later episodes.
+
+Better allocation still raises the cost of this joint strategy: the corresponding horizon-free
+totals are $30$ and $859$. It does not remove the finite-padding vulnerability. These joint results
+use zero-evidence additions, validated for the replay pool, and one greedy oracle strategy; they
+are not claims of minimum campaign cost. \Cref{app:joint} reports the complete reruns and checks
+that padding preserves the hypothesis keys and order.
+
+\subsection{Suppressing without live controller state}\label{sec:statefree}
+
+The primary and secondary windows have $\rho=2.13$ and $2.49$. Both satisfy the conditions of
+\cref{cor:dilution}, and both contain a ceiling-attaining attacker episode. Multiplying every
+attacker-owned episode by $c=3$ therefore suppresses the horizon-aware trajectory in each window,
+whereas $c=2$ does not. Although the unperturbed secondary run contains a false discovery, that
+episode reaches its rejection threshold only after earlier alerts raise the level. It remains below
+the cold-start threshold, as the corollary requires.
+
+Executing this fixed multiplier needs only the attacker's episode size. On LSPR23, attacked host
+pairs contain no benign traffic, so the attacker knows that size from its own flows. No live
+evidence sum or testing level is needed. This result depends on multiplying every own episode,
+obtaining zero-evidence pads, and preventing other hypotheses from initiating a rejection history.
+\Cref{app:nonoracle} gives the horizon-free multiplier and flat-pad sensitivity analyses. The next
+experiment tests where these conditions break.
+
+\subsection{Transfer to benign-inclusive victims and host-aware detection}\label{sec:transferattack}
+
+AIT-LDSv2.0 provides eight organisations in which attacked hosts also receive ordinary traffic.
+For each held-out organisation, we train on the other seven, calibrate on in-organisation benign
+flows preceding the first attack, and run the same two-hour host-pair/e-LOND pipeline. Per-alert
+replay uses real benign-to-victim templates over 200 draws.
+
+With the flow-only detector and canonical order, 78 of 79 true detections are suppressible using
+the full deployment template pool (\cref{tab:main}). This count records episodes with a successful
+replay; per-draw success is $0.93$--$1.00$. Per-organisation median empirical costs range from
+$12$ to $4{,}650$ flows. A template can contribute positive evidence, in which case empirical
+cost exceeds the zero-pad bound. The baseline runs issue 83 rejections, including four false
+discoveries, for pooled realised FDP $0.048$.
+
+Host context could make repeated connections increasingly anomalous. We test this by recomputing
+six causal host-context features as pads accumulate. On LSPR23, both primary-window host-conditioned
+targets remain suppressible under first-flow order. On AIT, the host-conditioned arm uses first-flow
+order across all eight organisations and suppresses 57 of 63 true detections. The other six have
+no successful draw within twice the zero-pad cost; that is a limit of the evaluated replay budget,
+not proof that padding is impossible. \Cref{app:ait} gives the accumulation model, scored ranges,
+and order comparisons.
+
+\subsection{Template availability and knowledge limit the joint attack}\label{sec:capability}
+
+The deployment-wide template pool is retrospective. To examine a more constrained attacker, we
+rerun the AIT controller using only traffic received by the victim before the attacker's last flow
+in each target episode. An episode with fewer than 20 eligible prior flows is not padded.
+The joint runs propagate both sampled pad evidence and the changed controller state.
+
+\begin{table}[t]
+\centering
+\caption{AIT flow-only joint-attack boundary under canonical order, seed 0: attacker-owned alerts
+remaining (lower is more effective). Baselines are exact sums across eight organisations; attacked
+counts sum the per-organisation medians over 100 sampled trajectories and are neither one combined
+trajectory nor the median of an aggregate total; \cref{apptab:joint76rel} gives the per-trajectory
+reliability. The deployment pool is retrospective; the prior pool
+contains only victim traffic observed before the attacker's last flow in the target episode.}
+\label{tab:aitboundary}
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}lrr@{}}
+\toprule
+Attacker arm & horizon-free & horizon-aware \\
+\midrule
+Baseline & 79 & 80 \\
+Sequential oracle, deployment pool & 1 & 0 \\
+Sequential oracle, victim-prior pool & 24 & 27 \\
+State-free multiplier, victim-prior pool & 65 & 60 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+With the full deployment pool, the sequential oracle leaves one and zero baseline attacker-owned
+alerts under horizon-free and horizon-aware spending, respectively (\cref{tab:aitboundary}).
+Restricting the same oracle to victim-prior traffic leaves $24$ and $27$. Across the 95
+attacker-owned episodes, 30 have fewer than 20 prior templates and 18 have none. Missing cover
+traffic prevents the attacker from suppressing some early alerts, allowing those alerts to raise
+later testing levels.
+
+Removing live controller knowledge further reduces suppression. Applying the fixed multiplier
+$c=\lfloor\rho\rfloor+1$ with the prior pool leaves $65$ and $60$ alerts. Its use under
+horizon-free spending is a heuristic transfer, since \cref{cor:dilution} is proved for
+horizon-uniform spending. These failures have identifiable causes: some episodes cannot be padded,
+some templates carry positive evidence, and some non-attacker episodes can reject at cold start.
+Sizing from the full group arity instead of the attacker's own flows leaves the same residual
+counts, so unknown co-resident arity is not the binding constraint in this arm.
+\Cref{apptab:cor2diag} tests the premises directly.
+
+The table sums per-organisation medians over 100 sampled trajectories; its totals are not one
+combined campaign. \Cref{apptab:joint76rel} reports per-trajectory reliability. Even the prior-pool
+arm assumes access to traffic that a compromised source may not observe. The results therefore
+locate capability boundaries: they demonstrate suppression with available templates, and quantify
+how restricting those templates and controller knowledge limits the attack.
+
+%% =======================================================================================
+\section{Design Implications and Limitations}\label{sec:fixes}\label{sec:discussion}
+
+\subsection{Where a mitigation must act}
+
+The results make calibration, allocation, and membership joint design decisions. Computing $\rho$
+before deployment establishes whether a covered controller can keep every cold-start step feasible
+under its best allocation. Choosing a coarser hypothesis can improve this ratio, but also changes the
+activity represented by each alert and the traffic an attacker can add to it. A deployment therefore
+needs both a feasibility calculation and an explicit model of who controls episode membership.
+
+The padding theorem narrows the available remedies. Under unbounded attacker-controlled membership,
+substituting another alert-capable symmetric e-merger cannot provide arbitrary padding robustness.
+A mitigation must change membership, introduce asymmetry, or change the calibrated unit.
+Our evaluated alternatives illustrate the resulting tradeoffs (\cref{tab:defenses}).
+Pre-committed asymmetric weights can ignore appended flows, but leading flows defeat the tested
+schemes that retain the mean's recall. Calibrating a group maximum protects against dilution, but
+replaces calibration flows with far fewer calibration groups; the resulting pipeline produces no
+alerts at the primary or secondary window. \Cref{app:defences,sec:groupcal} give the full comparisons.
+
+Changing the controller requires similar care. A restart with pre-committed epoch budgets satisfying
+$\sum_iq_i\le q$ can retain deployment-wide FDR control under the validity premise. A fresh budget
+$q$ in every epoch instead supplies a per-epoch guarantee. \Cref{app:taxonomy} measures the
+power gained under each choice. These alternatives should be evaluated with their evidence scale,
+decision timing, and error guarantee made explicit.
+
+\subsection{What the capacity experiment establishes}\label{sec:capacity}
+
+A membership limit changes the padding model by making some required additions infeasible.
+We test this boundary with a sequential attacker that pads an episode only if its final size fits
+a cap $n$; otherwise it allows the original alert to fire. Those surviving alerts can raise the
+cost of later pads, so the effect depends on the whole attacked trajectory.
+
+At $n=100$, $96$ of the $105$ primary-window horizon-aware alerts remain, as do $79$ of $107$
+in the secondary window. Some required pads exceed the cap even at cold start; the resulting
+early alerts raise later testing levels and make further pads too large. At $n=1{,}000$, the
+sequential attacker suppresses both windows. Under horizon-free spending, all three primary-window
+alerts remain suppressible at $n\ge100$ (\cref{app:capacity}).
+
+These results describe a capacity-constrained attacker. We do not truncate or rescore the complete
+clean and attacked streams under an admission policy. A cap of 100 would alter $3.4\%$ and
+$2.9\%$ of benign episodes as currently formed, but those shares do not measure the effect on
+clean detection, false discoveries, or service. An operational membership defence therefore still
+requires end-to-end evaluation.
+
+\subsection{Validity and empirical scope}\label{sec:dependency}\label{sec:limitations}
+
+The nominal FDR interpretation of e-LOND requires valid true-null group evidence. Our sufficient
+metadata-conditional premise is stated in \cref{assump:groupval}; the diagnostics do not establish
+it. The horizon and suppression calculations remain properties of the rejection rule and observed
+evidence regardless of that premise. \Cref{tab:scope} records which assumptions each result uses.
+This distinction allows us to study structural failure without treating low observed FDP as
+evidence that the formal guarantee holds.
+
+LSPR23 supplies one exercise with overlapping evaluation windows. The secondary window is a
+correlated robustness check, and the known-invalid stress window supports only mechanism and cost
+measurements. AIT adds a benign-inclusive setting across eight organisations, but does not establish
+broad cross-domain generality. LSPR23 also lacks reliable flow-to-campaign identifiers, so our
+episodes and five-minute atoms describe operational and evaluation units rather than verified
+incident boundaries.
+
+Attack cost is conditional on capability. Exact per-alert and sequential sizing use oracle
+information. The LSPR23 joint reruns cover two windows and one seed with zero-evidence pads;
+a positive pad firing rate can raise their cost. AIT joint runs sample real pads, but the deployment
+pool is retrospective and the victim-prior pool can include traffic a compromised source cannot
+observe. The host-conditioned experiments cover six causal features and an already-active
+attacker--victim pair; they do not characterise all host-aware detectors or padding from many new
+peers. The detailed replay ranges and censored costs appear in \cref{app:ait}.
+
+Finally, the horizon results apply to the specified controller--sequence pairs and evidence ceiling.
+Smoothing, restart, deferred decisions, and different evidence constructions can change those
+premises. \Cref{app:state}\label{sec:stateptr} separately examines an attack on ADDIS's
+evidence-conditioned index; that extension is not required for the main padding argument.
+
+%% =======================================================================================
+\section{Related Work}\label{sec:related}
+
+\emph{Online testing and finite evidence.} Online FDR procedures allocate testing levels under
+different assumptions about evidence and dependence. LOND, LORD, SAFFRON, ADDIS, e-LOND, online e-BH,
+and e-GAI develop this framework from alpha-investing and offline
+FDR control~\cite{foster2008alpha,benjamini1995controlling,javanmard2015lond,javanmard2018lord,ramdas2017lordpp,ramdas2018saffron,tian2019addis,xu2024elond,fischer2025onlineebh,egai2025}.
+E-values support testing under optional continuation and arbitrary
+dependence~\cite{grunwald2024safe,vovk2021evalues,wang2022evaluebh}.
+Alpha-death and loss of power at small levels are established concerns. Huo et
+al.~\cite{huo2024realtime} study how finite conformal resolution affects online testing, and
+Hennhofer and Preisach~\cite{hennhofer2026resolution} examine resolution collapse and smoothing in
+low-data batch tests. Our horizon results identify when bounded evidence makes rejection
+impossible for the covered controller families and yield an attained deployment sizing law.
+Kr\"onert et al.~\cite{kronert2024fdr} derive a related calibration equality for a windowed
+procedure; our law concerns one uninterrupted controller. \Cref{app:taxonomy} also evaluates
+recent closure and donation constructions~\cite{xu2026eclosure,xu2025closure}.
+
+\emph{Statistical layers for intrusion detection.} Chronological evaluation follows the concerns
+identified by TESSERACT~\cite{pendlebury2019tesseract}; conformal drift systems such as
+Transcend(ent)~\cite{jordaney2017transcend,barbero2022transcendent} likewise separate detector scores
+from statistical evidence. The closest alerting systems implement subsets of our composition.
+Rebjock et al.~\cite{rebjock2021online} apply online FDR to anomaly statistics, and
+C-PP-COAD~\cite{farzaneh2025coad} uses conformal p-values and active statistics.
+Online multi-layer FDR~\cite{wang2025multilayer} partitions hypotheses rather than merging
+observations. Gao et al.~\cite{gao2026boundary} combine conformal novelty detection
+with batch FDR procedures. We study an evaluated design assembled from these established kinds
+of components, rather than claiming an attack on an existing deployment. Our data-quality audit
+also addresses the label concerns documented in intrusion
+datasets~\cite{engelen2021troubleshooting,liu2022error}.
+
+\emph{Aggregation and adversarial testing.} E-merging theory characterises symmetric and asymmetric
+rules at fixed arity~\cite{vovk2021evalues,wang2025admissible}. Our adversary changes the arity by
+adding observations to its own hypothesis. This differs from manipulating scores, perturbing
+p-values, or corrupting reports~\cite{yasodharan2019nonzero,chen2024adversarialbh,zhang2025conformalevasion,zhang2025byzantine}.
+Our cross-arity robustness formulation turns essential domination by the mean into a quantitative
+impossibility for hypotheses whose membership an attacker can enlarge.
+
+Batching can improve online-testing power~\cite{zrnic2020batching}, although the dependence
+conditions of standard batch procedures need not hold for co-located flows sharing calibration.
+Decision deadlines offer a way to defer decisions under arbitrary
+dependence~\cite{fisher2022deadlines,xu2026eclosure}; \cref{app:taxonomy} compares them with immediate
+and history-wide decisions. Feedback-aware procedures incorporate revealed labels with formal
+control~\cite{lu2026gaif,liu2025ocsarc}. The analyst-delay baselines in \cref{app:baselines} instead
+measure simpler threshold controllers and are not claims about those procedures.
+
+%% =======================================================================================
+\section{Conclusion}\label{sec:conclusion}
+
+A statistical trust layer must be designed around the evidence and security unit it actually
+receives. For the controller families studied here, bounded conformal evidence creates a finite
+discovery horizon, and keeping a deployment cold-start feasible requires calibration to grow at
+least linearly with its hypothesis count. Grouping reduces that count, but also determines how an
+attacker can influence the evidence within a hypothesis. With unbounded attacker-controlled
+membership, every alert-capable symmetric e-merging family is vulnerable to sufficient
+zero-evidence padding.
+
+The experiments show why this interaction matters beyond the aggregation formula. Real traffic
+can supply the padding, and suppressing early alerts can keep later controller levels near cold
+start, substantially reducing joint cost. AIT also shows that template availability and attacker
+knowledge constrain realised suppression. Feasibility, alert resolution, membership, and controller
+feedback therefore need to be evaluated together when turning detector scores into operational
+alerts.
+
+%% =======================================================================================
+%% The sections below sit BEFORE the references and do NOT count toward the 12-page body.
+%% =======================================================================================
+
+\section*{Open Science}\label{sec:openscience}
+
+The artifact is published at
+%% Displayed, not inline: the URL is 255pt at normal size against a 252pt column, so inline it breaks
+%% mid-token and strands the lead-in line; \small measures 236pt and holds it on one copy-pasteable line.
+\begin{center}
+\small\url{https://anonymous.4open.science/r/SaTML_2027-EFD9/}
+\end{center}
+and contains the complete set of code and results needed to reproduce every number and figure in this
+paper: a single executable notebook and optionally a runner script that carries the paper's derivations
+and measurements, the library of measurement scripts it imports, the cached results of a full run, and
+environment details. Cached-result mode executes in
+about half a minute, renders every table and figure directly from the cache and requires no raw dataset. Full mode recomputes those from the original flow data; we
+executed both the modes end to end and verified that it reproduces the published results.
+
+Regarding third-party data, LSPR23 is publicly available under CC-BY-4.0 (Zenodo record 8042347), and the artifact contains the
+exact preprocessing commands that turn the raw CSV into the pipeline's inputs. The transfer test
+additionally uses AIT-LDSv2.0~\cite{aitlds} (Zenodo record 5789064, CC BY-NC-SA 4.0): the artifact contains the
+per-organisation \texttt{tstat} netflow extraction and the exact malicious/benign label mapping
+(\cref{app:procedures}) that turn its released packet captures into the eight-organisation netflow inputs,
+following the dataset's own recipe. Full-mode reproduction therefore requires downloading both records.
+The anonymised repository is kept accessible and unedited for the duration of review and, if accepted,
+will be deposited on Zenodo by the venue's final-artifact deadline.
+
+\section*{LLM Usage Considerations}
+
+Hosted LLMs were accessed through Claude Code for editorial refinement, code generation,
+evaluation support, and read-only code audits. The LLMs were used for editorial purposes in this manuscript 
+and the authors inspected all outputs to ensure precision and originality. They are not part of
+the proposed method, the released pipeline's operation, or the dataset labeling.  The released artifact
+contains the exact code used to produce the reported results. The authors take responsibility for all
+content and any remaining errors.
+
+\emph{Necessity, model choice and footprint.} We have used \texttt{claude-opus-5} and \texttt{claude-sonnet-5} via Claude code. The use of LLM was motivated
+by the volume of automation, evaluation and consistency-checking code the project required within its
+timeframe. We limited query
+volume by working in long sessions
+that batch related requests, by reusing generated code and the cached result objects rather than
+regenerating them, by running every consistency checks locally as a script rather than by querying a model. 
+
+Provider-side energy
+measurements for the assistants were not available to us, so we do not estimate their emissions. The
+reported experiments themselves are CPU-only scikit-learn computations on a single workstation, a
+MacBook Pro with an Apple M5 Pro system-on-chip (18 CPU cores, 48\,GB unified memory, no discrete GPU;
+the pipeline uses no GPU): a full recomputation from the flow data takes about two to three hours and
+the cached-result reproduction about half a minute.
+
+\section*{Ethical Considerations}
+
+This paper describes working attacks against a statistical trust layer for intrusion detection, so we
+state our reasoning against the Menlo Report framing~\cite{menlo2012}.
+
+\emph{Respect for persons and justice.} All measurements are made on public research datasets released
+for this purpose, captured during authorised cyber-defence exercises on purpose-built ranges rather than
+on production networks carrying third-party traffic. We rely on the publishers' own ethical review and
+release terms and did not conduct a separate consent audit, so we make no claim about individual consent
+beyond what those releases state. No attack was executed against any live network, and no personal data
+is used, disclosed or re-identified.
+
+\emph{Beneficence and responsible disclosure.} This work does not target a deployed product, and the
+class of system it studies is, to our knowledge, not yet widely deployed. It introduces no new attack on the underlying detector: it
+identifies a security consequence that emerges when public statistical components are composed ---
+bounded evidence, attacker-influenceable grouping and online error spending together produce an alert
+layer that can become infeasible or suppressible. We report both the inexpensive and the expensive
+attack regimes and evaluate representative mitigations, so that designers can assess the exposure
+before deploying such a composition.
+
+\emph{Law and public interest.} We identify a small set of host pairs whose labels we believe to be wrong
+and deliberately do not publish corrected labels. We report
+the direction of the error instead.
+
+\bibliographystyle{IEEEtran}
+\bibliography{refs}
+
+\appendices
+%% Both aliases are positional: labels set BEFORE this line keep their body types ("Section III-D"),
+%% labels set after become "Appendix F-C".  Dropping the subsection line reintroduces "section F-C".
+\crefalias{section}{appendix}
+\crefalias{subsection}{appendix}
+\crefalias{subsubsection}{appendix}
+\crefname{appendix}{Appendix}{Appendices}\Crefname{appendix}{Appendix}{Appendices}
+%% Unlimited, but reviewers are not required to read appendices, so nothing the BODY'S ARGUMENT needs
+%% lives only here.  Appendix G is the exception by design: it is an extension the body cites twice and
+%% never leans on.  Each appendix opens with the question it answers and its takeaway.
+
+%% ---------------------------------------------------------------------------------------
+\section{Proofs and Exact Scope}\label{app:proofs}
 
 \begin{table}[!t]
 \centering
@@ -239,1080 +1119,13 @@ mean & \emph{Formalise:} grouping, attacker-controlled membership, and controlle
 \end{tabular}
 \end{table}
 
-The key distinction is between weak evidence and an impossible decision. Once evidence cannot exceed
-$\ceil$, level decay produces a calculable step after which no admissible detector output can trigger
-a discovery. Maximising that horizon over spending sequences yields an attained deployment boundary in
-$\nCal$, $k$, and $T$ (\cref{cor:budget}), rather than another post-hoc measure of detection power.
-
-Our main evaluation uses 16,353,511 flows from LSPR23~\cite{lspr23}. The chronological position 0.55
-defines the primary window, and 0.62 provides a secondary check. Position 0.85 has a benign tail that
-violates marginal e-validity, so we use it only as an explicitly marked stress window for mechanism and
-cost measurements. AIT-LDSv2.0 provides a second, benign-inclusive setting. The appendices report the
-full windows, seeds, ordering variants, and validity diagnostics; \cref{fig:system} maps the argument
-to the paper structure.
-
-\begin{figure*}[t]
-\centering
-\includegraphics[width=0.72\textwidth]{fig1_chain.pdf}
-\caption{The statistical trust layer and the causal chain studied in this paper. Bounded evidence and
-decaying levels create a finite discovery horizon (\cref{sec:feasibility}). Grouping reduces the number
-of tests and restores feasibility (\cref{sec:granularity}), but a co-occupiable grouping key lets an
-attacker pad its own hypothesis with ordinary traffic (\cref{sec:attack}). The malicious flows and
-their detector scores remain unchanged. Exact sizing uses the realised controller state; the
-state-free attack over-provisions from the attacker's episode size alone.}
-\label{fig:system}
-\end{figure*}
-
-%% =======================================================================================
-\section{Statistical Trust Layer and Evaluation Model}\label{sec:model}
-
-\subsection{Bounded evidence and online decisions}\label{sec:controllers}
-
-Flows $x_1,x_2,\ldots$ arrive in timestamp order, and a detector $f$ assigns each flow a score
-$s_i=f(x_i)$. We convert the score to threshold conformal evidence using a benign calibration set
-$\Cal$ that is disjoint from training and precedes deployment. Let
-$K_i=1+\#\{c\in\Cal:s_c\ge s_i\}$ denote the rank of $s_i$ from the top of the calibration scores,
-with ties resolved against the test flow. At rank depth $1\le k\le\nCal+1$, the flow e-value is
-\begin{equation}\label{eq:evalue}
-e_i=\frac{\nCal+1}{k}\,\mathbf 1\{K_i\le k\},
-\end{equation}
-with $\mathbb E[e_i]\le1$ under the null and the relevant exchangeability premise, and
-$p_i=\min(1,1/e_i)$. The construction is two-point: a flow either reaches the calibration tail or
-receives zero. It therefore imposes the hard ceiling
-\begin{equation}\label{eq:ceiling}
-\ceil=\frac{\nCal+1}{k}.
-\end{equation}
-No detector score can produce evidence above $\ceil$. This ceiling follows from the finite resolution
-of deterministic rank-based conformal evidence~\cite{vovk2005alrw,hennhofer2026resolution}; it does
-not depend on the detector. Randomised smoothing removes the corresponding floor, and
-\cref{app:taxonomy} evaluates that alternative.
-
-We use $\alpha$ for the target error level and $\alphat$ for the level offered at step $t$; in
-particular, $\alpha_T$ denotes the offered level at step $T$, not a product. The procedure rejects
-hypothesis $t$ when
-\begin{equation}\label{eq:reject}
-\Ev(G_t)\ \ge\ 1/\alphat .
-\end{equation}
-Together, \eqref{eq:ceiling} and \eqref{eq:reject} give the paper's central feasibility condition: a
-rejection at step $t$ requires $\alphat\ge1/\ceil$, regardless of the detector score. We use e-LOND as
-the principal controller because it controls $\FDR$ under arbitrary dependence when the group
-e-values are marginally valid~\cite{xu2024elond}. We instantiate the horizon results for LOND,
-e-LOND, e-LORD, and LORD++; \cref{app:feasibility} covers additional procedures and escape mechanisms.
-All experiments use $q=\alpha=0.05$, $w_0=0.025$, and $k=1$.
-
-We compare two spending regimes. Let $(\gamma_j)_{j\ge1}$ be the spending sequence. The
-\emph{horizon-free} regime uses $\gamma_j=j^{-1.6}/\zeta(1.6)$, abbreviated
-$\gamma_j\propto j^{-1.6}$, and represents uninterrupted operation without a known terminal horizon.
-The \emph{horizon-aware} regime uses the horizon-uniform allocation
-$\gamma_j=T^{-1}\mathbf 1\{j\le T\}$, abbreviated $\gamma_j=1/T$. It assumes a known stream length and
-maximises the smallest cold-start level over $1,\ldots,T$, making it the strongest cold-start
-benchmark covered by \cref{cor:budget}. This comparison separates the merger's structural exposure
-from the controller's choice of allocation.
-
-\subsection{Grouped security hypotheses}\label{sec:grouping}
-
-Because SOC investigations rarely operate at flow granularity, we group flows into episodes $G_j$
-using pre-committed metadata and a time bucket. Our main unit is a source--destination host pair within
-a two-hour bucket. The controller receives the arithmetic mean
-\begin{equation}\label{eq:mean}
-\Ev(G_j)=\frac1{m_j}\sum_{i\in G_j}e_i,\qquad m_j=\lvert G_j\rvert .
-\end{equation}
-At every fixed arity, the mean is a valid e-merging rule under arbitrary dependence. Unlike the
-maximum, it does not systematically increase with group size, so it is the symmetric rule we evaluate.
-
-\emph{Guarantee scope.} The group-level premise is stated as \cref{assump:groupval}. Neither the
-discovery-horizon results nor \cref{thm:padding} requires it; it is needed only to read the empirical
-e-LOND runs as nominally $\FDR$-controlled. The nominal
-$\FDR$ guarantee for an empirical e-LOND run requires more than
-unconditional flow-level validity; what it needs is a marginally valid e-value for every true-null
-group. The premise we adopt is one sufficient condition for that, not a necessary one: for each
-true-null group $G_j$, every benign member remains e-valid conditional on the pre-committed local
-metadata that fixes the key, membership, arity, order position, and horizon; writing $\mathcal M_j$ for
-the $\sigma$-field that metadata generates, $\mathbb E[e_i\mid\mathcal M_j]\le1$ for every benign
-$i\in G_j$. Endpoint and service metadata can correlate with the features driving the score, so the
-unconditional conformal statement does not imply this conditional one. Under this premise, linearity
-gives marginally valid group e-values even with random arity and arbitrary dependence within and
-between groups; other constructions of valid group e-values are possible, and \cref{app:groupval}
-gives one in which the premise holds by construction. \Cref{app:validity,tab:deps} audit and track its use.
-
-\subsection{Threat model}\label{sec:threat}
-
-We assume that the defender correctly implements the detector, calibration, grouping, aggregation,
-and controller. The adversary controls traffic from an attacker-operated or compromised host and can
-open ordinary connections to the destination it is already attacking before the same bucket closes.
-Under the key $(\mathrm{SrcIP},\mathrm{DstIP},\text{bucket})$, those connections join the attacker's
-tested hypothesis. The adversary neither changes the detector or calibration code nor modifies stored
-scores or malicious flows; its goal is to suppress the alert on its own grouped activity.
-
-We test, rather than assume, that suitable ordinary traffic contributes zero evidence.
-\Cref{sec:replay} uses real LSPR23 flows chosen before deployment by network-observable service
-frequency alone. \Cref{sec:transferattack} repeats the attack on AIT with genuine benign traffic sent
-to attacked victims, then separates a retrospective deployment-wide template pool from traffic that
-had reached the victim before the attacker's last flow in the target episode. The latter restricts
-temporal availability, but it
-does not by itself make every template observable to a compromised source: such a host need not see
-other benign traffic received by the victim. We therefore report these pools as attacker-capability
-boundaries, not as demonstrated online attacks.
-
-We distinguish two knowledge models. The \textbf{exact attack cost} $r^{\star}_t$ uses the realised
-group evidence and live controller level, and is therefore an oracle lower bound. \textbf{State-free
-over-provisioning} instead uses a fixed multiplier of the attacker's own episode size
-(\cref{sec:paddingcost}).
-
-Groups that close in the same bucket still require an order. Our main results use a \textbf{canonical}
-order: a deterministic hash of each group's metadata key, with collisions broken by the key itself.
-Because it ignores arrival time, appending flows to one group does not move any other hypothesis; this
-preserves the group-validity premise on the attacked stream. Canonicalisation is not a security
-mechanism (\cref{sec:transfer}). We also audit first-flow arrival order, which exposes an attacker
-timing lever and gives a detector-favourable upper bound on LSPR23 detections. Every such contrast is
-labelled explicitly.
-
-\subsection{Data and chronological protocol}\label{sec:data}
-
-LSPR23~\cite{lspr23} contains 16,353,511 flows from the 161.5-hour Locked Shields live-fire exercise;
-1,644,599 flows are malicious (10.06\%, or $0.48$--$0.81\%$ of episodes). We sort the data by timestamp
-and construct chronological training, benign calibration, and deployment blocks, with calibration and
-test each occupying 15\% of $N$. No data are randomly mixed across time.
-
-The five deployment positions are overlapping chronological views of one exercise, not five datasets
-and not independent replications. Adjacent windows share $46.7$--$53.3\%$ of their deployment flows;
-each deployment block coincides, to within one flow, with the calibration block of the position $0.15$
-later; and the training pools $[0,i_1)$ are nested. We therefore report each window separately and use
-position 0.62 as a robustness check rather than confirmatory replication. \Cref{app:splits} gives the
-exact geometry. Two detector seeds change the scores but not any feasibility quantity, and we never
-pool them.
-
-The primary detector is HistGradientBoosting over the protocol and 32 flow timing and volume features.
-Using a standard classifier keeps the analysis focused on the trust layer. A second detector adds six
-strictly causal host-context features (\cref{sec:transferattack}). AIT-LDSv2.0~\cite{aitlds} provides
-an external, benign-inclusive transfer setting in which attacked hosts also receive ordinary traffic.
-\Cref{app:procedures} gives the features, preprocessing, and implementation checks.
-
-We fixed positions 0.55 (primary) and 0.62 (secondary) before running any validity diagnostic. At
-$k=1$, only $0$--$3$ benign deployment flows reach the calibration tail in each of the four non-stress
-windows, too few to establish validity. At position 0.85, 46 benign flows fire---$50.9\times$ the
-nominal rate---which refutes marginal e-validity ($\mathbb E[e]\approx51$). We therefore use 0.85 only
-as a \emph{known-invalid} stress window for algebraic, mechanism, and cost results that do not require
-valid evidence, and label every use accordingly.
-
-Unless stated otherwise, measured results use detector seed 0, canonical within-bucket order, and the
-horizon-free regime at the named window. \Cref{app:conventions} gives the complete reporting
-conventions.
-
-%% =======================================================================================
-\section{Bounded Evidence Creates a Finite Discovery Horizon}\label{sec:feasibility}
-
-Detection power asks whether malicious activity produces strong evidence. \emph{Feasibility} asks a
-more basic question: could the controller accept even the strongest admissible evidence? Combining
-\eqref{eq:reject} and \eqref{eq:ceiling} gives the necessary condition
-\begin{equation}\label{eq:feas}
-\alphat\ \ge\ 1/\ceil ,
-\end{equation}
-which is determined by $\nCal$, $k$, and the offered level before detector performance enters. We call
-step $t$ \textbf{evidence-feasible} when \eqref{eq:feas} holds. On a rejection-free run, the final such
-step is the \textbf{discovery horizon} $t^{\star}$. Beyond it, the run is \textbf{absorbed}: even the
-maximum admissible evidence cannot produce a rejection. We call this operational state
-\textbf{structural silence}. A procedure is \textbf{cold-start feasible through $T$} if every
-$t\le T$ remains evidence-feasible before the first rejection.
-
-Weak detectors, rare attacks, and unlucky orderings can all reduce recall. Structural silence is
-different: $\nCal$, $k$, and $T$ determine it independently of the observed scores. Accordingly, the
-results in this section concern the rejection rule itself and require neither valid e-values nor
-\cref{assump:groupval}; those conditions matter only for the nominal $\FDR$ interpretation
-(\cref{tab:deps}).
-
-\subsection{One headline result, two controller forms}\label{sec:horizon}
-
-\begin{theorem}[Finite discovery horizon, multiplicative family]\label{thm:family1}
-Let the evidence be bounded by $\ceil<\infty$ and the controller run without restart, with
-$\alphat=\alpha\,\gamma_t\,g(\mathcal H_{t-1})$, $\gamma\ge0$, $\sum_t\gamma_t\le1$ and
-$g\le c_g(R_{t-1}+1)^d$ for the rejection count $R$ and some $d\ge0$ (which the step below uses; every
-procedure we cover has $d\in\{0,1\}$). Since $R_{t-1}\le t-1$, a rejection is possible at
-$t$ only if $\gamma_t t^d\ge1/(\alpha c_g\ceil)$. If $\gamma_t t^d\to0$, only finitely many steps are
-feasible on a rejection-free run; if that set is non-empty it has a last element $t^{\star}$ and the run
-is absorbed from $t^{\star}+1$ onward, and if it is empty the run is absorbed from step $1$. No monotonicity of $\gamma$ is needed: a set of steps that is
-finite already has a maximum.
-\end{theorem}
-
-\begin{theorem}[Finite discovery horizon, lag-sum family]\label{thm:family2}
-Let the evidence be bounded by $\ceil<\infty$ and
-$\alphat=w_0\gamma_t+\sum_j a_j\gamma_{t-\tau_j}$ over prior rejection times $\tau_j<t$, with
-$w_0\ge0$, $0\le a_j\le\alpha$, $\gamma\ge0$ and $\sum_t\gamma_t<\infty$. During a rejection-free run of length $\Delta$ every lag
-is distinct and at least $\Delta$, so $\alphat\le(w_0+\alpha)\sum_{u\ge\Delta}\gamma_u$. The tail sum
-tends to zero, so $\Delta^{\star}=\min\{\Delta:(w_0+\alpha)\sum_{u\ge\Delta}\gamma_u<1/\ceil\}$ is finite
-and the run is absorbed once $\Delta\ge\Delta^{\star}$, with no monotonicity assumption on $\gamma$.
-\end{theorem}
-
-The two theorems capture the same mechanism for the two common forms of arrival-time levels, but their
-scope differs. \Cref{thm:family1} uses $R_{t-1}\le t-1$ to give a bound uniform over the preceding
-rejection history. \Cref{thm:family2} is a rejection-gap result: its tail bound applies after a gap of
-length $\Delta$, and a new rejection starts a new gap. Along the relevant rejection-free prefix, the
-offered level eventually falls below the fixed floor $1/\ceil$. Once that holds, no subsequent
-observation can trigger a rejection, because every group's evidence is bounded by $\ceil$, and since
-only a rejection would raise the level, the state is absorbing unless the mechanism itself changes.
-\Cref{thm:family1} covers LOND, e-LOND, and e-LORD, while \cref{thm:family2} covers LORD++.
-The sequence $\gamma_j\propto j^{-1.6}$ satisfies both sets of conditions. Full proofs and the precise
-hypothesis scope appear in \cref{app:proofs}.
-
-Huo et al.~\cite{huo2024realtime} identify the conformal floor $1/(\nCal+1)$ and observe poor
-online-testing behaviour for LOND, SAFFRON, and ADDIS. Our result characterises when this interaction
-becomes structural: for the two controller forms above, only finitely many steps are feasible and a
-sufficiently long rejection-free run becomes permanently silent. The result applies to both p-value
-and e-value procedures and identifies the relevant procedure--sequence pairs. The calibration law
-below then converts this mechanism into an ex-ante deployment test.
-
-\subsection{The best-case calibration--horizon exchange rate}\label{sec:exchange}
-
-Before the first rejection, a procedure can spend only its cold-start budget. Let $c_0$ denote the
-coefficient multiplying the spending weight: $c_0=w_0$ for a level-$w_0$ procedure such as LORD++, and
-$c_0=\alpha=2w_0$ for LOND and e-LOND. Among non-negative sequences with total mass at most one, the
-horizon-uniform allocation $\gamma_t=T^{-1}\mathbf 1\{t\le T\}$ maximises
-$\min_{t\le T}\gamma_t$, and therefore maximises the cold-start horizon. \Cref{app:proofs} gives the
-proof.
-
-\begin{corollary}[Horizon-uniform feasibility]\label{cor:budget}
-Cold-start feasibility over a horizon $T$ --- every step $t\le T$ evidence-feasible before the first
-rejection, which the ceiling decides and detection power does not --- requires $\nCal\ge k/\alpha_T-1$,
-for $\alpha_T$ the level offered at step $T$. Under the horizon-uniform allocation
-$\gamma_t=T^{-1}\mathbf 1\{t\le T\}$, where $\alpha_T$ is also the smallest level offered over the
-horizon, the condition is necessary \emph{and} sufficient and reads
-\[
-\nCal\ \ge\ \frac{kT}{c_0}-1 .
-\]
-The requirement is a scale-free count ratio $k/c_0$: at $k=1$ it is $20$ calibration units per
-hypothesis for LOND/e-LOND and $40$ for LORD++, whatever the unit is --- exactly $20T-1$ and $40T-1$
-over a horizon $T$, the ratio being the rate rather than the count.
-\end{corollary}
-
-\Cref{cor:budget} is the best cold-start scaling attainable by any pre-committed allocation. It turns
-the evidence ceiling into a sizing rule: the count ratio $k/c_0$ is independent of both the dataset and
-the alerting unit. Reducing the number of tested hypotheses therefore reduces the required calibration
-size in direct proportion, which motivates the grouping analysis in \cref{sec:granularity}. The same
-invariance does not hold in calendar time because calibration and deployment produce units at
-different rates (\cref{app:feasibility}). Kr\"onert et al.~\cite{kronert2024fdr} derive an algebraically
-related equality for a windowed procedure; \cref{sec:related} distinguishes the two settings.
-
-We summarise feasibility by the allocation-optimal, horizon-uniform ratio
-\begin{equation}\label{eq:rho}
-\rho_p=\frac{\ceil\,c_{0,p}}{T}=\frac{(\nCal+1)\,c_{0,p}}{kT}.
-\end{equation}
-For procedure $p$ under horizon-uniform allocation, $\rho_p\ge1$ is necessary and sufficient for
-cold-start feasibility through $T$ by \cref{cor:budget}. Under another pre-committed allocation
-$\gamma$, the corresponding minimum-level ratio is
-$\rho_p(\gamma)=\ceil\,c_{0,p}\min_{t\le T}\gamma_t\le\rho_p$. Throughout the paper, $\rho$ denotes the
-horizon-uniform ratio, with feasibility at $1$.
-
-At network scale, the requirement is substantial (\cref{fig:envelope}). Testing all 16,353,511 flows
-in one uninterrupted run requires about $3.3\times10^{8}$ calibration flows for LOND/e-LOND and
-$6.5\times10^{8}$ for LORD++. The smaller value is already 20 times the entire exercise, compared with
-the $1.8$--$2.4$ million benign calibration flows available before each deployment window. Scaling
-calibration and deployment together does not close the gap because the ratio $k/c_0$ remains fixed.
-Moreover, these figures assume the cheapest allocation: under horizon-free
-$\gamma\propto j^{-1.6}$, the same horizon requires about $1.6\times10^{13}$ calibration flows for
-LOND/e-LOND and $3.2\times10^{13}$ for LORD++.
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=0.70\columnwidth]{fig2_envelope.pdf}
-\caption{Calibration size needed to keep a rejection possible through horizon $T$ ($k=1$, $w_0=0.025$).
-The horizon-uniform allocation is cold-start optimal and scales linearly in $T$, with the controller
-entering through $c_0$; linear scaling is therefore the best case. Horizon-free
-$\gamma\propto j^{-1.6}$ scales as $T^{1.6}$. The grey band marks
-the $1.8$--$2.4$M calibration flows available in our windows. Procedures outside the two theorem
-families are compared in \cref{app:feasibility}.}
-\label{fig:envelope}
-\end{figure}
-
-\subsection{Feasibility is not detection power}\label{sec:feasnotdet}
-
-Feasibility is necessary for detection, but it does not guarantee detection. Two-hour host-pair
-episodes reduce $T$ to 31,568--57,368, making horizon-uniform e-LOND feasible in all five windows
-($\rho=2.13$--$3.34$). Under horizon-free spending, however, useful level remains concentrated in a
-short prefix: before the first discovery, only the first 748--902 hypotheses can reject, or
-$1.6$--$2.6\%$ of the stream. A near-ceiling malicious episode must land inside that prefix. Under the
-canonical order, e-LOND therefore detects three of 275 malicious episodes in the primary window and
-eleven in the secondary window (\cref{tab:costcurve}).
-
-The evidence ceiling and the spending sequence play different roles. At flow granularity, the
-shortfall is allocation-optimal, so reallocation cannot remove it. At the grouped unit, allocation
-matters: horizon-aware uniform spending is feasible ($\rho=2.13$) and detects $105$ of 275 malicious
-episodes at the primary window with no false discoveries, versus three detections under
-$\gamma\propto j^{-1.6}$ (\cref{tab:costcurve}). Two additional configurations show the same
-separation (\cref{app:feasnotpower}). Horizon-free spending exposes the short feasible prefix of an
-anytime deployment; horizon-aware spending or restart restores substantial power. Under first-flow
-order on both legs at the primary window and seed 0, e-LORD with horizon-aware weighting reaches
-$101$ detections with no false discoveries, and a two-hour periodic restart that keeps the
-deployment-wide budget takes e-LOND from $18$ to $55$ rejections (\cref{app:taxonomy}). We price the
-padding attack under both regimes in \cref{sec:costcurve}.
-
-Across the five canonical-order positions, e-LOND detects $3$, $11$, $0$, $0$, and $34$ episodes. The
-two zero counts arise because no episode clears its offered level, not because the controller is
-absorbed. The 34 detections occur in the known-invalid stress window.
-
-A detector with better ranking can even produce fewer alerts. Adding six strictly causal host-context
-features raises primary-window AUROC from 0.916 to 0.954 but reduces e-LOND detections from 18 to two
-under first-flow order across both legs. Because $\nCal$, $k$, and $T$ are unchanged, so is $\rho$:
-ranking quality affects power but cannot move the feasibility boundary. \Cref{app:feasibility} reports
-the full matrices, an Isolation Forest comparison, and a low-prevalence analysis in which the
-probability that e-LOND ever rejects falls to $0$--$40\%$ while $\rho$ remains fixed.
-
-\subsection{Procedures outside the theorems}\label{sec:escapes}
-
-The horizon theorems cover arrival-time controllers whose effective spending index advances with
-elapsed hypotheses or rejection lags. ADDIS can avoid elapsed-time decay by selectively advancing its
-index. History-wide procedures such as online e-BH also fall outside the predicate because they
-reconsider earlier hypotheses instead of fixing a decision level at arrival. These alternatives move
-the constraint rather than making evidence scale irrelevant. \Cref{app:feasibility} provides the full
-taxonomy and measurements, while \cref{app:state} shows how an evidence-conditioned index creates a
-separate attacker-controlled state variable.
-
-%% =======================================================================================
-\section{Grouping Restores Feasibility by Changing the Security Unit}\label{sec:granularity}
-
-\Cref{cor:budget} makes the alerting unit a design variable. When the calibration corpus is fixed,
-feasibility can be restored by reducing $T$: test groups of flows instead of individual flows.
-Replacing flow-level hypotheses with episodes changes the horizon from $T_{\mathrm{flow}}$ to
-$T_{\mathrm{group}}$ and gives the allocation-optimal requirement---the minimum calibration size over
-pre-committed spending allocations---
-\begin{equation}\label{eq:exchange}
-\nCal_{\min}+1=\frac{kT_{\mathrm{group}}}{c_0},
-\end{equation}
-Thus $\nCal+1$ falls in direct proportion to the number of tested hypotheses. For the covered
-procedures under uninterrupted control, grouping restores cold-start feasibility at this exact
-exchange rate.
-
-Grouping changes more than $T$. Moving from a host-pair key to a source-host key raises the primary
-window's canonical detections from $3$ to $46$ under horizon-free spending, while the median exact
-suppression cost---an oracle lower bound---rises from $24$ to $496$ added flows. The grouping
-key therefore changes feasibility, alert semantics, and attack cost together. It becomes a membership
-defence only when the attacker cannot cheaply co-occupy it; our operational keys include an endpoint
-that the attacker controls.
-
-We evaluate five SOC-relevant grouping families over six bucket widths and a whole-deployment bucket,
-for 35 configurations per window and seed (\cref{app:granularity}). Every family follows the predicted
-linear relationship between hypothesis count and required calibration, and each becomes feasible once
-the bucket is sufficiently coarse. Source-host grouping is feasible at every bucket, reducing each
-window to $763$--$24{,}043$ episodes. \Cref{apptab:grouping} reports the primary window at seed 0;
-feasibility itself depends only on $T$.
-
-The cost is lower semantic resolution. Episode recall cannot be compared directly across bucket
-widths because both the positive unit and its count change. We therefore fix an atomic reference:
-every malicious source--destination episode in a five-minute bucket is one atom, independent of the
-controller's alerting bucket. For an issued alert, \textbf{alert blur} is the number of distinct
-malicious atoms that it represents.
-
-We measure blur under first-flow order, which produces alerts at every width and holds ordering fixed
-as granularity changes. In the primary window, mean blur grows from $1.0$ at five minutes to $7.2$ at
-one hour, $16.1$ at the two-hour headline unit, and $38.5$ at one day
-(\cref{fig:granularity}). Fixed atomic coverage increases at the same time, but each alert identifies
-a progressively broader span of malicious activity.
-
-The same operation that restores feasibility decides which flows share a hypothesis. When endpoints,
-services, or timing determine membership, the attacker can influence the composition of the alerting
-unit directly.
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=\columnwidth]{fig3_granularity_body.pdf}
-\caption{Effect of coarsening the source--destination bucket. The feasibility ratio $\rho$
-(\eqref{eq:rho}) rises through $1$, while alert blur---the number of fixed five-minute malicious atoms
-represented by one alert---increases. Lines show the primary and secondary windows; shading covers the
-other three. Seed 0; the two-hour headline unit is marked.}
-\label{fig:granularity}
-\end{figure}
-
-%% =======================================================================================
-\section{Padding Evasion through Attacker-Influenceable Membership}\label{sec:attack}
-
-\subsection{Padding the tested hypothesis}
-
-
-An attack episode is a source--destination pair within a two-hour bucket. Before that bucket closes,
-the attacker opens additional ordinary connections to the same destination, placing them in the same
-hypothesis. The malicious flows and all existing detector scores remain unchanged. Under the two-point
-evidence construction, each added flow that misses the calibration tail contributes exactly zero, so
-$r$ additions change the aggregate from $F_m(e_1,\ldots,e_m)$ to
-$F_{m+r}(e_1,\ldots,e_m,0^r)$.
-
-The following theorem shows that, under attacker-controlled, unbounded membership, no alert-capable
-symmetric e-merging family can ignore arbitrary padding while preserving validity. Like the feasibility results, suppression of a specified alert is
-a property of the aggregation rule and realised controller level; it does not require valid e-values
-or \cref{assump:groupval} (\cref{tab:deps}). Nor does validity prevent it: \cref{app:groupval} gives
-a four-hypothesis construction in which every true-null e-value is exactly valid by exchangeability
-and one appended zero-evidence flow still erases the only alert.
-
-\subsection{Symmetric alerting and arbitrary padding invariance are incompatible}\label{sec:impossibility}
-
-
-\begin{definition}[$\theta$-padding-robustness, attainment]\label{def:padding}
-A family $\{F_N\}_{N\ge1}$ of e-merging functions is $\theta$-padding-robust, for $\theta>1$, if for every
-$m\ge1$, every finite $x\in[0,\infty)^m$ with $F_m(x)\ge\theta$ and every integer $r\ge0$,
-$F_{m+r}(x,0^{r})\ge\theta$. It
-\emph{attains} $\theta$ if some finite input has $F_m(x)\ge\theta$.
-\end{definition}
-
-Attainment excludes rules that can never fire, such as $F\equiv1$ (\cref{app:attain}).
-
-\begin{theorem}[Symmetric padding impossibility]\label{thm:padding}
-No family of symmetric e-merging functions that attains $\theta$ is $\theta$-padding-robust, for any
-$\theta>1$. Quantitatively, for every symmetric e-merging family, every $m\ge1$, every finite
-$x\in[0,\infty)^m$, every $\theta>1$ and every integer $r\ge0$,
-\[
-F_{m+r}(x,0^{r})<\theta\qquad\text{whenever}\qquad r>\frac{\sum_i x_i}{\theta}-m .
-\]
-\end{theorem}
-
-\begin{proof}[Proof idea]
-Vovk and Wang~\cite[Prop.~3.1]{vovk2021evalues} show that the arithmetic mean \emph{essentially}
-dominates every symmetric e-merging function: $F(e)>1$ implies $\mathrm{mean}(e)\ge F(e)$. A case split therefore gives
-$F_N(x)\le\max\{1,\mathrm{mean}(x)\}$ on finite inputs. Padding gives
-$\mathrm{mean}(x,0^{r})=\sum_ix_i/(m+r)$, which falls below $\theta$ once $r>\sum_ix_i/\theta-m$, and
-attainment supplies an $x$ to which this applies. The mean meets the bound with equality, so the
-quantitative statement is tight. \Cref{app:proofs} gives the full proof, the scaled-rule edge case, and
-an independent negatively-dependent special case.
-\end{proof}
-
-Vovk and Wang's domination result~\cite[Prop.~3.1]{vovk2021evalues} compares e-merging rules at a fixed
-arity: it asks how best to combine a given set of e-values. Our adversary changes that set.
-\Cref{def:padding} captures the required cross-arity property, and \cref{thm:padding} establishes an
-exact incompatibility under attacker-controlled, unbounded membership: a symmetric e-merging family can
-withstand arbitrary zero-evidence additions or attain an alert threshold, but not both. Whenever a symmetric merger issues an alert, the attainment
-condition holds at that threshold (\cref{app:attain}). The arithmetic mean reaches the quantitative
-bound, yielding the exact cost in \eqref{eq:rstar}. Substituting another symmetric merger therefore cannot eliminate the vulnerability while membership
-remains unbounded.
-
-\begin{figure*}[!t]
-\centering
-\includegraphics[width=0.72\textwidth]{fig4_padding_body.pdf}
-\caption{Per-alert suppression cost under canonical order, seed 0. \textbf{A}: LSPR23. Points mark the
-three horizon-free primary-window alerts suppressed by real-flow replay ($23$/$24$/$33$ added flows);
-the solid curve shows the eleven secondary-window alerts. The dashed curve shows the same primary
-window under horizon-aware allocation (\cref{tab:costcurve}). \textbf{B}: median empirical replay cost
-by AIT organisation. Empirical cost is at least the zero-pad bound and equals it in seven of eight
-organisations; replay success is reported separately. \Cref{fig:padsens} gives the stress-window and
-first-flow results.}
-\label{fig:attacks}
-\end{figure*}
-
-\subsection{Exact and state-free attack costs}\label{sec:paddingcost}
-
-
-For the arithmetic mean, let $S_t=\sum_{i\in G_t}e_i$ and $m_t=\lvert G_t\rvert$ for the group tested
-at step $t$. After $r$ zero-evidence additions, its evidence is $S_t/(m_t+r)$. If the original group
-is rejected at level $\alphat$, the minimum number of additions needed to suppress that rejection is
-\begin{equation}\label{eq:rstar}
-r^{\star}_t=\lfloor S_t\alphat\rfloor-m_t+1 ,
-\end{equation}
-where we write $r^{\star}$ when the step is clear. The traffic construction is black-box---ordinary
-connections on a common service to the host already under attack---but exact sizing requires $S_t$,
-the live level $\alphat$, and the unperturbed controller trajectory. Thus $r^{\star}_t$ is the oracle
-per-alert cost defined in \cref{sec:threat}.
-
-We report three complementary cost summaries. For the baseline true detections $\mathcal D$,
-$r^{\star}_t$ prices one alert on the unperturbed trajectory and
-$\sum_{t\in\mathcal D}r^{\star}_t$ adds those per-alert costs. The campaign-level quantity
-$J_{\mathrm{seq}}$ is the total paid by a greedy sequential oracle that re-evaluates each episode on
-the attacked trajectory. A \statefree\ attacker instead uses a fixed multiplier $c$ of its own episode
-size. \Cref{tab:costcurve} reports all three summaries.
-
-A \statefree\ attacker can over-provision from its own episode size alone. Multiplying an episode by
-$c$, through $(c-1)m_t$ additions, suppresses its alert whenever
-$c\ge1+r^{\star}_t/m_t$. No live access to $S_t$, $\alphat$, or $\nCal$ is required; on LSPR23, $c=10$
-is the smallest tested multiplier in $\{2,3,5,10,100\}$ that suppresses every canonical,
-horizon-free alert at seed 0 in the primary and stress windows, the two arms with stored per-episode
-arities. The measured cost is higher than the exact minimum. At the secondary window, one canonical
-alert with $m_t=22$ and $r^{\star}_t=859$ needs $c=41$. For horizon-aware spending, the joint rerun
-in \cref{sec:costcurve} yields an exact, sharper result.
-
-\begin{corollary}[Horizon-uniform feasibility ratio as a dilution threshold]\label{cor:dilution}
-Run e-LOND under the horizon-uniform allocation, so that $\alphat=(\alpha/T)(R_{t-1}+1)$ with
-$R_0=0$, on arithmetic-mean group evidence whose flow e-values are bounded by $\ceil$, and write
-$\rho=\rho_{\text{e-LOND}}=\ceil\alpha/T$, the horizon-uniform ratio \eqref{eq:rho} for e-LOND. Suppose no hypothesis other than the attacker's own
-episodes carries evidence at or above the cold-start threshold $T/\alpha$, and the attacker
-multiplies every one of its own episodes by an integer $c\ge1$, appending $(c-1)m_t$ zero-evidence
-flows to an episode of arity $m_t$. If $c>\rho$, the attacked trajectory is rejection-free. If
-$c\le\rho$ and some attacker episode attains $\ceil$, it is not rejection-free. Hence the smallest integer
-multiplier that suffices for every stream satisfying the hypotheses is
-$c_{\mathrm{int}}=\lfloor\rho\rfloor+1$.
-\end{corollary}
-
-For a particular stream, the smaller integer $\lfloor c_{\mathrm{crit}}\rfloor+1$ suffices, where
-$c_{\mathrm{crit}}\le\rho$ is the largest attacker evidence multiplied by $\alpha/T$. Equality holds
-when an attacker episode attains the ceiling, as occurs in every evaluated window; the proof is in
-\cref{app:proofs}. Under the corollary's assumptions, the same ratio that governs cold-start
-feasibility also gives the universal dilution threshold for attacker-owned cold-start alerts.
-\Cref{app:ait} measures the cases in which the assumptions fail.
-
-In the primary and secondary windows, $\rho$ is $2.13$ and $2.49$, so $c=3$ suffices and $c=2$ does
-not: against the horizon-aware controller, multiplying \emph{every} own episode by $c=3$ silences it
-at both windows. The one horizon-aware
-false discovery in the secondary window occurs only after earlier
-detections have raised its level, and disappears when those detections are suppressed, so the
-corollary's condition on other hypotheses holds. The attacker needs only its own arity $m_t$. On
-LSPR23, all 674 detected episodes lie on host pairs with no benign traffic, so that arity is simply the
-number of flows the attacker generated. No estimate of $S_t$, $\alphat$, or $\nCal$ is needed.
-\Cref{app:nonoracle} reports the over-provisioning factors, tested variants, and the one first-flow arm
-for which no fixed multiplier suffices.
-
-\subsection{Controller allocation prices alerts, not robustness}\label{sec:costcurve}
-
-\begin{table*}[t]
-\centering
-\caption{Detection and padding cost with detector, grouping, canonical order, and seed 0 fixed.
-$r^{\star}_t$ is the oracle cost of one alert; $\mathcal D$ is the set of true detections; and
-$J_{\mathrm{seq}}$ is the cost of a greedy sequential oracle on the attacked trajectory
-(\cref{sec:costcurve,apptab:joint}). The per-alert sum upper-bounds the joint cost; FDP is realised.}
-\label{tab:costcurve}
-\footnotesize
-\setlength{\tabcolsep}{8pt}
-\begin{tabular}{@{}llrrrrr@{}}
-\toprule
-Window & allocation & true det. & FDP & median $r^{\star}_t$ & $\sum_{t\in\mathcal D} r^{\star}_t$ & $J_{\mathrm{seq}}$ \\
-\midrule
-0.55 primary & horizon-free & 3 & 0.000 & $24$ & $80$ & $30$ \\
-\quad & horizon-aware & 105 & 0.000 & $2{,}946$ & $627{,}495$ & $5{,}650$ \\
-\midrule
-0.62 secondary & horizon-free & 11 & 0.000 & $6$ & $926$ & $859$ \\
-\quad & horizon-aware & 107 & 0.009 & $3{,}908$ & $977{,}567$ & $9{,}992$ \\
-\bottomrule
-\end{tabular}
-\end{table*}
-
-Because \eqref{eq:rstar} increases with $\alphat$, the offered level determines the cost of suppressing
-an individual alert. Under horizon-free $\gamma\propto j^{-1.6}$, the primary window produces three
-canonical alerts near the evidence ceiling, with a median suppression cost of 24 added flows. Under
-the max-min-optimal horizon-aware allocation, the same detector, groups, and order produce 105 true
-alerts with no observed false discoveries; the median cost rises to $2{,}946$. The corresponding
-feasibility ratios are $\rho=2.13$ and $2.49$ for the primary and secondary windows.
-
-Summing the separately priced primary-window pads gives
-$\sum_{t\in\mathcal D}r^{\star}_t=627{,}495$. This is an upper bound on the cost of jointly suppressing
-that set, not a joint minimum: removing an early alert lowers e-LOND's rejection count, which lowers
-the level and cost of later alerts. The secondary horizon-aware arm's one false discovery is not
-included in its per-alert sum. Within the unbounded-membership model of \cref{thm:padding}, allocation
-changes these finite costs but cannot remove padding vulnerability. A hard membership limit would
-change that model; below we measure the resulting attack boundary, not a deployed admission policy.
-
-We measure this feedback on the canonical, seed-0 trajectories for both windows by rerunning e-LOND
-over the fully padded stream, using the zero-evidence model validated by the real-flow replay in
-\cref{sec:replay}. Applying all per-alert pads and rerunning the controller under canonical order
-leaves no true detection standing in either regime or window; the secondary window's horizon-aware
-false discovery also disappears. The greedy sequential attacker is cheaper because it sizes each pad
-against the level actually offered on the attacked run. With earlier alerts removed, later levels stay
-at or near cold start.
-
-Under canonical order at the primary window, this attacker pays $5{,}650$ flows in total rather than the per-alert sum of
-$627{,}495$; at the secondary window, it pays $9{,}992$ against $977{,}567$. Across the alerts it
-pads, the median pad is $48.5$ and $33$ flows rather than the per-alert horizon-aware medians of
-$2{,}946$ and $3{,}908$, and $13$ and $4$ alerts need no pad at all because they existed only at levels
-raised by earlier detections. Thus the high horizon-aware cost
-is an individual-alert price created by the controller's own detection history. The greedy joint costs
-remain one to two orders of magnitude above the horizon-free totals of $30$ and $859$, and they are
-upper bounds on the minimum joint cost because they describe one oracle strategy.
-
-The resulting group sizes locate the membership-cap boundary. Under horizon-free spending, the
-median padded primary-window episode has arity 63, and 5\% of deployment episodes are at least that
-large. Per-alert horizon-aware pads have median arity $2{,}989$, reached by only $0.22\%$ of
-episodes. Once controller state is propagated, however, the attacker has median padded arity $91$ at
-the primary window and $55$ at the secondary, sizes reached by $3.8\%$ and $4.3\%$ of episodes.
-
-We therefore rerun the sequential attacker under a capacity constraint: it pads an episode only when
-$m_t+r_t\le n$ and otherwise leaves the original alert in place. This experiment does not truncate or
-rescore the complete clean and attacked streams, so it is not an end-to-end evaluation of an
-admission-control policy. Under canonical order and $n=100$, $96$ of
-the $105$ horizon-aware primary-window alerts still fire: $44$ because their pad would not fit even at
-the cold-start level, and $52$ because those first alerts raise $R$ enough to price later pads above
-the cap; at the secondary window $79$ of $107$ fire ($33$ and $46$) by the same mechanisms. At a cap
-of 300, we observe $19$ and $60$ alerts firing, whereas the per-alert reading where
-$m_t+r^{\star}_t>n$ predicts $91$ and $95$, and at $1{,}000$ the sequential attacker silences both
-windows. A cap of 100 would alter
-$3.4\%$ and $2.9\%$ of benign episodes as currently formed. This is the share an implemented cap
-would alter, not a measurement of its effect on evidence, clean detection, or benign service.
-
-The same constraint does not stop the horizon-free attacker: all three primary-window alerts remain
-suppressible at $n\ge100$. Reaching them requires $n=30$, which would alter $7.4\%$ of benign
-episodes. Thus the experiment identifies a mitigation boundary under an enforced capacity model; it
-does not establish the performance of a working defence.
-
-
-\subsection{Real-flow replay validates the cost model}\label{sec:replay}
-
-At the running levels received by each episode, the three canonical primary-window alerts require 23,
-24, and 33 zero-evidence additions; the eleven canonical secondary-window alerts have a median cost of six
-(\cref{fig:attacks,tab:main}). Those costs are arithmetic on stored evidence. To test them against the implemented detector, we build
-a weak-attacker pool using only network-observable service frequency. Specifically, we select the most
-common protocol--port pair in the training prefix, before either calibration or deployment. The
-selection uses no attack labels, detector outputs, calibration scores, or deployment traffic.
-
-None of 20,000 sampled pool flows reaches the primary window's conformal tail, giving a one-sided 95\%
-upper bound of $1.5\times10^{-4}$ on the firing probability. Injecting these real flows suppresses all
-$3/3$ canonical primary-window detections at exactly the predicted $23$--$33$-flow thresholds. It also suppresses
-all $11/11$ secondary-window detections, with measured cost equal to the closed form for every episode
-and median cost six.
-
-The horizon-aware regime replays the same way: per-alert replay suppresses $105/105$ and $107/107$
-true detections in the primary and secondary windows at their original levels, on every draw. The baseline runs have
-no false discovery in the primary window and one in the secondary (realised FDP $0.009$). A firing pad
-flow would contribute the full evidence ceiling, but none of the $845{,}691$ available primary-window
-pool flows reaches the tail. This full-pool zero count tightens the one-sided 95\% upper bound to
-$3.5\times10^{-6}$ and makes the replay cost equal, rather than approximate, to the zero-evidence
-closed form for this finite pool. The interval treats future pads as draws from a common firing rate;
-it is not a distribution-free guarantee for future operational traffic. \Cref{app:pools} quantifies
-the remaining risk. Across both windows, replay covers fourteen
-horizon-free alerts at recalls $0.01$ and $0.03$, and 212 horizon-aware true detections at recalls
-$0.38$ and $0.27$.
-
-Replay evaluates each alert separately at its level on the unperturbed trajectory. It measures
-e-values with real traffic and the implemented detector, then applies the aggregation and controller
-arithmetic at that fixed level. Its purpose is to establish the zero-evidence pad model; the joint rerun in
-\cref{sec:costcurve} propagates those pads through the altered e-LOND state.
-
-LSPR23 provides no ordinary traffic on attacked host pairs, which are 100\% malicious. Its pool is
-therefore service-level: flows matching the modal training-prefix protocol and port across the window,
-rather than flows sent to a particular victim. The AIT experiment below closes this gap using actual
-benign-to-victim traffic. Results are largely insensitive to the eligible pool
-(\cref{app:pools}), but they do depend on when the pool is selected: choosing the modal service from the
-deployment window can select the attacker's own high-scoring flood, which does not dilute evidence.
-
-Ordering changes which alerts are issued, not the conditional result. Every alert produced under any
-of the fifty audited pre-committed orders has a finite exact cost under
-\eqref{eq:rstar} (\cref{app:padwindows}).
-
-\subsection{Transfer to benign-inclusive hosts and host context}\label{sec:transferattack}
-
-\begin{table}[t]
-\centering
-\caption{Padding results under horizon-free spending at seed 0. Order is canonical unless stated.
-LSPR23 costs are exact zero-pad oracle costs from \eqref{eq:rstar}; AIT costs marked ``emp.'' are
-per-organisation empirical replay medians and are no smaller than the closed form. Suppression uses
-per-alert real-flow replay; AIT uses the retrospective deployment template pool. For the canonical
-flow-only AIT row, per-draw success is $0.93$--$1.00$. \Cref{app:attacks} gives all arms.}
-\label{tab:main}
-\footnotesize
-\setlength{\tabcolsep}{0.5pt}
-\begin{tabular}{@{}llrlr@{}}
-\toprule
-Setting & order & det. & cost & suppr. \\
-\midrule
-LSPR23 0.55 primary & canonical & 3 & 23, 24, 33 & 3/3 \\
-LSPR23 0.62 secondary & canonical & 11 & med.\ 6 & 11/11 \\
-AIT flow-only, 8 orgs & canonical & 79 & med.\ 12--4{,}650 (emp.) & 78/79 \\
-AIT host-cond., 8 orgs & first-flow & 63 & med.\ 43--8{,}471.5 (emp.) & 57/63 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\begin{table*}[t]
-\centering
-\caption{Representative design directions after \cref{thm:padding}, evaluated on LSPR23 two-hour
-host-pair episodes. Aggregation and weighting use first-flow order. The membership-cap row uses a
-capacity-constrained attacker under canonical order, not a complete admission policy. Supporting
-measurements appear in \cref{sec:costcurve,app:defences}.}
-\label{tab:defenses}
-\footnotesize
-\setlength{\tabcolsep}{6pt}
-\begin{tabular}{@{}>{\raggedright\arraybackslash}p{4.0cm}>{\raggedright\arraybackslash}p{5.4cm}>{\raggedright\arraybackslash}p{7.2cm}@{}}
-\toprule
-Design direction & Gain & Cost / boundary \\
-\midrule
-Capped normalisation $\sum_ie_i/n_0$ & Invariant to members appended below the cap $n_0$ &
-Leaves the symmetric e-merging class above $n_0$; validity-preserving caps detect nothing
-(\cref{apptab:caps}) \\[2pt]
-Pre-committed asymmetric weights~\cite{wang2025admissible} & Valid invariance to \emph{appended} flows &
-A few \emph{leading} flows defeat every scheme that keeps the mean's recall; a larger reach costs about
-$58\%$ of it (\cref{tab:asym}) \\[2pt]
-Group-calibrated maximum & Padding-robust aggregate & The smaller calibration unit destroys
-feasibility: no alerts at the primary or secondary window (\cref{sec:groupcal}) \\[2pt]
-Per-host-pair membership cap \emph{(outside the merging class)} & Makes pads above the cap infeasible
-in the capacity model; an early unpadded alert can raise later costs & Not evaluated as an end-to-end
-policy: baseline traffic is not truncated or rescored; the constraint leaves residual suppression and
-does not stop the horizon-free attacker (\cref{sec:costcurve}) \\
-\bottomrule
-\end{tabular}
-\end{table*}
-
-A host-aware detector might make repetitive padding anomalous. We test this possibility in two stages.
-First, on LSPR23, we add six strictly causal host-context features: prior connection counts,
-distinct-peer counts, and failed-connection fractions. We recompute the context causally as each pad
-arrives. The pads still contribute zero evidence, and both host-conditioned targets remain
-suppressible in the primary window under seed 0, horizon-free spending, and first-flow order, as well
-as in the stress window (\cref{apptab:r7host}). Because every attacked LSPR23 host pair is 100\%
-malicious, this experiment cannot test replay from ordinary traffic already sent to the victim.
-
-Second, AIT-LDSv2.0 provides eight organisations in which attacked hosts also serve benign traffic.
-For each held-out organisation, we train on the other seven, calibrate on in-organisation benign flows
-that precede the first attack, and run the same two-hour host-pair/e-LOND pipeline. We then replay real
-benign-to-victim traffic into every detected episode using 200 draws.
-
-Under canonical order, the flow-only detector yields 79 true detections, of which 78 are suppressible
-when each alert is replayed separately using templates drawn from the full deployment pool.
-Per-draw success ranges from $0.93$ to $1.00$, and the per-organisation median empirical cost is
-$12$--$4{,}650$ flows. Wherever a pad fires, this cost exceeds the zero-pad closed form. The eight
-runs issue 83 rejections in total, including four false discoveries, for pooled realised
-$\FDP=0.048$. First-flow resequencing produces 85 true detections and suppresses 84, at higher cost
-(\cref{app:attacks}).
-
-With host context recomputed throughout accumulation, the same chain at all eight organisations uses
-first-flow order, issues $63$ host-conditioned true detections
-and suppresses $57$ of them (\cref{tab:main}). For the other six, no draw succeeds
-within twice the zero-pad cost; this is a replay-budget limit, not evidence of impossibility. Host
-context changes the channel because a pad can itself reach the evidence ceiling instead of diluting
-the group.
-
-\begin{table}[t]
-\centering
-\caption{AIT flow-only joint-attack boundary under canonical order, seed 0: attacker-owned alerts
-remaining (lower is more effective). Baselines are exact sums across eight organisations; attacked
-counts sum the per-organisation medians over 100 sampled trajectories and are neither one combined
-trajectory nor the median of an aggregate total; \cref{apptab:joint76rel} gives the per-trajectory
-reliability. The deployment pool is retrospective; the prior pool
-contains only victim traffic observed before the attacker's last flow in the target episode.}
-\label{tab:aitboundary}
-\footnotesize
-\setlength{\tabcolsep}{3pt}
-\begin{tabular}{@{}lrr@{}}
-\toprule
-Attacker arm & horizon-free & horizon-aware \\
-\midrule
-Baseline & 79 & 80 \\
-Sequential oracle, deployment pool & 1 & 0 \\
-Sequential oracle, victim-prior pool & 24 & 27 \\
-State-free multiplier, victim-prior pool & 65 & 60 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-The per-alert results above price each target on the unperturbed trajectory. Joint reruns propagate
-both the sampled pads and the changed e-LOND state (\cref{tab:aitboundary}). Under canonical order, with the retrospective
-deployment pool, the sequential oracle spends $244{,}250$ and $91{,}713$ flows---$40\%$ and $15\%$ of
-the corresponding per-alert sums---and leaves one and zero of the 79 and 80 baseline alerts. Under the
-same canonical order, restricting
-templates to traffic received by the victim before the attacker's last flow in each target episode
-leaves $24$ and $27$ alerts. Across
-the 95 attacker-owned episodes, 30 have fewer than 20 such prior flows and 18 have none.
-
-Removing live controller-state knowledge narrows the attack further. With the victim-prior pool, the
-fixed multiplier $c=\lfloor\rho\rfloor+1$ from \cref{cor:dilution} leaves 65 and 60 alerts; under
-horizon-free spending this multiplier is a heuristic transfer, since the corollary is proved for
-horizon-uniform spending. Thus the
-deployment-pool arm establishes suppression when suitable templates are available, whereas the prior-pool
-and state-free arms expose the practical dependence on temporal availability and attacker information.
-A compromised source does not automatically observe every benign flow received by its victim, so even
-the prior-pool rows are capability bounds rather than a fully demonstrated low-information attack.
-The shortfall is a direct test of the corollary's hypotheses (\cref{apptab:cor2diag}). Its premise on
-the other hypotheses, that no non-attacker episode carries evidence at or above the cold-start threshold
-$T/\alpha$, fails in three of the ten cells: one non-attacker episode on \texttt{russellmitchell} reaches
-$1.50\,T/\alpha$, and on \texttt{shaw} a non-attacker episode attains the ceiling. It holds in the other seven,
-including \texttt{santos}, whose horizon-aware non-attacker alert fires only after nine earlier
-rejections have raised the level, so a baseline non-attacker alert is not by itself a premise failure.
-The hypothesis that every own episode is multiplied fails wherever an episode has no usable prior pool,
-two to five per organisation: those episodes fire, raise $R$, and price the remaining pads above the
-cold-start level, which is why the multiplier leaves alerts standing even where the premise holds. And
-sampled templates do not all carry zero evidence: the median share of multiplier pads that fire is
-$0$--$6\%$ by organisation. Unknown co-resident arity is not the binding issue in this arm---sizing
-from the full group rather than the attacker's own flows leaves the same 65 and 60 alerts
-(\cref{apptab:joint76}).
-
-
-%% =======================================================================================
-\section{Design Guidance and Evaluated Boundaries}\label{sec:fixes}
-
-\subsection{Where a mitigation must act}
-
-\Cref{thm:padding} identifies the design boundary. Under attacker-controlled, unbounded membership,
-replacing one alert-capable symmetric merger with another cannot provide padding robustness. A mitigation must instead control membership or admission,
-change the calibrated unit, or introduce asymmetry. \Cref{tab:defenses} evaluates one representative
-from each route; each exchanges one property for another. The membership-cap experiment makes this
-boundary especially clear: under horizon-aware spending, preventing a required pad from fitting can
-leave an early alert in place, and that rejection raises the cost of later pads. Under horizon-free
-spending, the tested caps do not stop the attack. Because we constrain only the attacker's additions
-and do not apply a truncation policy to the complete stream, these results locate a capacity boundary;
-they do not demonstrate the clean or attacked performance of an operational admission-control defence.
-
-
-\subsection{A deployment checklist}
-
-The evaluated boundaries reduce to five checks a deployment can make before and during operation.
-\begin{enumerate}
-\item \textbf{Compute $\rho$ before deployment.} Given $\nCal$, $k$, and $T$, \cref{cor:budget} decides
-whether a covered controller can report an alert at all across the intended horizon. If calibration
-cannot support the horizon, a better-ranking detector cannot repair the shortfall, and switching among
-the procedure--sequence pairs of \cref{thm:family1,thm:family2} leaves the boundary where it is.
-\item \textbf{Do not group on a key the attacker can cheaply co-occupy.} The grouping key sets the
-horizon, the meaning of an alert, and the attack cost together (\cref{sec:granularity}); report the
-calibration-to-hypothesis ratio and a fixed-denominator resolution measure such as alert blur alongside
-recall.
-\item \textbf{Treat membership limits and admission as part of the threat model.} Any field that
-determines group membership is attacker-facing, as is state used to set future testing levels
-(\cref{app:state}). A per-host-pair cap is a capacity boundary, not a demonstrated defence, until the
-clean and attacked streams have been evaluated end to end under it.
-\item \textbf{If restarting, say which guarantee holds.} A pre-committed split $\sum_iq_i\le q$ keeps the
-deployment-wide budget and recovers less power; a fresh $q$ per epoch recovers more but promises only a
-per-epoch $\FDR$ (\cref{app:feasibility}).
-\item \textbf{Do not expect a different symmetric merger to fix padding.} Under attacker-controlled,
-unbounded membership, \cref{thm:padding} rules that out; a mitigation has to act on membership, on the
-calibrated unit, or through asymmetry, and each route trades something away (\cref{tab:defenses}). A
-metadata-keyed order stops one padded group from shifting unrelated hypotheses but does not stop
-padding, and a keyed hash only changes the cost of insertion (\cref{sec:transfer}).
-\end{enumerate}
-
-%% =======================================================================================
-\section{Scope and Limitations}\label{sec:discussion}
-
-\subsection{Validity and claim scope}\label{sec:dependency}
-
-\Cref{tab:deps} separates the algebraic results, labelled empirical measurements, and nominal
-guarantee. The nominal $\FDR$ interpretation of the empirical e-LOND runs is conditional on the group-validity
-premise in \cref{assump:groupval}. The diagnostics in \cref{app:validity} neither establish nor refute
-that premise. \Cref{sec:groupcal} evaluates the constructive alternative of calibrating groups
-directly. The feasibility and padding theorems do not depend on this premise.
-
-\begin{table}[t]
-\centering
-\caption{Assumptions used by the main results. ``Valid $e$'' means valid e-values; A1 denotes
-\cref{assump:groupval}. Labels identify malicious and attacker-owned episodes. FDP is the realised
-false-discovery proportion. \Cref{tab:scope} gives the corresponding evaluation windows.}
-\label{tab:deps}
-\footnotesize
-\setlength{\tabcolsep}{2pt}
-\begin{tabular}{@{}>{\raggedright\arraybackslash}p{4.25cm}ccc@{}}
-\toprule
-Result & valid $e$ & A1 & labels / ownership \\
-\midrule
-Finite horizon, exchange rate (\S\ref{sec:feasibility}) & no & no & no \\
-Grouping buys feasibility (\S\ref{sec:granularity}) & no & no & no \\
-Padding impossibility (\cref{thm:padding}) & no & no & no \\
-Suppression and $r^{\star}_t$ of a specified alert (\S\ref{sec:attack}) & no & no & no \\
-Aggregates over $\mathcal D$, incl.\ $\sum_{t\in\mathcal D} r^{\star}_t$ (\S\ref{sec:attack}) & no & no & yes \\
-Joint rerun $J_{\mathrm{seq}}$, whole-window multiplier (\S\ref{sec:attack}) & no & no & yes \\
-Replay suppression counts, recall, FDP (\S\ref{sec:attack}) & no & no & yes \\
-Nominal e-LOND $\FDR$ reading of the runs & yes & yes & no \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\subsection{Limitations}\label{sec:limitations}
-
-\emph{Empirical breadth.} LSPR23 supplies the main chronology, with correlated windows from one
-live-fire exercise (\cref{sec:data}). Position 0.85 is the known-invalid stress window and supports only
-mechanism and cost measurements. AIT-LDSv2.0 adds a benign-inclusive transfer setting, but not broad
-cross-domain validation. Because LSPR23 has no reliable flow-to-campaign identifier, our operational
-units are episodes; the five-minute atom is a stable evaluation denominator, not externally validated
-incident ground truth.
-
-\emph{Attack cost.} Per-alert cost depends on the configuration that produced the alert because
-\eqref{eq:rstar} scales with the offered level. The joint rerun covers two windows and one seed, and
-assumes that the attacker knows which episodes it owns and that its pads carry zero evidence. On
-LSPR23, labels provide ownership and attacked host pairs contain no benign traffic. A positive pad
-firing rate would increase $J_{\mathrm{seq}}$; the complete primary-window pool contains no firing flow, giving a
-one-sided 95\% upper bound of $3.5\times10^{-6}$, but the joint rerun does not sample that residual
-risk. The class-wide result is finite cost, not equal cost or available cover in every deployment.
-On AIT, a \statefree\ attacker sees only a lower bound on $m_t$; the deployment pool is retrospective,
-and the temporally restricted prior pool can still contain traffic invisible to a compromised source.
-Joint totals sum per-organisation medians, not one campaign trajectory; \cref{apptab:joint76rel}
-gives the per-trajectory reliability behind them.
-
-\emph{Detector and grouping scope.} The host-conditioned experiment covers six causal features and our
-specific accumulation model for an already-active attacker--victim pair with fixed distinct-peer
-counts. It does not characterise every host-aware detector, padding from many new peers, or a
-high-volume flood. The AIT flow-only result uses canonical order with first-flow sensitivity; the
-host-conditioned arm covers all eight organisations under first-flow order only
-(\cref{tab:main}). LSPR23 joint reruns use zero-evidence pads, whereas AIT joint runs sample real pads;
-the \texttt{wilson} host costs are upper bounds.
-
-\emph{Capacity model.} The cap constrains attacker additions; it is not applied to the full stream.
-The benign shares count episodes an implemented policy would alter, but we do not recompute evidence,
-clean detection, false discoveries, or disruption. This is a capacity boundary, not a demonstrated defence.
-
-\emph{Theorem scope.} The finite horizon covers the procedure--sequence pairs in
-\cref{sec:horizon} under uninterrupted operation, together with the sparse-evidence closure variants.
-Smoothing, restart, deferred decisions, different evidence constructions, and faster-growing history
-terms change either the mechanism or its guarantee. The result does not imply that online FDR control
-is unusable in general. \Cref{app:state}\label{sec:stateptr} separately extends the analysis to ADDIS's
-evidence-conditioned spending index.
-
-
-%% =======================================================================================
-\section{Related Work}\label{sec:related}
-
-\textbf{Online FDR and finite conformal resolution.} LOND, LORD, SAFFRON, ADDIS, e-LOND, online e-BH,
-and e-GAI provide online error guarantees under different evidence and dependence
-assumptions~\cite{javanmard2015lond,javanmard2018lord,ramdas2017lordpp,ramdas2018saffron,tian2019addis,xu2024elond,wang2022evaluebh,fischer2025onlineebh,egai2025}.
-They build on $\alpha$-investing~\cite{foster2008alpha}, safe testing~\cite{grunwald2024safe}, and
-offline FDR control~\cite{benjamini1995controlling}. Alpha-death and power loss at small levels are
-well known~\cite{ramdas2017lordpp,foster2008alpha}; mem-e-LORD~\cite{egai2025}, for example, matches
-e-LORD before the first rejection.
-
-Huo et al.~\cite{huo2024realtime} observe how the conformal floor affects LOND, SAFFRON, and ADDIS,
-while Hennhofer and Preisach~\cite{hennhofer2026resolution} study resolution collapse and smoothing in
-low-data batch tests. Our theorems turn this interaction into a deployment boundary: given $\nCal$,
-$k$, and $T$, they determine whether any admissible observation can be rejected at the intended
-horizon for two controller families. \Cref{cor:budget} shows that the horizon-uniform boundary is
-attained, and the resulting criterion also classifies recent closure and donation
-constructions~\cite{xu2026eclosure,xu2025closure}. Kr\"onert et al.~\cite{kronert2024fdr} derive the related equality
-$n=\nu m/\alpha-1$ to tune calibration for an exact realised level in a windowed procedure. Our result
-instead marks the infeasibility boundary of one uninterrupted controller; their windowing corresponds
-to the restart alternative in \cref{app:feasibility}.
-
-\textbf{Trustworthy intrusion detection and temporal evaluation.} TESSERACT's temporal evaluation
-principles~\cite{pendlebury2019tesseract} and conformal drift systems such as
-Transcend(ent)~\cite{jordaney2017transcend,barbero2022transcendent} motivate our chronological design.
-The closest systems implement subsets of our pipeline. Rebjock et al.~\cite{rebjock2021online} apply
-online FDR to time-series anomaly statistics; C-PP-COAD~\cite{farzaneh2025coad} adds conformal p-values
-and active statistics, but not attacker-influenceable metadata groups. Online multi-layer
-FDR~\cite{wang2025multilayer} partitions hypotheses rather than merging observations. CALIBURN's
-streaming intrusion pipeline uses empirical calibration, cost-sensitive thresholds, within-window
-conformal risk control, and burn-rate alerts~\cite{caliburn2026}; Gao et al.~\cite{gao2026boundary}
-combine conformal novelty detection with batch BH and boundary-FDR procedures. Neither is an
-arrival-time FDR controller over merged e-values. We therefore treat the full stack as an evaluated
-design assembled from established components, not as an existing deployment. Because label quality is a persistent
-concern~\cite{engelen2021troubleshooting,liu2022error}, we also audit against an external record
-(\cref{app:validity}).
-
-\textbf{E-merging and adversarial testing.} E-merging theory characterises admissible
-symmetric~\cite{vovk2021evalues} and asymmetric~\cite{wang2025admissible} rules at fixed arity. Our padding
-adversary acts across arities. It neither changes detector scores nor corrupts reports, unlike attacks
-based on manipulated scores, perturbed p-values, or Byzantine
-inputs~\cite{yasodharan2019nonzero,chen2024adversarialbh,zhang2025conformalevasion,zhang2025byzantine}.
-Instead, it adds legitimate observations to its own tested hypothesis. \Cref{thm:padding} lifts this
-mechanism from one implementation to the entire alert-capable symmetric class.
-
-Batching can improve online-testing power~\cite{zrnic2020batching}, but standard results require
-within-batch independence or positive dependence that co-located flows sharing a calibration tail do
-not provide. We therefore use decision deadlines~\cite{fisher2022deadlines,xu2026eclosure}, which are
-compatible with arbitrary dependence; batching under one deployment-wide budget still obeys
-\cref{cor:budget}. Feedback-aware procedures incorporate revealed labels with finite-sample
-control~\cite{lu2026gaif,liu2025ocsarc}; \cref{app:baselines} evaluates simpler threshold controllers under
-analyst delay.
-
-%% =======================================================================================
-\section{Conclusion}\label{sec:conclusion}
-
-A statistically valid trust layer can still be operationally silent or adversarially suppressible.
-For the controller families studied here, finite evidence and arrival-time spending create a
-calculable, absorbing discovery horizon; calibration must grow at least linearly with the number of
-tested hypotheses. Grouping restores feasibility at that best-case rate,
-but an attacker-co-occupiable key turns group membership into a control surface. Under unbounded,
-attacker-controlled membership, every alert-capable symmetric e-merging family yields to sufficient
-zero-evidence padding.
-
-Controller allocation sets the price of an individual alert, not the existence of the vulnerability.
-In our joint reruns, suppressing early alerts keeps later levels near cold start and makes campaign cost
-far smaller than the per-alert sum. The AIT capability arms also distinguish finite algebraic cost from
-a temporally restricted, low-information attack: template availability and observability determine the
-realised suppression. Evidence scale, controller spending, alert granularity, and membership control therefore
-require joint design; a membership cap requires end-to-end evaluation before it can be called an
-effective defence.
-
-%% =======================================================================================
-%% The sections below sit BEFORE the references and do NOT count toward the 12-page body.
-%% =======================================================================================
-
-\section*{Open Science}\label{sec:openscience}
-
-We will release the complete set of artifacts needed to reproduce every number and figure in this paper;
-they exist and have been run in full at the time of submission: a single executable notebook that carries
-the paper's derivations and measurements alongside the prose, the library of measurement scripts it
-imports, the cached results of a full run, and a pinned environment. Cached-result mode executes in
-about half a minute, renders every table and figure directly from the shipped result objects (the
-figure-drawing code is part of the library, and the script that writes this paper's figures is a wrapper
-over it) and requires no raw dataset. Full mode recomputes those objects from the original flow data; we
-executed that mode end to end and verified that it reproduces the shipped results.
-
-The obstacle is third-party data, on which the artifact depends in two places. LSPR23 is not ours to
-redistribute but is publicly available under CC-BY-4.0 (Zenodo record 8042347), and the artifact ships the
-exact preprocessing commands that turn the published CSV into the pipeline's inputs. The transfer test
-additionally uses AIT-LDSv2.0~\cite{aitlds} (Zenodo record 5789064, CC-BY-4.0): the artifact ships the
-per-organisation \texttt{tstat} netflow extraction and the exact malicious/benign label mapping
-(\cref{app:procedures}) that turn its released packet captures into the eight-organisation netflow inputs,
-following the dataset's own recipe. Full-mode reproduction therefore requires downloading both records;
-the derivations, procedure implementations, attack code and cached results carry no such restriction.
-They will be deposited in a fully anonymised repository within three days of submission, kept accessible
-for the duration of review and not edited after that deadline, and, if accepted, deposited on Zenodo by
-the venue's final-artifact deadline.
-
-\section*{LLM Usage Considerations}
-
-Hosted LLMs were accessed through Claude Code and Codex CLI for editorial refinement, code generation,
-evaluation support, and read-only code audits. LLMs were used for editorial purposes in this manuscript,
-and all outputs were inspected by the authors to ensure accuracy and originality. They are not part of
-the proposed method, the released pipeline's operation or the dataset labelling. Their use was motivated
-by the volume of automation, evaluation and consistency-checking code the project required within its
-timeframe. Code was validated
-through unit tests, per-alert real-flow replay against the closed forms, closed-form cross-checks of the
-derivations, and paper-to-artifact consistency gates that recompute every reported number from the
-shipped result objects; every number and reference was verified by the authors. The released artifact
-contains the exact code used to produce the reported results. The authors take responsibility for all
-content and any remaining errors.
-
-\emph{Necessity, model choice and footprint.} We used the general-purpose assistants already available
-in our development environment; no model was trained or fine-tuned, and no LLM is required to execute or
-reproduce the released pipeline. The models were chosen because the tasks were editorial, code-generation and code-audit tasks for
-which a general model suffices. The clients' session logs for this project record Claude Code (client versions 2.1.241--2.1.261) with the model identifiers \texttt{claude-opus-5}, \texttt{claude-opus-4-8},
-\texttt{claude-fable-5-1} and \texttt{claude-fable-5}, and Codex CLI (client versions 0.142.3 and
-0.152.1) with the model identifiers \texttt{gpt-5.5}, \texttt{gpt-5.6-terra} and \texttt{gpt-5.6-sol};
-neither client records the provider-side model snapshot date, so we do not report one. We limited query
-volume by working in long sessions
-that batch related requests, by reusing generated code and the cached result objects rather than
-regenerating them, by running every consistency gate locally as a script rather than by querying a model,
-and by keeping the released pipeline free of any model call: reproducing every number and figure in this
-paper requires no access to an LLM, and the artifact imports no LLM client. Provider-side energy
-measurements for the assistants were not available to us, so we do not estimate their emissions. The
-reported experiments themselves are CPU-only scikit-learn computations on a single workstation, a
-MacBook Pro with an Apple M5 Pro system-on-chip (18 CPU cores, 48\,GB unified memory, no discrete GPU;
-the pipeline uses no GPU): a full recomputation from the flow data takes about two to three hours and
-the cached-result reproduction about half a minute.
-
-\section*{Ethical Considerations}
-
-This paper describes working attacks against a statistical trust layer for intrusion detection, so we
-state our reasoning against the Menlo Report framing~\cite{menlo2012}.
-
-\emph{Respect for persons and justice.} All measurements are made on public research datasets released
-for this purpose, captured during authorised cyber-defence exercises on purpose-built ranges rather than
-on production networks carrying third-party traffic. We rely on the publishers' own ethical review and
-release terms and did not conduct a separate consent audit, so we make no claim about individual consent
-beyond what those releases state. No attack was executed against any live network, and no personal data
-is used, disclosed or re-identified.
-
-\emph{Beneficence and responsible disclosure.} This work does not target a deployed product, and the
-class of system it studies is, to our knowledge, not yet widely deployed, which is the point at which
-disclosure is cheapest and most useful. It introduces no new attack on the underlying detector: it
-identifies a security consequence that emerges when public statistical components are composed ---
-bounded evidence, attacker-influenceable grouping and online error spending together produce an alert
-layer that can become infeasible or suppressible. We report both the inexpensive and the expensive
-attack regimes and evaluate representative mitigations, so that designers can assess the exposure
-before deploying such a composition.
-
-\emph{Law and public interest.} We identify a small set of host pairs whose labels we believe to be wrong
-and deliberately do not publish corrected labels: rewriting a public dataset's labels from our own
-detector's tail would be circular, and the pairs were identified using test-split information. We report
-the direction of the error instead.
-
-\bibliographystyle{IEEEtran}
-\bibliography{refs}
-
-\appendices
-%% Both aliases are positional: labels set BEFORE this line keep their body types ("Section III-D"),
-%% labels set after become "Appendix F-C".  Dropping the subsection line reintroduces "section F-C".
-\crefalias{section}{appendix}
-\crefalias{subsection}{appendix}
-\crefalias{subsubsection}{appendix}
-\crefname{appendix}{Appendix}{Appendices}\Crefname{appendix}{Appendix}{Appendices}
-%% Unlimited, but reviewers are not required to read appendices, so nothing the BODY'S ARGUMENT needs
-%% lives only here.  Appendix G is the exception by design: it is an extension the body cites twice and
-%% never leans on.  Each appendix opens with the question it answers and its takeaway.
-
-%% ---------------------------------------------------------------------------------------
-\section{Proofs and Exact Scope}\label{app:proofs}
-
-\emph{Question answered.} What exactly do the body's four formal results assume, and what does the
+\emph{Question answered.} What exactly do the body's core formal results assume, and what does the
 $\FDR$ reading of an empirical e-LOND run assume on top of them? \emph{Takeaway.} The feasibility
 theorems need only a finite evidence ceiling and the stated level form; the padding impossibility needs
 only the symmetric e-merging class; the group-validity premise below is needed by neither, and only by
 the nominal guarantee.
 
-The body states \cref{thm:family1,thm:family2,cor:budget,thm:padding}. This appendix adds the
+The body states \cref{thm:family1,thm:family2,cor:budget,thm:padding,cor:dilution}. This appendix adds the
 group-validity premise, the exact scope of each body result, and five further results the body cites;
 all proofs follow, verified numerically in the released artifact.
 
@@ -1561,7 +1374,7 @@ readings (a literal snapshot and a running union of the rejection history); we r
 to the literal one.
 
 \Cref{tab:procedures} gives the full procedure matrix at the primary and stress windows, including the
-first-flow rejection counts the body's taxonomy (\cref{tab:taxonomy}) summarises.
+first-flow rejection counts the taxonomy (\cref{tab:taxonomy}) summarises.
 
 \begin{table*}[t]
 \centering
@@ -1596,7 +1409,7 @@ e-LORD ($=$e-SAFFRON$_{\lambda{=}0}$)~\cite{egai2025} & e-value & elapsed time (
 mem-e-LORD~\cite{egai2025}         & e-value & elapsed time (reparam.) & \oracle & yes (I) & 87 & 142 & 0.000 & controls mem-$\FDR$ \\
 SAFFRON~\cite{ramdas2018saffron}   & p-value & non-candidates & no & \textbf{no}$^\dagger$ & 0 & 70 & 0.000 & assumes independence \\
 \textbf{ADDIS}~\cite{tian2019addis}& p-value & selected non-cand.\ & no & \textbf{no} & \textbf{110} & \textbf{152} & 0.033 & \textbf{null-cons.\ violated} \\
-\textbf{online e-BH}~\cite{xu2024elond} & e-value & fixed point over history & no & \textbf{no} & 18 & 72 & 0.000 & FDR under group e-validity \\
+\textbf{online e-BH}~\cite{xu2024elond,fischer2025onlineebh} & e-value & fixed point over history & no & \textbf{no} & 18 & 72 & 0.000 & FDR under group e-validity \\
 \bottomrule
 \end{tabular}}
 \end{table*}
@@ -1649,7 +1462,7 @@ $[i_2,i_3)$; benign subsampling is confined to $[0,i_1)$. A separate red-team ta
 narratives, 83 machine-readable compromise reports, 295 timestamped step submissions) is used only as
 external ground truth in \cref{app:granularity,app:validity}, never as a feature.
 
-\emph{AIT-LDSv2.0.} The transfer tests use AIT-LDSv2.0~\cite{aitlds} (Zenodo 5789064, CC-BY-4.0), eight
+\emph{AIT-LDSv2.0.} The transfer tests use AIT-LDSv2.0~\cite{aitlds} (Zenodo 5789064, CC BY-NC-SA 4.0), eight
 organisation testbeds whose released packet captures we convert to per-organisation \texttt{tstat}
 \texttt{tcp\_complete} netflows following the dataset's own recipe (45,001 attack flows). Each flow
 carries the dataset's own attack-label string; we treat as malicious exactly the attack-step labels it
@@ -1820,6 +1633,11 @@ host-pair episodes, matching \cref{apptab:detection}. Within-bucket ordering cha
 not $T$. The two headline windows are the two largest calibration sets, and 0.62 exceeds
 0.55 rather than repeating it.
 
+\emph{Full-exercise scaling.} Under horizon-free $\gamma_j\propto j^{-1.6}$, testing all
+16,353,511 flows in one uninterrupted run requires about $1.6\times10^{13}$ calibration flows
+for LOND/e-LOND and $3.2\times10^{13}$ for LORD++. These are the horizon-free counterparts to
+the horizon-uniform counts in \cref{sec:exchange}.
+
 \emph{Cold-start arithmetic.} The count ratio of \cref{cor:budget} is dataset-independent, but its
 calendar form is not: for LORD++ the horizon-uniform requirement is $1.44\times10^{9}$ calibration flows
 for one hour of a 10k-flows/s link and $3.46\times10^{10}$ for a day. Under $\gamma\propto j^{-1.6}$ the
@@ -1861,6 +1679,12 @@ order across the ten cells and $+1$ and $+0$ under first-flow arrival (\cref{app
 grouping-independent resolution cost against the fixed atomic reference (including the malicious-flow
 coverage the body omits), \cref{apptab:semblur} the external red-team denominator, and
 \cref{apptab:transfer} the cross-window configuration transfer.
+
+\emph{Grouping key and attack cost.} Changing the primary window's two-hour key from a host pair
+to a source host raises canonical horizon-free detections from $3$ to $46$ and the median exact
+per-alert suppression cost from $24$ to $496$ added flows. The grouping key therefore sets
+feasibility, alert semantics, and attack cost together. Source-host grouping is feasible at every
+evaluated bucket width, reducing each window to $763$--$24{,}043$ episodes.
 
 \emph{Restart as a granularity lever.} Coarsening is not the only way to divide the hypothesis count a
 run must survive: hourly restart at one-hour grouping reaches recall $0.406$ at $\approx125$ alerts,
@@ -1959,15 +1783,22 @@ produce none, so this is a survivorship-conditioned estimand.
 
 \subsection{Sizing without the oracle}\label{app:nonoracle}
 
+For horizon-free spending, $c=10$ is the smallest tested multiplier in $\{2,3,5,10,100\}$
+that suppresses every canonical seed-0 alert in the primary and known-invalid stress windows,
+the two arms with stored per-episode arities. In the secondary window, the canonical alert with
+$m_t=22$ and $r^\star_t=859$ requires $c=41$. Across the LSPR23 analysis, all 674 detected
+episodes lie on host pairs containing no benign traffic, so episode arity is the attacker's
+own generated flow count.
+
 Multiplying the attacker's own episode by $c$ defeats an alert whenever $c\ge1+r^{\star}_t/m_t$. That
 overshoot factor has median $1.57$ at the canonical primary window and maximum $6.17$ at the stress
 window, and it is what the attacker must cover --- never the threshold itself. Tuning $c$ per window is
-cheaper than the fixed $c=10$ the body reports ($c=3$ suppresses all three primary alerts at a median of
+cheaper than the fixed $c=10$ evaluated here ($c=3$ suppresses all three primary alerts at a median of
 80 added flows, $3.5\times$), but that choice reads the realised costs and is reported as an
 oracle-informed floor, not an attacker rule; so is the flat pad, where 33 flows suffice at the primary
 window and 17 for $90\%$ of the secondary window's eleven. The one exception is the first-flow stress
 arm, where overshoot reaches $4{,}302$ and no multiplier we test suffices (\cref{apptab:nonoracle}).
-The fixed $c=10$ the body reports costs a median $15.7\times$ the oracle at the primary window and
+The fixed $c=10$ evaluated here costs a median $15.7\times$ the oracle at the primary window and
 $5.1\times$ at the stress window, so dropping to \statefree\ sizing costs a factor of about ten, not the
 $10^{4}$--$10^{6}$ span of $1/\alphat$ within a window. The resulting pad is large but not anomalous:
 the padded primary-window episode, arity $120$, is exceeded by $0.9$--$9.9\%$ of deployment episodes.
@@ -2033,6 +1864,35 @@ causally rather than scoring the pool in isolation.
 
 \subsection{Aggregation alternatives and the capacity boundary}\label{app:defences}
 
+\begin{table*}[t]
+\centering
+\caption{Representative design directions after \cref{thm:padding}, evaluated on LSPR23 two-hour
+host-pair episodes. Aggregation and weighting use first-flow order. The membership-cap row uses a
+capacity-constrained attacker under canonical order, not a complete admission policy. Supporting
+measurements appear in \cref{sec:capacity,app:defences}.}
+\label{tab:defenses}
+\footnotesize
+\setlength{\tabcolsep}{6pt}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{4.0cm}>{\raggedright\arraybackslash}p{5.4cm}>{\raggedright\arraybackslash}p{7.2cm}@{}}
+\toprule
+Design direction & Gain & Cost / boundary \\
+\midrule
+Capped normalisation $\sum_ie_i/n_0$ & Invariant to members appended below the cap $n_0$ &
+Leaves the symmetric e-merging class above $n_0$; validity-preserving caps detect nothing
+(\cref{apptab:caps}) \\[2pt]
+Pre-committed asymmetric weights~\cite{wang2025admissible} & Valid invariance to \emph{appended} flows &
+A few \emph{leading} flows defeat every scheme that keeps the mean's recall; a larger reach costs about
+$58\%$ of it (\cref{tab:asym}) \\[2pt]
+Group-calibrated maximum & Padding-robust aggregate & The smaller calibration unit destroys
+feasibility: no alerts at the primary or secondary window (\cref{sec:groupcal}) \\[2pt]
+Per-host-pair membership cap \emph{(outside the merging class)} & Makes pads above the cap infeasible
+in the capacity model; an early unpadded alert can raise later costs & Not evaluated as an end-to-end
+policy: baseline traffic is not truncated or rescored; the constraint leaves residual suppression and
+does not stop the horizon-free attacker (\cref{sec:capacity}) \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
 Caps large enough to preserve the intended validity domain yield zero detections at the median
 window--seed cell (first-flow, the detection-favourable order; \cref{apptab:caps}). In the
 primary-window weight sweep every scheme that retains the mean's recall is defeated by one to eight
@@ -2044,6 +1904,32 @@ margin collapses to about $-0.97$ and the primary and secondary windows issue no
 (\cref{sec:groupcal}). Appending is not the only lever against it either: creating hypotheses ahead of a
 target pushes it past the cold-start window, and in that construction's short prefix every
 group-maximum detection falls to $62$--$295$ inserted hypotheses (\cref{apptab:insertion}).
+
+\subsection{Capacity-constrained sequential padding}\label{app:capacity}
+
+The resulting group sizes locate the membership-cap boundary. Under horizon-free spending, the
+median padded primary-window episode has arity 63, and 5\% of deployment episodes are at least that
+large. Per-alert horizon-aware pads have median arity $2{,}989$, reached by only $0.22\%$ of
+episodes. Once controller state is propagated, however, the attacker has median padded arity $91$ at
+the primary window and $55$ at the secondary, sizes reached by $3.8\%$ and $4.3\%$ of episodes.
+
+We therefore rerun the sequential attacker under a capacity constraint: it pads an episode only when
+$m_t+r_t\le n$ and otherwise leaves the original alert in place. This experiment does not truncate or
+rescore the complete clean and attacked streams, so it is not an end-to-end evaluation of an
+admission-control policy. Under canonical order and $n=100$, $96$ of
+the $105$ horizon-aware primary-window alerts still fire: $44$ because their pad would not fit even at
+the cold-start level, and $52$ because those first alerts raise $R$ enough to price later pads above
+the cap; at the secondary window $79$ of $107$ fire ($33$ and $46$) by the same mechanisms. At a cap
+of 300, we observe $19$ and $60$ alerts firing, whereas the per-alert reading where
+$m_t+r^{\star}_t>n$ predicts $91$ and $95$, and at $1{,}000$ the sequential attacker silences both
+windows. A cap of 100 would alter
+$3.4\%$ and $2.9\%$ of benign episodes as currently formed. This is the share an implemented cap
+would alter, not a measurement of its effect on evidence, clean detection, or benign service.
+
+The same constraint does not stop the horizon-free attacker: all three primary-window alerts remain
+suppressible at $n\ge100$. Reaching them requires $n=30$, which would alter $7.4\%$ of benign
+episodes. Thus the experiment identifies a mitigation boundary under an enforced capacity model; it
+does not establish the performance of a working defence.
 
 \emph{Static versus running pricing.} Pricing against the static first-step threshold $T/w_0$ is the
 cheap extreme (median 34 flows at 0.85 under the canonical order); the body reports the larger
@@ -2126,7 +2012,7 @@ valid e-value; ``A1'' is \cref{assump:groupval}; ``labels / ownership'' is wheth
 the oracle for which episodes the attacker owns. Windows
 are named by position: 0.55 primary, 0.62 secondary, 0.85 stress (evidence not a valid e-value;
 mechanism and cost only); AIT is the second dataset.}
-\label{tab:scope}
+\label{tab:scope}\label{tab:deps}
 \footnotesize
 \setlength{\tabcolsep}{4pt}
 \begin{tabular}{@{}>{\raggedright\arraybackslash}p{8.2cm}cccp{3.0cm}@{}}
@@ -2138,9 +2024,9 @@ Granularity buys feasibility (\S\ref{sec:granularity}) & no & no & no & all \\
 Alert blur (\S\ref{sec:granularity}) & no & no & yes & 0.55, 0.85 \\
 Padding impossibility (Thm.~\ref{thm:padding}) & no & no & no & --- \\
 Suppression and $r^{\star}_t$ of a specified alert (\S\ref{sec:attack}) & no & no & no & 0.55, 0.62, 0.85, AIT \\
-Aggregates over $\mathcal D$, incl.\ $\sum_{t\in\mathcal D} r^{\star}_t$ (\S\ref{sec:attack}) & no & no & yes & 0.55, 0.62 \\
-Joint rerun $J_{\mathrm{seq}}$, whole-window multiplier (\S\ref{sec:attack}) & no & no & yes & 0.55, 0.62 \\
-Replay suppression counts, recall, FDP (\S\ref{sec:attack}) & no & no & yes & 0.55, 0.62, 0.85, AIT \\
+Aggregates over $\mathcal D$, incl.\ $\sum_{t\in\mathcal D} r^{\star}_t$ (\S\ref{sec:evaluation}) & no & no & yes & 0.55, 0.62 \\
+Joint rerun $J_{\mathrm{seq}}$, whole-window multiplier (\S\ref{sec:evaluation}) & no & no & yes & 0.55, 0.62 \\
+Replay suppression counts, recall, FDP (\S\ref{sec:evaluation}) & no & no & yes & 0.55, 0.62, 0.85, AIT \\
 Nominal e-LOND $\FDR$ guarantee & yes & yes & no & 0.55, 0.62 \\
 ADDIS state attack, real stream (\cref{app:state}) & no & no & yes & 0.85 (mechanism) \\
 ADDIS silenced, guarantee valid (\cref{app:state}) & yes & --- & no & synthetic \\

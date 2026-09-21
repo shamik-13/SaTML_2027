@@ -3,7 +3,12 @@
 %% DOUBLE BLIND: cite our own prior work in the THIRD PERSON.
 %%
 %% Every entry below was verified against a primary source (publisher page, arXiv listing, or
-%% proceedings entry) on 27 Aug 2026.  Corrections made during that pass are noted inline.
+%% proceedings entry) on 27 Aug 2026 and RE-VERIFIED on 22 Sep 2026 against the arXiv API,
+%% Crossref, PMLR, the NeurIPS proceedings and the Zenodo records.  Corrections from both passes
+%% are noted inline.  The 22 Sep pass found one entry whose source had been withdrawn by its own
+%% author between the two checks, so an arXiv-only citation is worth re-reading before submission.
+%% PREPRINT YEARS are the year of FIRST POSTING, which is what the arXiv listing shows; several
+%% entries here are on v3-v5 and their latest revision carries a later year.
 
 %% ---------------------------------------------------------------- motivation and security
 
@@ -53,20 +58,11 @@
   note      = {arXiv:2010.03856}
 }
 
-%% Title and author recovered from the arXiv listing; the project record carried a placeholder.
-@misc{caliburn2026,
-  author = {Youssef, Michel A.},
-  title  = {{CALIBURN}: Operationally Calibrated Streaming Intrusion Detection with
-            Regime-Dependent Conformal Risk Control},
-  year   = {2026},
-  note   = {arXiv:2605.24696}
-}
-
 %% Closest predecessors: online/streaming conformal anomaly detection with FDR-style control.
 %% Verified against arXiv listings on 31 Aug 2026.
 @misc{farzaneh2025coad,
   author = {Farzaneh, Amirmohammad and Simeone, Osvaldo},
-  title  = {Context-Aware Online Conformal Anomaly Detection with Prediction-Powered Data Acquisition},
+  title  = {Online Conformal Anomaly Detection with Prediction-Powered Data Acquisition},
   year   = {2025},
   note   = {arXiv:2505.01783}
 }
@@ -117,7 +113,7 @@
   pages   = {3466--3482},
   year    = {2023},
   doi     = {10.1109/TDSC.2022.3201582},
-  note    = {{AIT}-LDSv2.0 dataset: Zenodo record 5789064, CC-BY-4.0}
+  note    = {{AIT}-LDSv2.0 dataset: Zenodo record 5789064, CC BY-NC-SA 4.0}
 }
 
 @techreport{menlo2012,
@@ -289,6 +285,7 @@
   booktitle = {International Conference on Machine Learning (ICML)},
   series    = {PMLR},
   volume    = {267},
+  pages     = {76308--76331},
   year      = {2025},
   note      = {arXiv:2506.01452}
 }
@@ -318,7 +315,7 @@
 @misc{fischer2025onlineebh,
   author = {Fischer, Lasse and Xu, Ziyu and Ramdas, Aaditya},
   title  = {An Online Generalization of the (e-){B}enjamini-{H}ochberg Procedure},
-  year   = {2025},
+  year   = {2024},
   note   = {arXiv:2407.20683}
 }
 
@@ -326,7 +323,7 @@
 %% interpolates between immediate decisions and the ARC setting.
 @inproceedings{fisher2022deadlines,
   author    = {Fisher, Aaron J.},
-  title     = {Online Control of the False Discovery Rate under ``Decision Deadlines''},
+  title     = {Online Control of the False Discovery Rate under `Decision Deadlines'},
   booktitle = {International Conference on Artificial Intelligence and Statistics (AISTATS)},
   series    = {PMLR},
   volume    = {151},
@@ -379,6 +376,8 @@
   author    = {Chen, Louis L. and Szechtman, Roberto and Seri, Matan},
   title     = {On the Adversarial Robustness of {Benjamini--Hochberg}},
   booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  volume    = {37},
+  pages     = {90965--90988},
   year      = {2024},
   note      = {arXiv:2501.03402}
 }
@@ -403,6 +402,7 @@
   title     = {Real-Time Selection Under General Constraints via Predictive Inference},
   booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
   volume    = {37},
+  pages     = {61267--61305},
   year      = {2024}
 }
 
@@ -418,7 +418,7 @@
 @misc{lu2026gaif,
   author = {Lu, Lin and Huo, Yuyang and Ren, Haojie and Wang, Zhaojun and Zou, Changliang},
   title  = {Feedback-Enhanced Online Multiple Testing with Applications to Conformal Selection},
-  year   = {2026},
+  year   = {2025},
   note   = {arXiv:2509.03297}
 }
 
@@ -429,9 +429,12 @@
   note   = {arXiv:2508.13838}
 }
 
-@misc{zhang2025byzantine,
-  author = {Zhang, Daofu and Pournaderi, Mehrdad and Xiang, Yu and Varshney, Pramod},
-  title  = {Distributed Multiple Testing with False Discovery Rate Control in the Presence of Byzantines},
-  year   = {2025},
-  note   = {arXiv:2501.13242}
+%% Published version: ISIT 2025 (DOI 10.1109/ISIT63088.2025.11195318); was cited as a preprint.
+@inproceedings{zhang2025byzantine,
+  author    = {Zhang, Daofu and Pournaderi, Mehrdad and Xiang, Yu and Varshney, Pramod},
+  title     = {Distributed Multiple Testing with False Discovery Rate Control in the Presence of Byzantines},
+  booktitle = {IEEE International Symposium on Information Theory (ISIT)},
+  pages     = {1--6},
+  year      = {2025},
+  note      = {arXiv:2501.13242}
 }
